@@ -1,0 +1,61 @@
+{
+	"thegamesdb": {
+		"snes": {
+			"platform": ["Super Nintendo (SNES)"]
+		},
+		"sms": {
+			"platform": ["Sega Master System", "SEGA SG-1000"]
+		},
+		"gg": {
+			"platform": ["Sega Game Gear"]
+		},
+		"gen": {
+			"platform": ["Sega Genesis", "Sega Mega Drive", "Sega 32X"]
+		},
+		"gba": {
+			"platform": ["Nintendo Game Boy Advance"]
+		},
+		"gb": {
+			"platform": ["Nintendo Game Boy", "Nintendo Game Boy Color"]
+		},
+		"nes": {
+			"platform": ["Famicom Disk System", "Nintendo Entertainment System (NES)"]
+		},
+		"n64": {
+			"platform": ["Nintendo 64"]
+		},
+		"pce": {
+			"platform": ["TurboGrafx 16"]
+		},
+		"lynx": {
+			"platform": ["Atari Lynx"]
+		},
+		"vb": {
+			"platform": ["Nintendo Virtual Boy"]
+		},
+		"wsx": {
+			"platform": ["WonderSwan Color", "WonderSwan"]
+		},
+		"a7800": {
+			"platform": ["Atari 7800"]
+		},
+		"a5200": {
+			"platform": ["Atari 5200"]
+		},
+		"a2600": {
+			"platform": ["Atari 2600"]
+		},
+		"ngpx": {
+			"platform": ["Neo Geo Pocket", "Neo Geo Pocket Color"]
+		},
+		"jag": {
+			"platform": ["Atari Jaguar"]
+		},
+		"nds": {
+			"platform": ["Nintendo DS"]
+		},
+		"vect": {
+			"platform": ["Vectrex"]
+		}
+	}
+}

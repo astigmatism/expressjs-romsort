@@ -1,0 +1,44 @@
+extends layout
+
+block content
+
+	label system id (a7800): 
+	input#system
+	br
+	label boxart term ([title] genesis box):
+	input#term
+	br
+	br
+	button(onclick='$("#decompress").text("working");$.get("/decompress?system=" + $("#system").val(), function() { $("#decompress").text("complete"); })') decompress
+	span#decompress
+	br
+	br
+	button(onclick='$("#romfolders").text("working");$.get("/romfolders", function() { $("#romfolders").text("complete"); })') rom folders 
+	span#romfolders
+	br
+	br
+	button(onclick='$("#datafile").text("working");$.get("/datafile?system=" + $("#system").val(), function() { $("#datafile").text("complete"); })') datafile 
+	span#datafile
+	br
+	br
+	button(onclick='$("#getboxart").text("working");$.get("/getboxart?system=" + $("#system").val() + "&term=" + $("#term").val(), function() { $("#getboxart").text("complete"); })') getboxart
+	span#getboxart
+	br
+	br
+	button(onclick='$("#thegamesdb").text("working");$.get("/thegamesdb?system=" + $("#system").val() + "&update=all", function() { $("#thegamesdb").text("complete"); })') thegamesdb 
+	span#thegamesdb
+	br
+	br
+	button(onclick='window.open("/boxart/" + $("#system").val(), "_blank")') open box art
+	br
+	br
+	button(onclick='$("#boxartdatafile").text("working");$.get("/datafile/boxart?system=" + $("#system").val(), function() { $("#boxartdatafile").text("complete"); })') box art datafile
+	span#boxartdatafile
+	br
+	br
+	button(onclick='$("#cdnreadyboxes").text("working");$.get("/cdnboxready/" + $("#system").val(), function() { $("#cdnreadyboxes").text("complete"); })') cdnready boxes
+	span#cdnreadyboxes
+	br
+	br
+	button(onclick='$("#cdnready").text("working");$.get("/cdnready?system=" + $("#system").val() + "&source=decompressed", function() { $("#cdnready").text("complete"); })') cdnready roms
+	span#cdnready

@@ -1,0 +1,40 @@
+body {
+	padding: 0;
+	margin: 0;
+}
+
+ul {
+	display: inline-block;
+	padding: 0;
+	margin: 0;
+	width: 100%;
+}
+
+li {
+	padding: 10px;
+	list-style: none;
+	display: inline-block;
+	margin: 10px;
+	width: 200px;
+	font-size: 12px;
+}
+
+li.nobox {
+	background-color: #ffe6e6;
+}
+
+li.box {
+	
+}
+
+li a {
+	font-size: 18px;
+	text-decoration: none;
+}
+
+li img {
+	min-width: 100px;
+	min-height: 50px;
+}
+
+

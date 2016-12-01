@@ -1,0 +1,23 @@
+doctype html
+html
+  head
+    script.
+        var data = !{data};
+        var webtitles = !{webtitles};
+        var system = '!{system}';
+    script(src='https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js')
+    script(src='/javascripts/boxart.js', type='text/javascript')
+    script(src='/javascripts/dropzone.js', type='text/javascript')
+    link(rel='stylesheet', href='/stylesheets/boxart.css')
+    link(rel='stylesheet', href='/stylesheets/dropzone.css')
+  body
+    div
+        span Add term to search: 
+        input#search
+    div
+        input(type='checkbox')#lowrankingtoggle
+        span show/hide low ranking
+    div
+        input(type='checkbox')#inwebfolder
+        span show/hide in web folder
+    ul
