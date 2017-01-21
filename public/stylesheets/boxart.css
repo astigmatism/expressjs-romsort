@@ -15,16 +15,8 @@ li {
 	list-style: none;
 	display: inline-block;
 	margin: 10px;
-	width: 200px;
+	width: 250px;
 	font-size: 12px;
-}
-
-li.nobox {
-	background-color: #ffe6e6;
-}
-
-li.box {
-	
 }
 
 li a {
@@ -32,9 +24,10 @@ li a {
 	text-decoration: none;
 }
 
-li img {
-	min-width: 100px;
-	min-height: 50px;
+li.foreign {
+	background-color: #EAFAF1;
 }
 
-
+li.en {
+	background-color: #FDEDEC;
+}

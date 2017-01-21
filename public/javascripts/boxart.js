@@ -5,20 +5,20 @@ var BoxArt = function() {
 	var self = this;
 
 	$(document).ready(function() {
-		
-		$('#lowrankingtoggle').click(function() {
+
+		$('#hideus').click(function() {
 			if ($(this).is(':checked')) {
-				$('li.nobox').hide();
+				$('li.en').hide();
 			} else {
-				$('li.nobox').show();
+				$('li.en').show();
 			}
 		});
 
-		$('#inwebfolder').click(function() {
+		$('#hideforeign').click(function() {
 			if ($(this).is(':checked')) {
-				$('li.noweb').hide();
+				$('li.foreign').hide();
 			} else {
-				$('li.noweb').show();
+				$('li.foreign').show();
 			}
 		});
 
@@ -30,29 +30,31 @@ var BoxArt = function() {
 				topranking = rank > topranking ? rank : topranking;
 			});
 
+			//250 and below is the score at which we are not concerned about getting box art (see findbestrom.js for details) 
 			if (topranking <= 250) {
 				return;
 			}
 
-			var inwebfolder = ($.inArray(title, webtitles) > -1 ? true : false);
-
-			var li = $('<li class="' + (topranking > 250 ? 'box' : 'nobox' ) + ' ' + (inwebfolder ? 'web' : 'noweb') + '"><a href="javascript:opengoogle(\'' + encodeURIComponent(title).replace('\'','\\\'').replace('&','\&') + '\')" target="_blank">' + title + '</a><br/></li>');
+			//red = foreign, green = english title
+			var li = $('<li class="' + ((topranking >= 400) ? 'en' : 'foreign') + '" style="background-color: ' + ((topranking >= 400) ? '#EAFAF1' : '#FDEDEC') + '"><a href="javascript:opengoogle(\'' + encodeURIComponent(title).replace('\'','\\\'').replace('&','\&') + '\')" target="_blank" onerror="this.src=\'missing.jpg\'">' + title + '</a><div style="padding-top: 5px;content=\' \'"></div></li>')
+			
 
 			var image = new Image();
 			image.src = '/boxart/' + system + '/' + title + '/original.jpg'; //always show original since we can be certain it is jpg
-			image.width = 120;
+			image.onerror = function() { 'this.src="missing.png"' };
+			image.width = 250;
+
 			li.append(image);
 
-			li.append($('<br/>'));
-			li.append($('<div>in web folder: ' + inwebfolder + '</div>'));
-			li.append($('<div>Top Ranking File</div>'));
-			li.append($('<div>' + details.best + '</div>'));
-			li.append($('<div>score: ' + topranking + '</div>'));
-			li.append($('<br/>'));
+			li.append('<div style="padding-top: 3px">Score: ' + topranking + '</div>');
+			li.append('<div>Top File: ' + details.best + '</div>');
 
-			var del = $('<a href="javascript:void(0);">delete</a>');
+			
+
+			var del = $('<input type="button" value="Delete"></input>');
 			del.click(function(e) {
 				
+				image.src ='';
 				$.ajax({
 					url: '/boxart',
 					type: 'DELETE',
@@ -60,11 +62,10 @@ var BoxArt = function() {
 						system: system,
 						title: title
 					}
-				}).done(function(response) {
-					li.remove();
+				}).error(function() {
+					alert('There was an error deleting the image. Please check the server!');
 				});
 			});
-
 			li.append(del);
 
 
@@ -73,11 +74,15 @@ var BoxArt = function() {
 				sending: function(file, xhr, formData) {
 	    			formData.append('title', title);
 	    			formData.append('system', system);
+				},
+				init: function () {
+					this.on('error', function (file) {
+						alert('There was an error saving the image. Please check the server!');
+					});
 				}
-			})
+			});
 
 			$('ul').append(li);
-
 		});	
 
 	});

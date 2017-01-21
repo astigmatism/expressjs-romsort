@@ -1,9 +1,13 @@
 var fs = require('fs-extra');
 var async = require('async');
 var Main = require('./main.js');
+var gm = require('gm');
 
 CDNBoxReady = function() {
 };
+
+CDNBoxReady.resizes = [170, 120, 50];
+CDNBoxReady.outputFormat = 'jpg';
 
 CDNBoxReady.exec = function(datafilePath, sourcePath, destinationPath, callback) {
 
@@ -52,29 +56,43 @@ CDNBoxReady.exec = function(datafilePath, sourcePath, destinationPath, callback)
 
                                 console.log(folder + ' ---> ' + key);
 
-                                //create a target folder
-                                Main.createFolder(destinationPath + '/' + key, true, function(err) {
-                                    if (err) {
-                                        return callback(err);
+                                //an original.jpg file MUST exist
+                                fs.exists(sourcePath + '/' + folder + '/original.jpg', function(exists) {
+
+                                    if (exists) {
+
+                                        //create a target folder
+                                        Main.createFolder(destinationPath + '/' + key, true, function(err) {
+                                            if (err) {
+                                                return callback(err);
+                                            }
+
+
+                                            //now create thumbnails
+                                            self.resize(sourcePath + '/' + folder + '/original.jpg', destinationPath + '/' + key, function(err) {
+                                                
+                                                //on error for thumbnails, break... we require them for packing cdn art
+                                                if (err) {
+                                                    console.log('Error preparing thumbnails for ' + folder + ': ' + err);
+                                                    return callback(err);
+
+                                                } else {
+
+                                                    console.log('All thumbnails created! --> ' + folder);
+
+                                                    return nextfolder();
+                                                }
+                                            }); 
+                                        });
+
+                                    } else {
+                                        console.log('Could not find original.jpg in + ' + sourcePath + '/' + folder);
+                                        return nextfolder();
                                     }
 
-                	                //read title folder
-                	                fs.readdir(sourcePath + '/' + folder, function(err, files) {
-                	                    if (err) {
-                	                        return nextfolder(err);
-                	                    }
-
-                                        for (var i = 0; i < files.length; ++i) {
-
-                                            //no need to copy original source image!! only wastes space on cdn. it was used only to create the resized images we DO use
-                                            if (files[i] !== 'original.jpg') {
-                                                fs.copySync(sourcePath + '/' + folder + '/' + files[i], destinationPath + '/' + key + '/' + files[i]);
-                                            }
-                                        }
-
-                                        return nextfolder();
-                                    });
                                 });
+
+                                
                             } else {
                                 return nextfolder();
                             }
@@ -90,6 +108,36 @@ CDNBoxReady.exec = function(datafilePath, sourcePath, destinationPath, callback)
                 });
             });
         });
+    });
+};
+
+CDNBoxReady.resize = function(source, destination, callback) {
+
+    var self = this;
+
+    //loop over resizes
+    async.eachSeries(self.resizes, function(resize, nextresize) {
+
+        gm(source).resize(resize).setFormat(self.outputFormat).write(destination + '/' + resize + '.' + self.outputFormat, function (err) {
+            if (err) {
+                return nextresize(err)
+            }
+
+            console.log(resize + ' resize compelte');
+            return nextresize();
+        });
+
+    }, function(err) {
+        if (err) {
+                
+            console.log('error in resizes: ' + err);
+
+            callback(true);
+            return;
+            
+        } else {
+            callback();
+        }
     });
 };
 

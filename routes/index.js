@@ -67,6 +67,7 @@ router.get('/decompress', function(req, res, next) {
 
 	Decompress.exec(folders.starthere + folder, folders.decompressed + folder, function(err, data) {
 		if (err) {
+			console.log(err);
             return res.json(err);
         }
         res.json(data);
@@ -234,6 +235,7 @@ router.get('/getboxart', function(req, res, next) {
 
 	GetBoxArt.exec(system, term, folders.data, folders.boxart, folders.webboxart, delay, function(err, data) {
 		if (err) {
+			console.log(err);
             return res.json(err);
         }
         res.json(data);
@@ -285,6 +287,7 @@ router.get('/boxart/:system', function(req, res, next) {
 	//read all titles from web folder
 	fs.readdir(folders.webboxart + system, function(err, webtitles) {
         if (err) {
+        	console.log(err);
             return res.json(err);
         }
 
@@ -310,6 +313,7 @@ router.delete('/boxart', function(req, res, next) {
 
 	Main.rmdir(folders.webboxart + '/' + system + '/' + title, function(err) {
 		if (err) {
+			console.log(err);
 			res.json(err);
 		}
 		res.json();
@@ -322,21 +326,23 @@ router.post('/boxart', upload.single( 'file' ), function(req, res, next) {
 	var title = req.body.title;
 	var path = folders.webboxart + '/' + system + '/' + title;
 
-	//cleanout dir
-	Main.emptydir(path, function(err) {
+	Main.createFolder(path, false, function(err) {
 		if (err) {
-			return res.json(err);
+			console.log(err);
+			return res,json(err);
 		}
-		
-		fs.rename(req.file.path, path + '/original.jpg', function(err) {
+
+		//cleanout dir
+		Main.emptydir(path, function(err) {
 			if (err) {
 				return res.json(err);
 			}
-
-			GetBoxArt.resize(path + '/original.jpg', path + '/', function(err) {
+			
+			fs.rename(req.file.path, path + '/original.jpg', function(err) {
 				if (err) {
 					return res.json(err);
 				}
+
 				res.json(req.file);
 			});
 		});

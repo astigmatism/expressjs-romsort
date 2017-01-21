@@ -14,14 +14,13 @@ var client = googleImages('011110580981838212022:6cvn0m3bpw0', 'AIzaSyAmG26PFFf2
 GetBoxArt = function() {
 };
 
-GetBoxArt.resizes = [170, 120, 50];
 GetBoxArt.outputFormat = 'jpg';
 
 GetBoxArt.exec = function(system, term, sourcePath, destinationPath, webDestination, delay, callback) {
 
     var datafile = {};
     var self = this;
-    var threshold = 250; //SEE FINDBESTROM.JS
+    var threshold = 250; //at 250 and below, we don't get box art (SEE FINDBESTROM.JS)
 
 	//open source folder (datafiles)
 	fs.readdir(sourcePath, function(err, datafiles) {
@@ -89,8 +88,9 @@ GetBoxArt.exec = function(system, term, sourcePath, destinationPath, webDestinat
                                 } else {
 
                                     //already exists
-                                    console.log('A folder for the game ' + game + ' already exists in the web directory. you can view and modify the file there.');
+                                    console.log('A folder for the game "' + game + '" already exists in the web directory. You can view and modify the file there. For efficiency, we dont download art we already have.');
 
+                                    return nextgame();
                                 }
                             });
 
@@ -100,7 +100,8 @@ GetBoxArt.exec = function(system, term, sourcePath, destinationPath, webDestinat
                                 return nextdatafile(err);
                             }
 
-                            console.log('copy all results to the web folder');
+                            console.log('----------------------------------------------------');
+                            console.log('Coping all results to the web folder');
 
                             //finally, copy entire result to webfolder
                             fs.copy(destinationPath + '/' + system, webDestination + '/' + system, {
@@ -110,7 +111,14 @@ GetBoxArt.exec = function(system, term, sourcePath, destinationPath, webDestinat
                                     return callback(err);
                                 }
 
-                                nextdatafile();
+                                console.log('Cleaning up file system');
+                                Main.rmdir(destinationPath + '/' + system, function(err) {
+
+                                    console.log('DONE!');
+                                    console.log('----------------------------------------------------');
+
+                                    nextdatafile();
+                                });
                             });
                         });
                     });
@@ -194,7 +202,7 @@ GetBoxArt.scrape = function(game, system, term, destinationPath, callback, image
 
                             console.log('images folder created');
 
-                            var originalpath = destinationPath + '/' + system + '/' + game + '/original' + fileext;
+                            var originalpath = destinationPath + '/' + system + '/' + game + '/downloaded' + fileext;
 
                             console.log('downloading image from original source: ' + imageurl);
 
@@ -211,32 +219,24 @@ GetBoxArt.scrape = function(game, system, term, destinationPath, callback, image
                                         fs.removeSync(destinationPath + '/console.png');
                                     }
 
-                                    //resize original image
-                                    self.resize(originalpath, destinationPath + '/' + system + '/' + game + '/', function(err) {
+                                    //after scrape, save downloaded image in the format we work with
+                                    gm(originalpath).setFormat(self.outputFormat).write(destinationPath + '/' + system + '/' + game + '/original.' + self.outputFormat, function (err) {
                                         if (err) {
-                                            //in the case of a resize error, take the next result in the image search
-
-                                            //delete this folder on error to try again next time
-                                            Main.rmdir(destinationPath + '/' + system + '/' + game, function (err) {
-                                                
-                                                //if we havent already searched for this image 10 times, try again
-                                                if (imageindex < 10) {
-
-                                                    self.scrape(game, system, term, destinationPath, callback, imageindex + 1, delay);
-                                                    return;
-                                                } else {
-                                                    
-                                                    console.log('image search exhausted');
-                                                    callback()
-                                                    return;
-                                                }
-                                            });
-                                        } else {
-                                            console.log('this game done!');
-                                            callback();
-                                            return;
+                                            console.log('Error in saving downloaded image: ' + err);
                                         }
-                                    }); 
+
+                                        console.log('Deleting downloaded image');
+
+                                        fs.unlink(originalpath, function(err) {
+                                            if (err) {
+                                                console.log('Error deleting downloaded image');
+                                            }
+
+                                            console.log('We have completed ' + game);
+                                            return callback();
+
+                                        });
+                                    });
                                 });
                             });
                         });
@@ -266,36 +266,6 @@ GetBoxArt.scrape = function(game, system, term, destinationPath, callback, image
         });
 
     }, delay);
-};
-
-GetBoxArt.resize = function(source, destination, callback) {
-
-    var self = this;
-
-    //loop over resizes
-    async.eachSeries(self.resizes, function(resize, nextresize) {
-
-        gm(source).resize(resize).setFormat(self.outputFormat).write(destination + resize + '.' + self.outputFormat, function (err) {
-            if (err) {
-                return nextresize(err)
-            }
-
-            console.log(resize + ' resize compelte');
-            return nextresize();
-        });
-
-    }, function(err) {
-        if (err) {
-                
-            console.log('error in resizes: ' + err);
-
-            callback(true);
-            return;
-            
-        } else {
-            callback();
-        }
-    });
 };
 
 GetBoxArt.download = function(uri, filename, callback){

@@ -13,17 +13,23 @@ Decompress = function() {
 
 Decompress.exec = function(sourcePath, destinationPath, callback) {
 
+	console.log('Opening ' + sourcePath);
+
 	//open source folder
 	fs.readdir(sourcePath, function(err, sevenzipfiles) {
         if (err) {
             return callback(err);
         }
 
+        console.log('Found ' + sevenzipfiles.length + ' titles in ' + sourcePath);
+
         //create a target folder
         Main.createFolder(destinationPath, true, function(err) {
         	if (err) {
         		return callback(err);
         	}
+
+        	console.log('Created ' + destinationPath);
 
 			//loop over all file contents
 	        async.eachSeries(sevenzipfiles, function(file, nextfile) {
@@ -37,7 +43,7 @@ Decompress.exec = function(sourcePath, destinationPath, callback) {
 	            	var f = Main.getFileNameAndExt(file);
 
 
-	            	//sanitize file name here as needed
+	            	//for nintendo ds
 	            	//f.name = f.name.replace(/^(\d{4}|xxxx)\s{1}\-?\s?/,''); //remove prefix for nds
 	            	
 	            	//for vectrex
@@ -48,7 +54,9 @@ Decompress.exec = function(sourcePath, destinationPath, callback) {
 	            	// 	year = yearmatch[1];
 	            	// }
 
-	            	f.name = f.name.replace(/\(.*\)/g,''); //remove everything in paran
+	            	//all systems - remove everything in paran
+	            	f.name = f.name.replace(/\(.*\)/g,'');
+	            	
 	            	//f.name = f.name.replace(/_/g,' ');
 	            	
 	            	f.name = f.name.trim();

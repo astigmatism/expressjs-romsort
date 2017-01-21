@@ -12,12 +12,22 @@ html
     link(rel='stylesheet', href='/stylesheets/dropzone.css')
   body
     div
+        h3 A little about the process of obtaining box art:
+        div When you run /getboxart for a system, it uses the master data file (pce.json) as a source for which titles to download box art for.
+        div Any titles with a score of less than 250 are ignored (we don't obtain box art for them)
+        div If you have run /getboxart before, then title folders exist in /public/boxart. If we find that the title has a folder here, then we skidiv obtaining box art for that title
+        div At the end of the /getboxart process, all folders are copied to the /public/boxart folder.
+        div NOW: It is your duty to scan the box art and make corrections as needed. you can upload new art or delete it altoegther.
+        div The next steps ("box art datafile" and "cdnready boxes") will scan only the art from the web folder
+    h3 All titles which rank 250 and greater:
+    div(style='padding-top: 10px')
         span Add term to search: 
         input#search
     div
-        input(type='checkbox')#lowrankingtoggle
-        span show/hide low ranking
+        input(type='checkbox')#hideus
+        span Hide English-speaking titles
     div
-        input(type='checkbox')#inwebfolder
-        span show/hide in web folder
+        input(type='checkbox')#hideforeign
+        span Hide Foreign titles
     ul
+
