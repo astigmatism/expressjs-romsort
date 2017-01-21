@@ -3,11 +3,27 @@ var async = require('async');
 var pako = require('pako');
 var btoa = require('btoa');
 var nodeZip = require('node-zip');
+var config = require('config');
 
 /**
  * DataService Constructor
  */
 Main = function() {
+};
+
+Main.onApplicationStart = function() {
+
+	//ensure all paths exist
+	for (path in config.get('paths')) {
+
+		Main.createFolder(__dirname + config.get('paths')[path], false, function(err) {
+			if (err) {
+				console.log(err);
+			}
+		});
+	};	
+
+
 };
 
 Main.createFolder = function(path, overwrite, callback) {
@@ -162,6 +178,10 @@ Main.compress = {
             file: file
         });
     }
+};
+
+Main.getPath = function(key) {
+	return __dirname + config.get('paths')[key];
 };
 
 module.exports = Main;

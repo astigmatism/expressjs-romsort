@@ -29,7 +29,7 @@ Decompress.exec = function(sourcePath, destinationPath, callback) {
         		return callback(err);
         	}
 
-        	console.log('Created ' + destinationPath);
+        	console.log('Created (or overwrote) ' + destinationPath);
 
 			//loop over all file contents
 	        async.eachSeries(sevenzipfiles, function(file, nextfile) {
@@ -65,6 +65,7 @@ Decompress.exec = function(sourcePath, destinationPath, callback) {
 	            	//is this a file? (also check if 7z?)
 	            	if (stats.isFile() && f.ext === '7z') {
 
+	            		
 						var task = new sevenZip();
 
 						task.extractFull(sourcePath + '/' + file, destinationPath + '/' + f.name, { 

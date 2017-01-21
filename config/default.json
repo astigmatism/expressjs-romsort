@@ -1,4 +1,27 @@
 {
+	"paths": {
+		"start": "/workspace/00 - starthere/",
+		"decompressed": "/workspace/01 - decompressed/",
+		"compressed": "/workspace/02 - compressedfiles/",
+		"hacksorted": "/workspace/03 - hacksorted/",
+		"alphasorted": "/workspace/04 - alphasorted/",
+		"topchoice": "/workspace/05 - topchoice/",
+		"datafiles": "/workspace/06 - datafile/",
+		"romfiles": "/workspace/07 - romfiles/",
+		"romfolders": "/workspace/08 - romfolders/",
+		"boxartdownloads": "/workspace/09 - boxart downloads/",
+		"shaderfiles": "/workspace/10 - shaderfiles/",
+		"allshaders": "/workspace/11 - allshaders/",
+		"cgshaders": "/workspace/12 - cgshaders/",
+		"glsl": "/workspace/13 - glsl/",
+		"thegamesdbpics": "/workspace/14 - thegamesdbpics/",
+		"ready": "/workspace/ready/",
+		"cdnboxready": "/workspace/cdnboxready/",
+		"cdnready": "/workspace/cdnready/",
+		"webboxart": "/public/boxart/",
+		"cdnshaderready": "/workspace/cdnshaderready/",
+		"config": "/config/"
+	},
 	"thegamesdb": {
 		"snes": {
 			"platform": ["Super Nintendo (SNES)"]

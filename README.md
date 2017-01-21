@@ -3,70 +3,6 @@ expressjs-romsort
 
 This project was designed to manage and sort large rom file sets. Specifically, GoodTools merged sets which usually begin as a group of 7z files. It can however, be used for general purpose cases. See below.
 
-UP TO DATE:
-
------
-definitely finished
-
-gg
-GoodGG 3.20
-datafile: complete
-boxes: 2.0.3
-roms: 2.0.1
-thegamesdb: complete
-
------
-
-vect
-GoodVect 1.06
-data file: 
-boxes: complete 2.0.2
-roms: complete 2.0.2
-thegamesdb: complete
-
-a7800
-Good7800 3.28
-data file: 
-boxes: 2.0.1
-roms: 2.0.1
-thegamesdb: complete
-
-lynx
-GoodLynx 2.01
-datafile: complete
-boxes: 2.0.1
-roms: 2.0.1
-thegamesdb: complete
-
-jag
-GoodJag 2.01
-datafile: 
-boxes: 2.0.1
-roms: 2.0.2
-thegamesdb: complete
-
-
-
-vb
-VBoy 3.1415
-datafile: complete
-boxes: 2.0.1
-roms: 2.0.1
-thegamesdb: complete
-
-sms
-GoodSMS 3.20
-datafile: complete
-boxes:
-
-gen
-GoodGen 3.21
-datafile: complete
-boxes: 
-
-nds (working)
-roms set : up to 6600
-
 
 getting started
 ------------------
@@ -118,6 +54,7 @@ These endpoints consist of operations you can perform on large file sets.
 
 /decompress/
 ------------------
+have: brew install p7zip
 required query param: system : The folder name within /workspace/00 - starthere/ (snes, gen, gb, gba...)
 
 

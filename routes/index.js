@@ -29,30 +29,6 @@ router.get('/', function(req, res, next) {
 
 });
 
-var folders = {
-	starthere: 			__dirname + '/../workspace/00 - starthere/',
-	decompressed: 		__dirname + '/../workspace/99 - decompressed/',
-	compressedfiles: 	__dirname + '/../workspace/02 - compressedfiles/',
-	hacksorted: 		__dirname + '/../workspace/03 - hacksorted/',
-	alphasorted:		__dirname + '/../workspace/04 - alphasorted/',
-	topchoice: 			__dirname + '/../workspace/05 - topchoice/',
-	data: 				__dirname + '/../workspace/06 - datafile/',
-	romfiles: 			__dirname + '/../workspace/07 - romfiles/',
-	romfolders: 		__dirname + '/../workspace/08 - romfolders/',
-	boxart:				__dirname + '/../workspace/09 - boxart downloads/',
-	shaderfiles: 		__dirname + '/../workspace/10 - shaderfiles/',
-	allshaders: 		__dirname + '/../workspace/11 - allshaders/',
-	cgshaders: 			__dirname + '/../workspace/12 - cgshaders/',
-	glsl: 				__dirname + '/../workspace/13 - glsl/',
-	thegamesdbpics: 	__dirname + '/../workspace/14 - thegamesdbpics/',
-	ready: 				__dirname + '/../workspace/ready/',
-	cdnboxready:		__dirname + '/../workspace/cdnboxready/',
-	cdnready: 			__dirname + '/../workspace/98 - cdnready/',
-	webboxart: 			__dirname + '/../public/boxart/',
-	cdnshaderready: 	__dirname + '/../workspace/cdnshaderready/',
-	config: 		 	__dirname + '/../config/'
-};
-
 /**
  * This end point is going to take a folder with a bunch of 7z files and extact them
  * This is the typical storage routine for GoodMerge sets
@@ -65,7 +41,7 @@ router.get('/decompress', function(req, res, next) {
 		return res.json('system is a required query param');
 	}
 
-	Decompress.exec(folders.starthere + folder, folders.decompressed + folder, function(err, data) {
+	Decompress.exec(Main.getPath('start') + folder, Main.getPath('decompressed') + folder, function(err, data) {
 		if (err) {
 			console.log(err);
             return res.json(err);
@@ -87,7 +63,7 @@ router.get('/compressfiles', function(req, res, next) {
 	if (!filter)
 		return res.json('filter is a required query param: zip|7z');
 
-	CompressFiles.exec(folders.decompressed + folder, folders.compressedfiles + folder, compressiontype, filter, function(err, data) {
+	CompressFiles.exec(Main.getPath('decompressed') + folder, Main.getPath('compressed') + folder, compressiontype, filter, function(err, data) {
 		if (err) {
             return res.json(err);
         }
@@ -102,7 +78,7 @@ router.get('/alphasort', function(req, res, next) {
 	if (!folder)
 		return res.json('system is a required query param. Maps to folder name (gen, snes, n64, gb...)');
 
-	AlphaSort.exec(folders.compressedfiles + folder, folders.alphasorted + folder, function(err, data) {
+	AlphaSort.exec(Main.getPath('compressed') + folder, Main.getPath('alphasorted') + folder, function(err, data) {
 		if (err) {
             return res.json(err);
         }
@@ -112,12 +88,28 @@ router.get('/alphasort', function(req, res, next) {
 
 router.get('/romfolders', function(req, res, next) {
 
-	RomFolders.exec(folders.romfiles, folders.romfolders, function(err, data) {
+	RomFolders.exec(Main.getPath('romfiles'), Main.getPath('romfolders'), function(err, data) {
 		if (err) {
             return res.json(err);
         }
         res.json(data);
 	});
+});
+
+router.get('/clearromfolders', function(req, res, next) {
+
+	Main.emptydir(Main.getPath('romfiles'), function(err) {
+		if (err) {
+			console.log(err);
+		}
+		Main.emptydir(Main.getPath('romfolders'), function(err) {
+			if (err) {
+				console.log(err);
+			}
+			return res.json();
+		});
+	});
+	
 });
 
 router.get('/neogeorename', function(req, res, next) {
@@ -128,7 +120,7 @@ router.get('/neogeorename', function(req, res, next) {
 		return res.json('system is a required query param');
 	}
 
-	NeoGeoRename.exec(folders.config + 'mame179dat.json', folders.starthere + folder, folders.decompressed + folder, function(err, data) {
+	NeoGeoRename.exec(Main.getPath('config') + 'mame179dat.json', Main.getPath('start') + folder, Main.getPath('decompressed') + folder, function(err, data) {
 		if (err) {
             return res.json(err);
         }
@@ -140,7 +132,7 @@ router.get('/hacksort/:folder', function(req, res, next) {
 	
 	var folder = req.params.folder;
 
-	AlphaSort.sortHacks(folders.hacksorted + folder, function(err, data) {
+	AlphaSort.sortHacks(Main.getPath('hacksorted') + folder, function(err, data) {
 		if (err) {
             return res.json(err);
         }
@@ -155,7 +147,7 @@ router.get('/datafile', function(req, res, next) {
 	if (!folder)
 		return res.json('system is a required query param. Maps to folder name (gen, snes, n64, gb...)');
 
-	DataFile.exec(folders.decompressed + folder, folders.data + '/' + folder + '.json', function(err, data) {
+	DataFile.exec(Main.getPath('decompressed') + folder, Main.getPath('datafiles') + '/' + folder + '.json', function(err, data) {
 		if (err) {
             return res.json(err);
         }
@@ -170,7 +162,7 @@ router.get('/datafile/boxart', function(req, res, next) {
 	if (!folder)
 		return res.json('system is a required query param. Maps to folder name (gen, snes, n64, gb...)');
 		
-	DataFile.boxart(folders.data + '/' + folder + '.json', folders.webboxart + folder, folders.data + '/' + folder + '_boxart.json', function(err, result) {
+	DataFile.boxart(Main.getPath('datafiles') + '/' + folder + '.json', Main.getPath('webboxart') + folder, Main.getPath('datafiles') + '/' + folder + '_boxart.json', function(err, result) {
 		if (err) {
 			return res.json(err);
 		}
@@ -186,7 +178,7 @@ router.get('/topchoice', function(req, res, next) {
 	if (!folder)
 		return res.json('system is a required query param');
 
-	TopChoice.exec(folders.decompressed + folder, folders.topchoice + folder, flatten, function(err, data) {
+	TopChoice.exec(Main.getPath('decompressed') + folder, Main.getPath('topchoice') + folder, flatten, function(err, data) {
 		if (err) {
             return res.json(err);
         }
@@ -205,9 +197,9 @@ router.get('/cdnready', function(req, res, next) {
 	if (!source)
 		return res.json('source is a required query param. topchoice|decompressed');
 
-	source = source === "topchoice" ? folders.topchoice + folder : folders.decompressed + folder;
+	source = source === "topchoice" ? Main.getPath('topchoice') + folder : Main.getPath('decompressed') + folder;
 
-	CDNReady.exec(source, folders.cdnready + folder, segmentsize, function(err, data) {
+	CDNReady.exec(source, Main.getPath('cdnready') + folder, segmentsize, function(err, data) {
 		if (err) {
             return res.json(err);
         }
@@ -219,7 +211,7 @@ router.get('/cdnboxready/:folder', function(req, res, next) {
 
 	var folder = req.params.folder;	
 
-	CDNBoxReady.exec(folders.data + '/' + folder + '.json', folders.webboxart  + folder, folders.cdnboxready + folder, function(err, data) {
+	CDNBoxReady.exec(Main.getPath('datafiles') + '/' + folder + '.json', Main.getPath('webboxart')  + folder, Main.getPath('cdnboxready') + folder, function(err, data) {
 		if (err) {
             return res.json(err);
         }
@@ -233,7 +225,7 @@ router.get('/getboxart', function(req, res, next) {
 	var term = req.query.term;
 	var delay = req.query.delay || 2000; //delay between searching
 
-	GetBoxArt.exec(system, term, folders.data, folders.boxart, folders.webboxart, delay, function(err, data) {
+	GetBoxArt.exec(system, term, Main.getPath('datafiles'), Main.getPath('boxartdownloads'), Main.getPath('webboxart'), delay, function(err, data) {
 		if (err) {
 			console.log(err);
             return res.json(err);
@@ -255,7 +247,7 @@ router.get('/thegamesdb', function(req, res, next) {
 
 	score = parseFloat(score);
 
-	TheGamesDB.exec(system, score, update, folders.data, folders.data + '/' + system + '_thegamesdb.json', folders.data + '/' + system + '_thegamesdb_report.json', function(err, data){
+	TheGamesDB.exec(system, score, update, Main.getPath('datafiles'), Main.getPath('datafiles') + '/' + system + '_thegamesdb.json', Main.getPath('datafiles') + '/' + system + '_thegamesdb_report.json', function(err, data){
 		if (err) {
             return res.json(err);
         }
@@ -271,7 +263,7 @@ router.get('/thegamesdbpics', function(req, res, next) {
 	if (!system)
 		return res.json('system is a required query param. Maps to folder name (gen, snes, n64, gb...)');
 
-	TheGamesDBPics.exec(system, folders.data + '/' + system + '_thegamesdb.json', folders.thegamesdbpics, function(err, data){
+	TheGamesDBPics.exec(system, Main.getPath('datafiles') + '/' + system + '_thegamesdb.json', Main.getPath('thegamesdbpics'), function(err, data){
 		if (err) {
             return res.json(err);
         }
@@ -285,14 +277,14 @@ router.get('/boxart/:system', function(req, res, next) {
 	var alpha = req.query.alpha;
 
 	//read all titles from web folder
-	fs.readdir(folders.webboxart + system, function(err, webtitles) {
+	fs.readdir(Main.getPath('webboxart') + system, function(err, webtitles) {
         if (err) {
         	console.log(err);
             return res.json(err);
         }
 
         //get contents of data file
-        fs.readJson(folders.data + '/' + system + '.json', function(err, datafile) {
+        fs.readJson(Main.getPath('datafiles') + '/' + system + '.json', function(err, datafile) {
 	        if (err) {
 	            return callback(err);
 	        }
@@ -311,7 +303,7 @@ router.delete('/boxart', function(req, res, next) {
 	var system = req.body.system;
 	var title = req.body.title;
 
-	Main.rmdir(folders.webboxart + '/' + system + '/' + title, function(err) {
+	Main.rmdir(Main.getPath('webboxart') + '/' + system + '/' + title, function(err) {
 		if (err) {
 			console.log(err);
 			res.json(err);
@@ -324,7 +316,7 @@ router.post('/boxart', upload.single( 'file' ), function(req, res, next) {
 
 	var system = req.body.system;
 	var title = req.body.title;
-	var path = folders.webboxart + '/' + system + '/' + title;
+	var path = Main.getPath('webboxart') + '/' + system + '/' + title;
 
 	Main.createFolder(path, false, function(err) {
 		if (err) {
@@ -353,9 +345,9 @@ router.get('/makeshader/:name', function(req, res, next) {
 
 	var name = req.params.name;
 
-	fs.emptyDir(folders.cdnshaderready, function (err) {
+	fs.emptyDir(Main.getPath('cdnshaderready'), function (err) {
 
-		CompressShaders.exec(name, folders.shaderfiles, folders.cdnshaderready, function(err, data) {
+		CompressShaders.exec(name, Main.getPath('shaderfiles'), Main.getPath('cdnshaderready'), function(err, data) {
 			if (err) {
 	            return res.json(err);
 	        }
@@ -366,9 +358,9 @@ router.get('/makeshader/:name', function(req, res, next) {
 
 router.get('/makeallshaders', function(req, res, next) {
 
-	fs.emptyDir(folders.shaderfiles, function (err) {
+	fs.emptyDir(Main.getPath('shaderfiles'), function (err) {
 
-		MakeAllShaders.exec(folders.allshaders, folders.shaderfiles, folders.cgshaders, folders.cdnshaderready, function(err, data) {
+		MakeAllShaders.exec(Main.getPath('allshaders'), Main.getPath('shaderfiles'), Main.getPath('cgshaders'), Main.getPath('cdnshaderready'), function(err, data) {
 			if (err) {
 	            return res.json(err);
 	        }
@@ -380,9 +372,9 @@ router.get('/makeallshaders', function(req, res, next) {
 
 router.get('/glsl', function(req, res, next) {
 
-	fs.emptyDir(folders.glsl, function (err) {
+	fs.emptyDir(Main.getPath('glsl'), function (err) {
 
-		MakeAllShaders.glslFlatten(folders.allshaders, folders.glsl, function(err, data) {
+		MakeAllShaders.glslFlatten(Main.getPath('allshaders'), Main.getPath('glsl'), function(err, data) {
 			if (err) {
 	            return res.json(err);
 	        }

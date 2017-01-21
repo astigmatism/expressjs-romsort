@@ -4,6 +4,7 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var Main = require('./main.js');
 
 var routes = require('./routes/index');
 
@@ -69,5 +70,7 @@ app.use(function(err, req, res, next) {
 var server = app.listen(app.get('port'));
 
 server.timeout = 10800000; //3 hours repsonse timeout
+
+Main.onApplicationStart();
 
 module.exports = app;

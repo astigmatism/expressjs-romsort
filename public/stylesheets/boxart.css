@@ -19,15 +19,23 @@ li {
 	font-size: 12px;
 }
 
-li a {
-	font-size: 18px;
-	text-decoration: none;
-}
-
 li.foreign {
 	background-color: #EAFAF1;
 }
 
 li.en {
 	background-color: #FDEDEC;
+}
+
+div.title {
+	font-size: 18px;
+	text-decoration: none;
+}
+
+div.controls {
+	margin: 10px 0;
+}
+
+div.buttons {
+	margin: 5px 0;
 }

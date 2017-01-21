@@ -36,8 +36,9 @@ var BoxArt = function() {
 			}
 
 			//red = foreign, green = english title
-			var li = $('<li class="' + ((topranking >= 400) ? 'en' : 'foreign') + '" style="background-color: ' + ((topranking >= 400) ? '#EAFAF1' : '#FDEDEC') + '"><a href="javascript:opengoogle(\'' + encodeURIComponent(title).replace('\'','\\\'').replace('&','\&') + '\')" target="_blank" onerror="this.src=\'missing.jpg\'">' + title + '</a><div style="padding-top: 5px;content=\' \'"></div></li>')
+			var li = $('<li class="' + ((topranking >= 400) ? 'en' : 'foreign') + '" style="background-color: ' + ((topranking >= 400) ? '#EAFAF1' : '#FDEDEC') + '"><div class="title" style="padding-top: 5px">' + title + '</div></li>')
 			
+			li.append('<div class="buttons"><input type="button" value="Title" onclick="opengoogle(\'' + title.replace('\'','\\\'') + '\', 0)"></input><input type="button" value="Title and term1" onclick="opengoogle(\'' + title.replace('\'','\\\'') + '\', 1)"></input><input type="button" value="Title and term2" onclick="opengoogle(\'' + title.replace('\'','\\\'') + '\', 2)"></input></div>');
 
 			var image = new Image();
 			image.src = '/boxart/' + system + '/' + title + '/original.jpg'; //always show original since we can be certain it is jpg
@@ -90,7 +91,19 @@ var BoxArt = function() {
 
 var boxart = new BoxArt();
 
-var opengoogle = function(term) {
-	var text = $('#search').val();
-	window.open('https://www.google.com/search?q=' + escape(term) + ' ' + escape(text) + '&source=lnms&tbm=isch&sa=X&ved=0ahUKEwi89tOMoezKAhVT22MKHWQDBxYQ_AUIBygB&biw=2156&bih=1322', '_blank');
-}
+var opengoogle = function(term, type) {
+
+	switch (type) {
+		case 1:
+			term += ' ' + $('#search1').val();
+			break;
+		case 2:
+			term += ' ' + $('#search2').val();
+			break;
+	}
+
+	console.log(term);
+
+	term = escape(term);
+	window.open('https://www.google.com/search?q=' + term + '&source=lnms&tbm=isch&sa=X&ved=0ahUKEwi89tOMoezKAhVT22MKHWQDBxYQ_AUIBygB&biw=2156&bih=1322', '_blank');
+};

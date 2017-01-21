@@ -17,6 +17,10 @@ block content
 	span#romfolders
 	br
 	br
+	button(onclick='$("#clearromfolders").text("working");$.get("/clearromfolders", function() { $("#clearromfolders").text("complete"); })') clear rom folders 
+	span#clearromfolders
+	br
+	br
 	button(onclick='$("#datafile").text("working");$.get("/datafile?system=" + $("#system").val(), function() { $("#datafile").text("complete"); })') datafile 
 	span#datafile
 	br
