@@ -25,9 +25,14 @@ block content
 	span#datafile
 	br
 	br
-	button(onclick='$("#getboxart").text("working");$.get("/getboxart?system=" + $("#system").val() + "&term=" + $("#term").val(), function() { $("#getboxart").text("complete"); })') getboxart
+	button(onclick='$("#getboxart").text("working");$.get("/getboxart?system=" + $("#system").val() + "&term=" + $("#term").val() + "&lower=400&override=" + $("#overridebox").is(":checked"), function() { $("#getboxart").text("complete"); })') getboxart (domestic)
+	button(onclick='$("#getboxart").text("working");$.get("/getboxart?system=" + $("#system").val() + "&term=" + $("#term").val() + "&lower=250&upper=400&override=" + $("#overridebox").is(":checked"), function() { $("#getboxart").text("complete"); })') getboxart (foreign)
+	button(onclick='$("#getboxart").text("working");$.get("/getboxart?system=" + $("#system").val() + "&term=" + $("#term").val() + "&lower=250&override=" + $("#overridebox").is(":checked"), function() { $("#getboxart").text("complete"); })') getboxart (all)
 	span#getboxart
 	br
+	div
+		input(type="checkbox")#overridebox
+		span Override existing downloaded box art
 	br
 	button(onclick='$("#thegamesdb").text("working");$.get("/thegamesdb?system=" + $("#system").val() + "&update=all", function() { $("#thegamesdb").text("complete"); })') thegamesdb 
 	span#thegamesdb

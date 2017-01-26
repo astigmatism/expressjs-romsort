@@ -11,6 +11,7 @@ CDNBoxReady.outputFormat = 'jpg';
 
 CDNBoxReady.exec = function(datafilePath, sourcePath, destinationPath, callback) {
 
+    var self = this;
     var datafile = {};
 
     //open data file

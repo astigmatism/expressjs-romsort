@@ -224,8 +224,13 @@ router.get('/getboxart', function(req, res, next) {
 	var system = req.query.system;
 	var term = req.query.term;
 	var delay = req.query.delay || 2000; //delay between searching
+	var lowerThreshold = req.query.lower || 250;
+	var higherThreshold = req.query.upper || 500;
+	var override = req.query.override;
 
-	GetBoxArt.exec(system, term, Main.getPath('datafiles'), Main.getPath('boxartdownloads'), Main.getPath('webboxart'), delay, function(err, data) {
+	console.log(override);
+
+	GetBoxArt.exec(system, term, Main.getPath('datafiles'), Main.getPath('webboxart'), delay, lowerThreshold, higherThreshold, function(err, data) {
 		if (err) {
 			console.log(err);
             return res.json(err);

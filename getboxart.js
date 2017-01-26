@@ -16,11 +16,12 @@ GetBoxArt = function() {
 
 GetBoxArt.outputFormat = 'jpg';
 
-GetBoxArt.exec = function(system, term, sourcePath, destinationPath, webDestination, delay, callback) {
+GetBoxArt.exec = function(system, term, sourcePath, destinationPath, delay, lowerScoreThreshold, higherScoreThreshold, callback) {
 
     var datafile = {};
     var self = this;
-    var threshold = 250; //at 250 and below, we don't get box art (SEE FINDBESTROM.JS)
+    var lowerScore = lowerScoreThreshold || 250; //at 250 and below, we don't get box art (SEE FINDBESTROM.JS)
+    var higherScore = higherScoreThreshold || 500;
 
 	//open source folder (datafiles)
 	fs.readdir(sourcePath, function(err, datafiles) {
@@ -61,7 +62,7 @@ GetBoxArt.exec = function(system, term, sourcePath, destinationPath, webDestinat
                         //async does not provide a good object iterator (they state their reasons well)
                         var games = [];
                         for (game in content) {
-                            if (content[game].files[content[game].best] > threshold) {
+                            if (content[game].files[content[game].best] > lowerScore && content[game].files[content[game].best] <= higherScoreThreshold) {
                                 games.push(game);
                             }
                         }
@@ -74,7 +75,7 @@ GetBoxArt.exec = function(system, term, sourcePath, destinationPath, webDestinat
                             console.log(content[game].files[content[game].best]);
 
                             //first check tp see if a folder already exists in the web folder
-                            fs.exists(webDestination + '/' + system + '/' + game, function(exists) {
+                            fs.exists(destinationPath + '/' + system + '/' + game, function(exists) {
 
                                 //if it doesn't exist, scrape google
                                 if (!exists) {
@@ -100,26 +101,7 @@ GetBoxArt.exec = function(system, term, sourcePath, destinationPath, webDestinat
                                 return nextdatafile(err);
                             }
 
-                            console.log('----------------------------------------------------');
-                            console.log('Coping all results to the web folder');
-
-                            //finally, copy entire result to webfolder
-                            fs.copy(destinationPath + '/' + system, webDestination + '/' + system, {
-                                clobber: false
-                            }, function (err) {
-                                if (err) {
-                                    return callback(err);
-                                }
-
-                                console.log('Cleaning up file system');
-                                Main.rmdir(destinationPath + '/' + system, function(err) {
-
-                                    console.log('DONE!');
-                                    console.log('----------------------------------------------------');
-
-                                    nextdatafile();
-                                });
-                            });
+                            nextdatafile();
                         });
                     });
                 });
@@ -149,6 +131,7 @@ GetBoxArt.scrape = function(game, system, term, destinationPath, callback, image
     var url = 'https://www.google.com/search?q=' + encodeURIComponent(term) + '&source=lnms&tbm=isch';
 
     console.log('Searching (index: ' + imageindex + ', with timeout) for: ' + term);
+    console.log('url: ' + url3);
 
     setTimeout(function() {
 
@@ -162,10 +145,8 @@ GetBoxArt.scrape = function(game, system, term, destinationPath, callback, image
             timeout: 20000
         }, function(err, response, body) {
             if (err) {
-                self.scrape(game, system, term, destinationPath, function() {
-                    callback();
-                    return;
-                }, imageindex + 1, delay);
+                console.log(err);
+                self.scrape(game, details, destinationPath, callback, imageindex + 1, delay);
                 return;
             }
             
@@ -249,8 +230,7 @@ GetBoxArt.scrape = function(game, system, term, destinationPath, callback, image
                         
                 } else {
                     console.log('skipping. data had no ou attribute? (image url)');
-                    callback();
-                    return;    
+                    return callback();
                 }
 
             } else {
