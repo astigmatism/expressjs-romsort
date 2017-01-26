@@ -7,3 +7,4 @@ workspace/99 - decompressed/*
 workspace/cdnboxready/*
 workspace/cdnready/*
 public/boxart/*
+!public/boxart/nes
