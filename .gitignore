@@ -8,3 +8,5 @@ workspace/cdnboxready/*
 workspace/cdnready/*
 public/boxart/*
 !public/boxart/nes
+!public/boxart/pce
+!public/boxart/a7800
