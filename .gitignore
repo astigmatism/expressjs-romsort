@@ -7,6 +7,6 @@ workspace/99 - decompressed/*
 workspace/cdnboxready/*
 workspace/cdnready/*
 public/boxart/*
-!public/boxart/nes
+!public/boxart/vb
 !public/boxart/pce
-!public/boxart/a7800
+!public/boxart/sms
