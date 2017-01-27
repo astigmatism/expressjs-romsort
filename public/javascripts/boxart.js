@@ -43,12 +43,8 @@ var BoxArt = function() {
 			li.append('<div class="buttons">');
 			li.append('<input type="button" style="width:50px" value="T" onclick="opengoogle(\'' + titleforbutton + '\', 1)"></input>');
 			li.append('<input type="button" style="width:50px" value="T&B" onclick="opengoogle(\'' + titleforbutton + '\', 4)"></input>');
-
-
 			li.append('<input type="button" style="width:50px" value="1" onclick="opengoogle(\'' + titleforbutton + '\', 2)"></input>');
 			li.append('<input type="button" style="width:50px" value="1&B" onclick="opengoogle(\'' + titleforbutton + '\', 5)"></input>');
-
-			
 			li.append('<input type="button" style="width:50px" value="2" onclick="opengoogle(\'' + titleforbutton + '\', 3)"></input>');
 			li.append('<input type="button" style="width:50px" value="2&B" onclick="opengoogle(\'' + titleforbutton + '\', 6)"></input>');
 			li.append('</div>');
@@ -58,6 +54,39 @@ var BoxArt = function() {
 
 			var size = $('<div style="padding-top: 3px"></div>');
 			li.append(size);
+
+			var makeButton = function(label, b, s, h) {
+
+				return $('<input type="button" style="width:50px" value="' + label + '"></input>').click(function() {
+					modulate(imagewrapper, size, system, title, b, s, h);
+				});
+			}
+
+			li.append('<div class="buttons">');
+			li.append(makeButton('-10%', 90, 100, 100));
+			li.append(makeButton('-5%', 95, 100, 100));
+			li.append(makeButton('-1%', 99, 100, 100));
+			li.append(' Brightness ');
+			li.append(makeButton('1%', 101, 100, 100));
+			li.append(makeButton('5%', 105, 100, 100));
+			li.append(makeButton('10%', 110, 100, 100));
+			li.append('<br/>');
+			li.append(makeButton('-10%', 100, 90, 100));
+			li.append(makeButton('-5%', 100, 95, 100));
+			li.append(makeButton('-1%', 100, 99, 100));
+			li.append(' Saturation ');
+			li.append(makeButton('1%', 100, 101, 100));
+			li.append(makeButton('5%', 100, 105, 100));
+			li.append(makeButton('10%', 100, 110, 100));
+			li.append('<br/>');
+			li.append(makeButton('-10%', 100, 100, 90));
+			li.append(makeButton('-5%', 100, 100, 95));
+			li.append(makeButton('-1%', 100, 100, 99));
+			li.append(' Hue ');
+			li.append(makeButton('1%', 100, 100, 101));
+			li.append(makeButton('5%', 100, 100, 105));
+			li.append(makeButton('10%', 100, 100, 110));
+			li.append('</div>');
 
 			loadImage(imagewrapper, size, system, title);
 
@@ -114,6 +143,29 @@ var BoxArt = function() {
 		});	
 
 	});
+};
+
+var modulate = function(wrapper, size, system, title, b, s, h) {
+
+	$.ajax({
+		url: '/boxart',
+		type: 'PATCH',
+		data: {
+			system: system,
+			title: title,
+			b: b,
+			s: s,
+			h: h
+		},
+		complete: function(xhr, textStatus) {
+	        if (xhr.status != 200) {
+	        	alert('There was an error deleting the art. Check the server.')
+	        }
+
+	        loadImage(wrapper, size, system, title);
+	    }
+	});
+
 };
 
 var loadImage = function(wrapper, size, system, title) {

@@ -290,6 +290,22 @@ GetBoxArt.download = function(uri, filename, callback){
     });
 };
 
+GetBoxArt.modulate = function(imagePath, b, s, h, callback) {
+
+    b = b || 100;
+    s = s || 100;
+    h = h || 100;
+
+    console.log('Modulating image (bsh): ' + b + ',' + s + ',' + h);
+
+    gm(imagePath).modulate(b, s, h).write(imagePath, function(err) {
+        if (err) {
+            return callback(err);
+        }
+        callback();
+    });
+};
+
 GetBoxArt.convertImageOnObtain = function(toolsDir, sourceImage, destinationPath, autoTone, callback) {
 
     var self = this;

@@ -301,6 +301,23 @@ router.get('/boxart/:system', function(req, res, next) {
     });
 });
 
+router.patch('/boxart', function(req, res, next) {
+
+	var system = req.body.system;
+	var title = req.body.title;
+	var b = req.body.b;
+	var s = req.body.s;
+	var h = req.body.h;
+
+	GetBoxArt.modulate(Main.getPath('webboxart') + '/' + system + '/' + title + '/original.jpg', b, s, h, function(err) {
+		if (err) {
+			console.log(err);
+			return res.json(err);
+		}
+		res.json();
+	});
+});
+
 router.delete('/boxart', function(req, res, next) {
 
 	var system = req.body.system;
@@ -309,7 +326,7 @@ router.delete('/boxart', function(req, res, next) {
 	Main.rmdir(Main.getPath('webboxart') + '/' + system + '/' + title, function(err) {
 		if (err) {
 			console.log(err);
-			res.json(err);
+			return res.json(err);
 		}
 		res.json();
 	});
