@@ -127,7 +127,7 @@ GetBoxArt.scrape = function(game, system, term, toolsDir, destinationPath, callb
     imageindex = imageindex || 0;
 
     var term = term.replace('[title]', game); //game + ' ' + details.searchname + ' box';
-    var url3 = 'https://www.google.com/search?site=&tbm=isch&source=hp&biw=1223&bih=782&q=' + encodeURIComponent(term) + '&oq=hello&gs_l=img.3..0l10.2987.3491.0.3684.5.5.0.0.0.0.151.151.0j1.1.0....0...1ac.1.64.img..4.1.150.0JEY7yau9_Y';
+    var url3 = 'https://www.google.com/search?site=&tbm=isch&source=hp&biw=1223&bih=782&q=' + encodeURIComponent(term) + '&source=lnms&tbm=isch&sa=X&ved=0ahUKEwi89tOMoezKAhVT22MKHWQDBxYQ_AUIBygB&biw=2156&bih=1322&tbm=isch&tbs=isz:lt,islt:qsvga';
     var url2 = 'https://www.google.com/search?biw=2156&bih=1278&tbm=isch&sa=1&q=' + encodeURIComponent(term) + '&oq=Nes+Advanced+Dungeons+%26+Dragons+-+Heroes+of+the+Lance+box+front&gs_l=img.12...0.0.1.2801486.0.0.0.0.0.0.0.0..0.0....0...1c..64.img..0.0.0.L9RpRHCeZw0&bav=on.2,or.&bvm=bv.113370389,d.cGc&dpr=2&ech=1&psi=e1y1VvSoBsaWjwOhmpqIBA.1454726407284.3&ei=9Vy1VpauNcTqjwPsrb64BA&emsg=NCSR&noj=1'
     var url = 'https://www.google.com/search?q=' + encodeURIComponent(term) + '&source=lnms&tbm=isch';
 

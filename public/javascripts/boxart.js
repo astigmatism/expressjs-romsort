@@ -35,10 +35,23 @@ var BoxArt = function() {
 				return;
 			}
 
+			var titleforbutton = title.replace('\'','\\\'');
+
 			//red = foreign, green = english title
 			var li = $('<li class="' + ((topranking >= 400) ? 'en' : 'foreign') + '" style="background-color: ' + ((topranking >= 400) ? '#EAFAF1' : '#FDEDEC') + '"><div class="title" style="padding-top: 5px">' + title + '</div></li>')
 			
-			li.append('<div class="buttons"><input type="button" value="Title" onclick="opengoogle(\'' + title.replace('\'','\\\'') + '\', 0)"></input><input type="button" value="Title & \'box\'" onclick="opengoogle(\'' + title.replace('\'','\\\'') + '\', 1)"></input><input type="button" value="Title and term1" onclick="opengoogle(\'' + title.replace('\'','\\\'') + '\', 2)"></input><input type="button" value="Title and term2" onclick="opengoogle(\'' + title.replace('\'','\\\'') + '\', 3)"></input></div>');
+			li.append('<div class="buttons">');
+			li.append('<input type="button" style="width:50px" value="T" onclick="opengoogle(\'' + titleforbutton + '\', 1)"></input>');
+			li.append('<input type="button" style="width:50px" value="T&B" onclick="opengoogle(\'' + titleforbutton + '\', 4)"></input>');
+
+
+			li.append('<input type="button" style="width:50px" value="1" onclick="opengoogle(\'' + titleforbutton + '\', 2)"></input>');
+			li.append('<input type="button" style="width:50px" value="1&B" onclick="opengoogle(\'' + titleforbutton + '\', 5)"></input>');
+
+			
+			li.append('<input type="button" style="width:50px" value="2" onclick="opengoogle(\'' + titleforbutton + '\', 3)"></input>');
+			li.append('<input type="button" style="width:50px" value="2&B" onclick="opengoogle(\'' + titleforbutton + '\', 6)"></input>');
+			li.append('</div>');
 
 			var imagewrapper = $('<div></div>');
 			li.append(imagewrapper);
@@ -78,7 +91,7 @@ var BoxArt = function() {
 				url: '/boxart',
 				sending: function(file, xhr, formData) {
 	    			
-
+					$('.dz-preview').hide();
 
 	    			formData.append('title', title);
 	    			formData.append('system', system);
@@ -122,19 +135,25 @@ var boxart = new BoxArt();
 var opengoogle = function(term, type) {
 
 	switch (type) {
-		case 1:
-			term += ' box';
-			break;
 		case 2:
 			term += ' ' + $('#search1').val();
 			break;
 		case 3:
 			term += ' ' + $('#search2').val();
 			break;
+		case 4:
+			term += ' box';
+			break;
+		case 5:
+			term += ' ' + $('#search1').val() + ' box';
+			break;
+		case 6:
+			term += ' ' + $('#search2').val() + ' box';
+			break;
 	}
 
 	console.log(term);
 
 	term = escape(term);
-	window.open('https://www.google.com/search?q=' + term + '&source=lnms&tbm=isch&sa=X&ved=0ahUKEwi89tOMoezKAhVT22MKHWQDBxYQ_AUIBygB&biw=2156&bih=1322', '_blank');
+	window.open('https://www.google.com/search?q=' + term + '&source=lnms&tbm=isch&sa=X&ved=0ahUKEwi89tOMoezKAhVT22MKHWQDBxYQ_AUIBygB&biw=2156&bih=1322&tbm=isch&tbs=isz:lt,islt:qsvga', '_blank');
 };
