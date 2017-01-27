@@ -228,9 +228,7 @@ router.get('/getboxart', function(req, res, next) {
 	var higherThreshold = req.query.upper || 500;
 	var override = req.query.override;
 
-	console.log(override);
-
-	GetBoxArt.exec(system, term, Main.getPath('datafiles'), Main.getPath('webboxart'), delay, lowerThreshold, higherThreshold, function(err, data) {
+	GetBoxArt.exec(system, term, Main.getPath('tools'), Main.getPath('datafiles'), Main.getPath('webboxart'), delay, lowerThreshold, higherThreshold, override, function(err, data) {
 		if (err) {
 			console.log(err);
             return res.json(err);
@@ -321,28 +319,12 @@ router.post('/boxart', upload.single( 'file' ), function(req, res, next) {
 
 	var system = req.body.system;
 	var title = req.body.title;
-	var path = Main.getPath('webboxart') + '/' + system + '/' + title;
 
-	Main.createFolder(path, false, function(err) {
+	GetBoxArt.uploaded(Main.getPath('tools'), req.file, Main.getPath('webboxart') + '/' + system + '/' + title, function(err) {
 		if (err) {
-			console.log(err);
-			return res,json(err);
+			return res.json(err);
 		}
-
-		//cleanout dir
-		Main.emptydir(path, function(err) {
-			if (err) {
-				return res.json(err);
-			}
-			
-			fs.rename(req.file.path, path + '/original.jpg', function(err) {
-				if (err) {
-					return res.json(err);
-				}
-
-				res.json(req.file);
-			});
-		});
+		res.json(req.file);
 	});
 });
 

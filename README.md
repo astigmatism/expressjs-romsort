@@ -3,6 +3,10 @@ expressjs-romsort
 
 This project was designed to manage and sort large rom file sets. Specifically, GoodTools merged sets which usually begin as a group of 7z files. It can however, be used for general purpose cases. See below.
 
+requirements
+__________________
+- brew install imagemagick --with-webp
+
 
 getting started
 ------------------

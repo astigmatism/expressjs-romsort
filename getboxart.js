@@ -4,6 +4,7 @@ var request = require('request');
 var config = require('config');
 var cheerio = require('cheerio');
 var gm = require('gm');
+const exec = require('child_process').exec;
 var Main = require('./main.js');
 require('console-png').attachTo(console);
 
@@ -16,7 +17,7 @@ GetBoxArt = function() {
 
 GetBoxArt.outputFormat = 'jpg';
 
-GetBoxArt.exec = function(system, term, sourcePath, destinationPath, delay, lowerScoreThreshold, higherScoreThreshold, callback) {
+GetBoxArt.exec = function(system, term, toolsDir, sourcePath, destinationPath, delay, lowerScoreThreshold, higherScoreThreshold, override, callback) {
 
     var datafile = {};
     var self = this;
@@ -78,9 +79,9 @@ GetBoxArt.exec = function(system, term, sourcePath, destinationPath, delay, lowe
                             fs.exists(destinationPath + '/' + system + '/' + game, function(exists) {
 
                                 //if it doesn't exist, scrape google
-                                if (!exists) {
+                                if (!exists || override == "true") {
 
-                                    self.scrape(game, system, term, destinationPath, function(err) {
+                                    self.scrape(game, system, term, toolsDir, destinationPath, function(err) {
 
                                         return nextgame();
 
@@ -119,7 +120,7 @@ GetBoxArt.exec = function(system, term, sourcePath, destinationPath, delay, lowe
 
 };
 
-GetBoxArt.scrape = function(game, system, term, destinationPath, callback, imageindex, delay) {
+GetBoxArt.scrape = function(game, system, term, toolsDir, destinationPath, callback, imageindex, delay) {
 
     var delay = delay || 2000;
     var self = this;
@@ -131,7 +132,7 @@ GetBoxArt.scrape = function(game, system, term, destinationPath, callback, image
     var url = 'https://www.google.com/search?q=' + encodeURIComponent(term) + '&source=lnms&tbm=isch';
 
     console.log('Searching (index: ' + imageindex + ', with timeout) for: ' + term);
-    console.log('url: ' + url3);
+    //console.log('url: ' + url3);
 
     setTimeout(function() {
 
@@ -146,7 +147,7 @@ GetBoxArt.scrape = function(game, system, term, destinationPath, callback, image
         }, function(err, response, body) {
             if (err) {
                 console.log(err);
-                self.scrape(game, details, destinationPath, callback, imageindex + 1, delay);
+                self.scrape(game, details, term, toolsDir, destinationPath, callback, imageindex + 1, delay);
                 return;
             }
             
@@ -190,7 +191,7 @@ GetBoxArt.scrape = function(game, system, term, destinationPath, callback, image
                             self.download(imageurl, originalpath, function(filename){
                                 
                                 //show image in console window
-                                gm(originalpath).resize(null, 50).setFormat('png').write(destinationPath + '/console.png', function (err) {
+                                gm(originalpath).resize(null, 30).setFormat('png').write(destinationPath + '/console.png', function (err) {
                                     if (err) {
                                         //meh. dont really care if console image cant show
                                     } else {
@@ -201,7 +202,7 @@ GetBoxArt.scrape = function(game, system, term, destinationPath, callback, image
                                     }
 
                                     //after scrape, save downloaded image in the format we work with
-                                    gm(originalpath).setFormat(self.outputFormat).write(destinationPath + '/' + system + '/' + game + '/original.' + self.outputFormat, function (err) {
+                                    self.convertImageOnObtain(toolsDir, originalpath, destinationPath + '/' + system + '/' + game, true, function(err) {
                                         if (err) {
                                             console.log('Error in saving downloaded image: ' + err);
                                         }
@@ -224,7 +225,7 @@ GetBoxArt.scrape = function(game, system, term, destinationPath, callback, image
                     } else {
 
                         //image is x-raw-image, try again
-                        self.scrape(game, details, destinationPath, callback, imageindex + 1, delay);
+                        self.scrape(game, details, term, toolsDir, destinationPath, callback, imageindex + 1, delay);
                         return;
                     }
                         
@@ -248,6 +249,31 @@ GetBoxArt.scrape = function(game, system, term, destinationPath, callback, image
     }, delay);
 };
 
+GetBoxArt.uploaded = function(toolsDir, file, destinationPath, callback) {
+
+    var self = this;
+
+    Main.createFolder(destinationPath, false, function(err) {
+        if (err) {
+            return callback(err);
+        }
+
+        //cleanout dir
+        Main.emptydir(destinationPath, function(err) {
+            if (err) {
+                return callback(err);
+            }
+
+            self.convertImageOnObtain(toolsDir, file.path, destinationPath, true, function(err) {
+                if (err) {
+                    return callback(err);
+                }
+                return callback();
+            });
+        });
+    });
+};
+
 GetBoxArt.download = function(uri, filename, callback){
     request.head(uri, function(err, res, body){
         //console.log('content-type:', res.headers['content-type']);
@@ -261,6 +287,31 @@ GetBoxArt.download = function(uri, filename, callback){
         .pipe(fs.createWriteStream(filename)).on('close', function() {
             callback(filename);
         });
+    });
+};
+
+GetBoxArt.convertImageOnObtain = function(toolsDir, sourceImage, destinationPath, autoTone, callback) {
+
+    var self = this;
+
+    //after scrape, save downloaded image in the format we work with
+    gm(sourceImage).setFormat(self.outputFormat).write(destinationPath + '/original.' + self.outputFormat, function (err) {
+        if (err) {
+            return callback(err);
+        }
+
+        //autotone this image? (come on, say yes!!)
+        if (autoTone) {
+            exec(toolsDir + 'autotone "' + destinationPath + '/original.' + self.outputFormat + '" "' + destinationPath + '/original.' + self.outputFormat + '"', function (err, stdout, stderr) {
+                if (err) {
+                    console.log('stderr: ' + stderr);
+                    return callback(err);
+                }
+                return callback();
+            });
+        } else {
+            return callback();
+        }
     });
 };
 

@@ -19,7 +19,8 @@
 		"cdnready": "/workspace/cdnready/",
 		"webboxart": "/public/boxart/",
 		"cdnshaderready": "/workspace/cdnshaderready/",
-		"config": "/config/"
+		"config": "/config/",
+		"tools": "/tools/"
 	},
 	"thegamesdb": {
 		"snes": {

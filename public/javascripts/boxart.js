@@ -77,6 +77,9 @@ var BoxArt = function() {
 			$(li).dropzone({ 
 				url: '/boxart',
 				sending: function(file, xhr, formData) {
+	    			
+
+
 	    			formData.append('title', title);
 	    			formData.append('system', system);
 				},
@@ -85,6 +88,7 @@ var BoxArt = function() {
 						alert('There was an error saving the image. Please check the server!');
 					});
 					this.on('success', function() {
+						
 						$('.dz-preview').hide();
 						
 						loadImage(imagewrapper, size, system, title);

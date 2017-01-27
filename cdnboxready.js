@@ -6,7 +6,7 @@ var gm = require('gm');
 CDNBoxReady = function() {
 };
 
-CDNBoxReady.resizes = [170, 120, 50];
+CDNBoxReady.resizes = [200, 170, 120, 50];
 CDNBoxReady.outputFormat = 'jpg';
 
 CDNBoxReady.exec = function(datafilePath, sourcePath, destinationPath, callback) {
@@ -119,7 +119,7 @@ CDNBoxReady.resize = function(source, destination, callback) {
     //loop over resizes
     async.eachSeries(self.resizes, function(resize, nextresize) {
 
-        gm(source).resize(resize).setFormat(self.outputFormat).write(destination + '/' + resize + '.' + self.outputFormat, function (err) {
+        gm(source).resize(resize).setFormat(self.outputFormat).quality(100).write(destination + '/' + resize + '.' + self.outputFormat, function (err) {
             if (err) {
                 return nextresize(err)
             }
