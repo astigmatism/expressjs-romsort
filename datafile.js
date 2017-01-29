@@ -112,6 +112,7 @@ DataFile.boxart = function(datafileSource, boxartSoruce, destinationFile, callba
             //loop over all folders in web box art
             async.eachSeries(boxartFolders, function(folder, nextfolder) {
 
+
                 fs.stat(boxartSoruce + '/' + folder, function(err, stats) {
                     
                     //bail if a file, folders only
@@ -119,13 +120,17 @@ DataFile.boxart = function(datafileSource, boxartSoruce, destinationFile, callba
                         return nextfolder(null);
                     }
 
-                    //if the data file has an entry for the web folder, then we want to mark this game as having art
-                    if (datafile.hasOwnProperty(folder)) {
-                        console.log('found boxart for: ' + folder);
-                        imagedatafile[folder] = true;
-                    }
+                    //must have original.jpg
+                    fs.exists(boxartSoruce + '/' + folder + '/original.jpg', function(exists) {
 
-                    nextfolder();
+                        //if the data file has an entry for the web folder, then we want to mark this game as having art
+                        if (datafile.hasOwnProperty(folder) && exists) {
+                            console.log('found boxart for: ' + folder);
+                            imagedatafile[folder] = true;
+                        }
+
+                        nextfolder();
+                    });
                 });
             }, function(err, result) {
 
