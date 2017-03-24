@@ -54,21 +54,12 @@ RomFolders.exec = function(sourcePath, destinationPath, callback) {
                             return callback(err);
                         }
 
-                        //read file
-                        fs.readFile(sourcePath + '/' + romfile, function(err, buffer) {
+                        Main.copyFile(sourcePath + '/' + romfile, destinationPath + '/' + dirname + '/' + romfile, function(err) {
                             if (err) {
                                 return callback(err);
                             }
 
-                            fs.writeFile(destinationPath + '/' + dirname + '/' + romfile, buffer, function(err) {
-                                if (err) {
-                                    return nextfolder(err);
-                                }
-
-                                console.log(romfile + ' ---> ' + dirname);
-
-                                nextromfile();
-                            }); 
+                            nextromfile();                      
                         });
                     });
                 }

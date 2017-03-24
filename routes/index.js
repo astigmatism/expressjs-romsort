@@ -16,6 +16,7 @@ var TheGamesDB = require('../thegamesdb');
 var TheGamesDBPics = require('../thegamesdbpics');
 var CompressShaders = require('../compressshaders');
 var MakeAllShaders = require('../makeallshaders');
+var RenameSPCFolder = require('../renamespcfolder');
 var multer  = require('multer');
 var upload = multer( { dest: '../public/uploads/' } );
 var router = express.Router();
@@ -61,7 +62,7 @@ router.get('/compressfiles', function(req, res, next) {
 	if (!compressiontype)
 		return res.json('compression is a required query param: zip|7z');
 	if (!filter)
-		return res.json('filter is a required query param: zip|7z');
+		return res.json('filter is a required query param: verified|none');
 
 	CompressFiles.exec(Main.getPath('decompressed') + folder, Main.getPath('compressed') + folder, compressiontype, filter, function(err, data) {
 		if (err) {
@@ -74,11 +75,14 @@ router.get('/compressfiles', function(req, res, next) {
 router.get('/alphasort', function(req, res, next) {
 	
 	var folder = req.query.system;
+	var source = req.query.source;
 
 	if (!folder)
 		return res.json('system is a required query param. Maps to folder name (gen, snes, n64, gb...)');
+	if (!source)
+		return res.json('source is a required query param: compressed|decompressed');
 
-	AlphaSort.exec(Main.getPath('compressed') + folder, Main.getPath('alphasorted') + folder, function(err, data) {
+	AlphaSort.exec(Main.getPath(source) + folder, Main.getPath('alphasorted') + folder, function(err, data) {
 		if (err) {
             return res.json(err);
         }
@@ -384,6 +388,16 @@ router.get('/glsl', function(req, res, next) {
 	        }
 	        res.json(data);
 		});
+	});
+});
+
+router.get('/spcrename', function(req, res, next) {
+
+	RenameSPCFolder.exec(Main.getPath('spcs'), Main.getPath('spcsready'), function(err, data) {
+		if (err) {
+            return res.json(err);
+        }
+        res.json(data);
 	});
 });
 

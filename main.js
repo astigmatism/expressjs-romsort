@@ -26,6 +26,100 @@ Main.onApplicationStart = function() {
 
 };
 
+Main.copyAllFiles = function(sourceFolderPath, destinationFolderPath, overrideDestination, copyFolders, callback) {
+
+
+	//ensuring destination exists, overrides it if needed
+    Main.createFolder(destinationFolderPath, overrideDestination, function(err) {
+        if (err) {
+            return callback(err);
+        }
+
+
+		//open source folder
+	    fs.readdir(sourceFolderPath, function(err, files) {
+	        if (err) {
+	            return callback(err);
+	        }
+
+
+	        //loop over all file contents
+	        async.eachSeries(files, function(file, nextfile) {
+
+	            fs.stat(sourceFolderPath + '/' + file, function(err, stats) {
+	                if (err) {
+	                	return nextfile(err);
+	                }
+
+	                //handle file or folder
+	                if (stats.isFile()) {
+
+	                	//ugh
+	                    if (file === '.DS_Store') {
+	                        return nextfile();
+	                    }
+
+	                    //copy file to destination
+	                    Main.copyFile(sourceFolderPath + '/' + file, destinationFolderPath + '/' + file, function(err) {
+	                        if (err) {
+	                            return nextfile(err);
+	                        }
+
+	                        nextfile();                      
+	                    });
+	                }
+	                else {
+
+	                	//its a folder! are we copying them too?
+	                	if (copyFolders) {
+
+	                		Main.copyAllFiles(sourceFolderPath + '/' + file, destinationFolderPath + '/' + file, overrideDestination, copyFolders, function(err) {
+	                			if (err) {
+	                				return nextfile(err);
+	                			}
+	                			nextfile();
+	                		});
+
+	                	}
+	                }
+	            });
+
+	        }, function(err, result) {
+
+	            if (err) {
+	                return callback(err);
+	            }
+
+	            console.log('Copied all files: ' + sourceFolderPath + ' ---> ' + destinationFolderPath);
+
+	            callback(null, '');
+	        });
+	    });
+    });
+};
+
+Main.copyFile = function(sourcePath, destinationPath, callback) {
+
+	//read file
+    fs.readFile(sourcePath, function(err, buffer) {
+        if (err) {
+        	console.log(err);
+            return callback(err);
+        }
+
+        fs.writeFile(destinationPath, buffer, function(err) {
+            if (err) {
+            	console.log(err);
+                return callback(err);
+            }
+
+            console.log(sourcePath + ' --- copied ---> ' + destinationPath);
+
+            callback();
+        }); 
+    });
+};
+
 Main.createFolder = function(path, overwrite, callback) {
 
 	fs.exists(path, function (exists) {

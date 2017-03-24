@@ -14,11 +14,13 @@
 		"cgshaders": "/workspace/12 - cgshaders/",
 		"glsl": "/workspace/13 - glsl/",
 		"thegamesdbpics": "/workspace/14 - thegamesdbpics/",
+		"spcs": "/workspace/15 - spcs/",
 		"ready": "/workspace/ready/",
 		"cdnboxready": "/workspace/cdnboxready/",
 		"cdnready": "/workspace/cdnready/",
 		"webboxart": "/public/boxart/",
 		"cdnshaderready": "/workspace/cdnshaderready/",
+		"spcsready": "/workspace/spcsready/",
 		"config": "/config/",
 		"tools": "/tools/"
 	},
