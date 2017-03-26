@@ -41,12 +41,19 @@ var BoxArt = function() {
 			var li = $('<li class="' + ((topranking >= 400) ? 'en' : 'foreign') + '" style="background-color: ' + ((topranking >= 400) ? '#EAFAF1' : '#FDEDEC') + '"><div class="title" style="padding-top: 5px">' + title + '</div></li>')
 			
 			li.append('<div class="buttons">');
-			li.append('<input type="button" style="width:50px" value="T" onclick="opengoogle(\'' + titleforbutton + '\', 1)"></input>');
-			li.append('<input type="button" style="width:50px" value="T&B" onclick="opengoogle(\'' + titleforbutton + '\', 4)"></input>');
-			li.append('<input type="button" style="width:50px" value="1" onclick="opengoogle(\'' + titleforbutton + '\', 2)"></input>');
-			li.append('<input type="button" style="width:50px" value="1&B" onclick="opengoogle(\'' + titleforbutton + '\', 5)"></input>');
-			li.append('<input type="button" style="width:50px" value="2" onclick="opengoogle(\'' + titleforbutton + '\', 3)"></input>');
-			li.append('<input type="button" style="width:50px" value="2&B" onclick="opengoogle(\'' + titleforbutton + '\', 6)"></input>');
+			li.append('<input type="button" style="width:50px" value="T" onclick="opengoogle(\'' + titleforbutton + '\', 1, 1)"></input>');
+			li.append('<input type="button" style="width:50px" value="T&B" onclick="opengoogle(\'' + titleforbutton + '\', 1, 4)"></input>');
+			li.append('<input type="button" style="width:50px" value="1" onclick="opengoogle(\'' + titleforbutton + '\', 1, 2)"></input>');
+			li.append('<input type="button" style="width:50px" value="1&B" onclick="opengoogle(\'' + titleforbutton + '\', 1, 5)"></input>');
+			li.append('<input type="button" style="width:50px" value="2" onclick="opengoogle(\'' + titleforbutton + '\', 1, 3)"></input>');
+			li.append('<input type="button" style="width:50px" value="2&B" onclick="opengoogle(\'' + titleforbutton + '\', 1, 6)"></input>');
+			li.append('<br/>');
+			li.append('<input type="button" style="width:50px" value="T" onclick="opengoogle(\'' + titleforbutton + '\', 0, 1)"></input>');
+			li.append('<input type="button" style="width:50px" value="T&B" onclick="opengoogle(\'' + titleforbutton + '\', 0, 4)"></input>');
+			li.append('<input type="button" style="width:50px" value="1" onclick="opengoogle(\'' + titleforbutton + '\', 0, 2)"></input>');
+			li.append('<input type="button" style="width:50px" value="1&B" onclick="opengoogle(\'' + titleforbutton + '\', 0, 5)"></input>');
+			li.append('<input type="button" style="width:50px" value="2" onclick="opengoogle(\'' + titleforbutton + '\', 0, 3)"></input>');
+			li.append('<input type="button" style="width:50px" value="2&B" onclick="opengoogle(\'' + titleforbutton + '\', 0, 6)"></input>');
 			li.append('</div>');
 
 			var imagewrapper = $('<div></div>');
@@ -184,7 +191,7 @@ var loadImage = function(wrapper, size, system, title) {
 
 var boxart = new BoxArt();
 
-var opengoogle = function(term, type) {
+var opengoogle = function(term, size, type) {
 
 	switch (type) {
 		case 2:
@@ -204,8 +211,17 @@ var opengoogle = function(term, type) {
 			break;
 	}
 
+	switch (size)
+	{
+		case 1:
+			size = "vga";
+			break;
+		default:
+			size = "qsvga"
+	}
+
 	console.log(term);
 
 	term = escape(term);
-	window.open('https://www.google.com/search?q=' + term + '&source=lnms&tbm=isch&sa=X&ved=0ahUKEwi89tOMoezKAhVT22MKHWQDBxYQ_AUIBygB&biw=2156&bih=1322&tbm=isch&tbs=isz:lt,islt:qsvga', '_blank');
+	window.open('https://www.google.com/search?q=' + term + '&source=lnms&tbm=isch&sa=X&ved=0ahUKEwi89tOMoezKAhVT22MKHWQDBxYQ_AUIBygB&biw=2156&bih=1322&tbm=isch&tbs=isz:lt,islt:' + size, '_blank');
 };

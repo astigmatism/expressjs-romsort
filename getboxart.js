@@ -147,7 +147,7 @@ GetBoxArt.scrape = function(game, system, term, toolsDir, destinationPath, callb
         }, function(err, response, body) {
             if (err) {
                 console.log(err);
-                self.scrape(game, details, term, toolsDir, destinationPath, callback, imageindex + 1, delay);
+                self.scrape(game, system, term, toolsDir, destinationPath, callback, imageindex + 1, delay);
                 return;
             }
             
@@ -225,7 +225,7 @@ GetBoxArt.scrape = function(game, system, term, toolsDir, destinationPath, callb
                     } else {
 
                         //image is x-raw-image, try again
-                        self.scrape(game, details, term, toolsDir, destinationPath, callback, imageindex + 1, delay);
+                        self.scrape(game, system, term, toolsDir, destinationPath, callback, imageindex + 1, delay);
                         return;
                     }
                         
