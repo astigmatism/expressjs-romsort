@@ -331,4 +331,36 @@ GetBoxArt.convertImageOnObtain = function(toolsDir, sourceImage, destinationPath
     });
 };
 
+GetBoxArt.updateMeta = function(datafileSource, title, topsuggestion, callback) {
+
+    fs.exists(datafileSource, function(exists) {
+
+        if (!exists) {
+            return callback(datafileSource + ' does not exist');
+        }
+
+        //read screenshot datafile
+        fs.readJson(datafileSource, function(err, datafile) {
+            if (err) {
+                return callback(err);
+            }
+
+            if (title in datafile) {
+                
+                datafile[title].ts = topsuggestion;
+            }
+
+            //write data file
+            fs.writeFile(datafileSource, JSON.stringify(datafile), function(err) {
+                if (err) {
+                    return callback(err);
+                }
+
+                callback();
+            });
+
+        });
+    });
+};
+
 module.exports = GetBoxArt;

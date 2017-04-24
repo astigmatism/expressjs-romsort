@@ -26,8 +26,6 @@ router.get('/', function(req, res, next) {
 	res.render('index', { 
 		title: 'Express' 
 	});
-
-
 });
 
 /**
@@ -346,6 +344,20 @@ router.post('/boxart', upload.single( 'file' ), function(req, res, next) {
 			return res.json(err);
 		}
 		res.json(req.file);
+	});
+});
+
+router.post('/boxart/meta', function(req, res, next) {
+
+	var system = req.body.system;
+	var title = req.body.title;
+	var topsuggestion = req.body.topsuggestion;
+
+	//read system data file
+	GetBoxArt.updateMeta(Main.getPath('datafiles') + '/' + system + '_boxart.json', title, topsuggestion, function(err) {
+        if (err) {
+            return callback(err);
+        }
 	});
 });
 

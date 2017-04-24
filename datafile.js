@@ -123,10 +123,12 @@ DataFile.boxart = function(datafileSource, boxartSoruce, destinationFile, callba
                     //must have original.jpg
                     fs.exists(boxartSoruce + '/' + folder + '/original.jpg', function(exists) {
 
-                        //if the data file has an entry for the web folder, then we want to mark this game as having art
+                        //if the data file has an entry for the web folder. simply having a title in this file marks it as having art
+                        //will can fill the object with data in the future
+                        //update: I write if this art is "top suggestion"
                         if (datafile.hasOwnProperty(folder) && exists) {
                             console.log('found boxart for: ' + folder);
-                            imagedatafile[folder] = true;
+                            imagedatafile[folder] = {};
                         }
 
                         nextfolder();
@@ -139,7 +141,7 @@ DataFile.boxart = function(datafileSource, boxartSoruce, destinationFile, callba
                 }
 
                 //write data file
-                fs.writeFile(destinationFile, JSON.stringify(imagedatafile), function(error) {
+                fs.writeFile(destinationFile, JSON.stringify(imagedatafile), function(err) {
                     if (err) {
                         return callback(err);
                     }

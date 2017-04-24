@@ -100,6 +100,29 @@ var BoxArt = function() {
 			li.append('<div>Score: ' + topranking + '</div>');
 			li.append('<div>Top File: ' + details.best + '</div>');
 
+			var $checkbox = $('<input type="checkbox" />');
+			$checkbox.click(function(e) {
+				
+				var self = this;
+				$.ajax({
+					url: '/boxart/meta',
+					type: 'POST',
+					data: {
+						system: system,
+						title: title,
+						topsuggestion: self.checked
+					},
+					complete: function(xhr, textStatus) {
+				        if (xhr.status != 200) {
+				        	alert('There was an error updating the box data file. Have you generated it yet?')
+				        }
+				    }
+				});
+				alert(this.checked);
+			});	
+			var $checkwrapper = $('<div>Top Suggestion: </div>');
+			$checkwrapper.append($checkbox);
+			li.append($checkwrapper);
 			
 
 			var del = $('<input type="button" value="Delete"></input>');
