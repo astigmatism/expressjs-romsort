@@ -122,6 +122,13 @@ var BoxArt = function() {
 			});	
 			var $checkwrapper = $('<div>Top Suggestion: </div>');
 			$checkwrapper.append($checkbox);
+
+			if (title in boxartdata) {
+				if (boxartdata[title].hasOwnProperty('ts')) {
+					$checkbox.prop('checked', true);
+				}
+			}
+
 			li.append($checkwrapper);
 			
 

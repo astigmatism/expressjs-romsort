@@ -349,6 +349,9 @@ GetBoxArt.updateMeta = function(datafileSource, title, topsuggestion, callback) 
                 
                 datafile[title].ts = topsuggestion;
             }
+            else {
+                delete datafile[title].ts;
+            }
 
             //write data file
             fs.writeFile(datafileSource, JSON.stringify(datafile), function(err) {

@@ -294,10 +294,32 @@ router.get('/boxart/:system', function(req, res, next) {
 	            return callback(err);
 	        }
 
-	        res.render('boxart', {
-		    	data: JSON.stringify(datafile),
-		    	webtitles: JSON.stringify(webtitles),
-		    	system: system
+			//get contents of the boxart data file, if exists!
+			fs.exists(Main.getPath('datafiles') + '/' + system + '_boxart.json', function(exists) {
+
+				var onComplete = function(boxartdata) {
+
+					res.render('boxart', {
+						data: JSON.stringify(datafile),
+						webtitles: JSON.stringify(webtitles),
+						system: system,
+						boxartdata: JSON.stringify(boxartdata)
+					});
+					return;
+				};
+
+				if (exists) {
+					
+					fs.readJson(Main.getPath('datafiles') + '/' + system + '_boxart.json', function(err, boxartdatafile) {
+						if (err) {
+							return callback(err);
+						}
+						return onComplete(boxartdatafile);
+					});
+				}
+				else {
+					return onComplete();
+				}
 			});
 		});
     });
