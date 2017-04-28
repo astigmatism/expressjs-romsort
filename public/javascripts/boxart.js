@@ -118,7 +118,6 @@ var BoxArt = function() {
 				        }
 				    }
 				});
-				alert(this.checked);
 			});	
 			var $checkwrapper = $('<div>Top Suggestion: </div>');
 			$checkwrapper.append($checkbox);

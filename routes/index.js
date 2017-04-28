@@ -380,6 +380,7 @@ router.post('/boxart/meta', function(req, res, next) {
         if (err) {
             return callback(err);
         }
+		res.json();
 	});
 });
 
