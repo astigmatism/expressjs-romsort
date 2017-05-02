@@ -11,6 +11,7 @@ var DataFile = require('../datafile');
 var RomFolders = require('../romfolders');
 var GetBoxArt = require('../getboxart');
 var CDNBoxReady = require('../cdnboxready');
+var UploadToDropBox = require('../uploadtodropbox.js');
 //var NeoGeoRename = require('../neogeorename');
 var TheGamesDB = require('../thegamesdb');
 var TheGamesDBPics = require('../thegamesdbpics');
@@ -433,6 +434,32 @@ router.get('/spcrename', function(req, res, next) {
             return res.json(err);
         }
         res.json(data);
+	});
+});
+
+router.get('/dropbox/roms', function(req, res, next) {
+
+	var system = req.query.system;
+	var cdnversion = req.query.version;
+
+	UploadToDropBox.roms(system, cdnversion, Main.getPath('cdnready') + system, function(err, response) {
+		if (err) {
+            return res.json(err);
+        }
+        res.json(response);
+	});
+});
+
+router.get('/dropbox/boxes', function(req, res, next) {
+
+	var system = req.query.system;
+	var cdnversion = req.query.version;
+
+	UploadToDropBox.boxes(system, cdnversion, Main.getPath('cdnboxready') + system, function(err, response) {
+		if (err) {
+            return res.json(err);
+        }
+        res.json(response);
 	});
 });
 
