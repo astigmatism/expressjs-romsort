@@ -54,3 +54,17 @@ block content
 	br
 	button(onclick='$("#cdnready").text("working");$.get("/cdnready?system=" + $("#system").val() + "&source=decompressed", function() { $("#cdnready").text("complete"); })') cdnready roms
 	span#cdnready
+	br
+	br
+	label cdn box version (2.0.2):
+	input#cdnboxversion
+	br
+	button(onclick='$("#uploadboxestodropbox").text("working");$.get("/dropbox/boxes?system=" + $("#system").val() + "&version=" + $("#cdnboxversion").val(), function() { $("#uploadboxestodropbox").text("complete"); })') upload boxes to dropbox
+	span#uploadboxestodropbox
+	br
+	br
+	label cdn roms version (2.0.3):
+	input#cdnromsversion
+	br
+	button(onclick='$("#uploadromstodropbox").text("working");$.get("/dropbox/roms?system=" + $("#system").val() + "&version=" + $("#cdnromsversion").val(), function() { $("#uploadromstodropbox").text("complete"); })') upload roms to dropbox
+	span#uploadromstodropbox

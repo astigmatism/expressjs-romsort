@@ -1,5 +1,6 @@
 {
-	"dropboxaccesstoken": "m62ox__hvx4AAAAAAAg-wsMqXLg0V57RxRTk-PBFM3gKS23cOjrpY5y7x6aSZMRA",
+	"dropboxaccesstoken": "m62ox__hvx4AAAAAAAhOSoQif_E-mwTn_gH-mwyR7deR7a5pDpBIz1FmkxOKBQZt",
+	"dropboxroot": "/Public/crazyerics",
 	"paths": {
 		"start": "/workspace/00 - starthere/",
 		"decompressed": "/workspace/01 - decompressed/",
