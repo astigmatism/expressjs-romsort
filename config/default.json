@@ -37,7 +37,10 @@
 			"platform": ["Sega Game Gear"]
 		},
 		"gen": {
-			"platform": ["Sega Genesis", "Sega Mega Drive", "Sega 32X"]
+			"platform": ["Sega Genesis", "Sega Mega Drive"]
+		},
+		"32x": {
+			"platform": ["Sega 32X"]
 		},
 		"gba": {
 			"platform": ["Nintendo Game Boy Advance"]
