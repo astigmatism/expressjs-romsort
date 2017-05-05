@@ -12,6 +12,7 @@ var RomFolders = require('../romfolders');
 var GetBoxArt = require('../getboxart');
 var CDNBoxReady = require('../cdnboxready');
 var UploadToDropBox = require('../uploadtodropbox.js');
+var SupportFiles = require('../supportfiles.js');
 //var NeoGeoRename = require('../neogeorename');
 var TheGamesDB = require('../thegamesdb');
 var TheGamesDBPics = require('../thegamesdbpics');
@@ -207,6 +208,19 @@ router.get('/cdnready', function(req, res, next) {
             return res.json(err);
         }
         res.json(data);
+	});
+});
+
+router.get('/supportfiles', function(req, res, next) {
+
+	var system = req.query.system;
+	var segmentsize = req.query.segmentsize || 25000000;
+
+	SupportFiles.exec(system, segmentsize, Main.getPath('supportfiles'), Main.getPath('cdnsupportready'), function(err, response) {
+		if (err) {
+			return res.json(err);
+		}
+		res.json(response);
 	});
 });
 

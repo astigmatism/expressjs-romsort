@@ -5,9 +5,11 @@ workspace/07 - romfiles/*
 workspace/08 - romfolders/*
 workspace/09 - boxart downloads/*
 workspace/15 - spcs/*
+workspace/16 - supportfiles/*
 workspace/99 - decompressed/*
 workspace/cdnboxready/*
 workspace/cdnready/*
+workspace/cdnsupportready/*
 workspace/spcsready/*
 public/boxart/*
 !public/boxart/vb

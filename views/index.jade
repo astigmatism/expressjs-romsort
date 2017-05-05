@@ -20,6 +20,10 @@ block content
 	span#romfolders
 	br
 	br
+	button(onclick='$("#supportfiles").text("working");$.get("/supportfiles?system=" + $("#system").val(), function() { $("#supportfiles").text("complete"); })') compress support files
+	span#supportfiles
+	br
+	br
 	button(onclick='$("#clearromfolders").text("working");$.get("/clearromfolders", function() { $("#clearromfolders").text("complete"); })') clear rom folders 
 	span#clearromfolders
 	br
@@ -68,6 +72,7 @@ block content
 	br
 	label cdn roms version (2.0.3):
 	input#cdnromsversion
+	br
 	br
 	button(onclick='$("#uploadromstodropbox").text("working");$.get("/dropbox/roms?system=" + $("#system").val() + "&version=" + $("#cdnromsversion").val(), function() { $("#uploadromstodropbox").text("complete"); })') upload roms to dropbox
 	span#uploadromstodropbox
