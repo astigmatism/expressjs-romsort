@@ -203,7 +203,7 @@ router.get('/cdnready', function(req, res, next) {
 
 	source = source === "topchoice" ? Main.getPath('topchoice') + folder : Main.getPath('decompressed') + folder;
 
-	CDNReady.exec(source, Main.getPath('cdnready') + folder, segmentsize, function(err, data) {
+	CDNReady.exec(source, Main.getPath('cdnready') + folder, Main.getPath('datafiles') + '/' + folder + '_cdndata.json', segmentsize, function(err, data) {
 		if (err) {
             return res.json(err);
         }

@@ -7,7 +7,7 @@ var Main = require('./main.js');
 CDNReady = function() {
 };
 
-CDNReady.exec = function(sourcePath, destinationPath, segmentSize, callback) {
+CDNReady.exec = function(sourcePath, destinationPath, dataFilePath, segmentSize, callback) {
 
     var self = this;
     var datafile = {};
@@ -43,53 +43,92 @@ CDNReady.exec = function(sourcePath, destinationPath, segmentSize, callback) {
                         //loop over reach rom file or folder
                         async.eachSeries(roms, function(fileorfolder, nextfileorfolder) {
 
+                            if (fileorfolder == '.DS_Store') {
+                                return nextfileorfolder();
+                            }
+
+                            //output file for filesize
+                            datafile[fileorfolder] = {
+                                size: 0
+                            };
+
                             //ok, so here's the deal:
                             //if its a file: we compressed it to be included in the emulator file system
                             //if its a folder: we compress all files within it to be included in the emulator file system
                             
-                            var output = 'a({';
+                            console.log('\r\nStarting --> ' + fileorfolder);
 
+                            //what are we working with?
                             fs.stat(sourcePath + '/' + title + '/' + fileorfolder, function(err, stats) {
 
                                 if (stats.isFile()) {
+
+                                    //file
+                                    console.log('...is a file!');
+
+                                    var output = '{';                                   
                                     var file = fileorfolder;
 
-                                    //open file
-                                    fs.readFile(sourcePath + '/' + title + '/' + file, function(err, buffer) {
-                                        if (err) {
-                                            return nextfileorfolder(err);
-                                        }
+                                    self.compressFile(sourcePath + '/' + title + '/' + file, file, segmentSize, function(err, fileoutput) {
 
-                                        var compressedSegments = self.compressFile(buffer, segmentSize);
+                                        output += fileoutput + '}';
 
-                                        //add line to file
-                                        output += '"' + Main.compress.string(fileorfolder) + '":' + JSON.stringify(compressedSegments);
-
-                                        //close up file
-                                        output += '})';
-
-                                        //write output file
-                                        //create our cdn file, the name of this file is the title+(file or folder) compressed
-                                        var filename = Main.compress.string(title + fileorfolder);
-                                        fs.outputFile(destinationPath + '/' + encodeURIComponent(filename) + '.json', output, function (err) {
+                                        self.writeFile(destinationPath, title, fileorfolder, output, function(err, filesize) {
                                             if (err) {
                                                 return nextfileorfolder(err);
                                             }
-                                            console.log('cdnready: ' + title + ' --> ' + file);
+                                            datafile[fileorfolder].size = filesize;
+
                                             return nextfileorfolder();
                                         });
                                     });
 
-
                                 } else {
+
+                                    //folder
+                                    console.log('...is a folder!');
+
                                     var folder = fileorfolder;
+                                    var output = '{';
                                     //file is a folder, compress all files into a single
 
-                                    //i have not had the need to implement this yet. perhaps with more sega cd testing
+                                    //read folder
+                                    fs.readdir(sourcePath + '/' + title + '/' + folder, function(err, files) {
+                                        if (err) {
+                                            return nextfileorfolder();
+                                        }
 
-                                    return nextfileorfolder();
+                                        //loop over reach rom file or folder
+                                        async.eachSeries(files, function(file, nextfile) {
+                                            
+                                            self.compressFile(sourcePath + '/' + title + '/' + folder + '/' + file, file, segmentSize, function(err, fileoutput) {
+                                                if (err) {
+                                                    return nextfile(err);
+                                                }
+
+                                                output += fileoutput + ',';
+
+                                                return nextfile();
+                                            });
+
+                                        }, function(err, result) {
+                                            if (err) {
+                                            }
+
+                                            output = output.slice(0, -1); //remove last comma
+                                            output += '}';
+
+                                            self.writeFile(destinationPath, title, fileorfolder, output, function(err, filesize) {
+                                                if (err) {
+                                                    return nextfileorfolder(err);
+                                                }
+                                                datafile[fileorfolder].size = filesize;
+                                                return nextfileorfolder();
+                                            });
+                                        });
+                                    });
+
                                 }
-
                             });
 
                         }, function(err, result) {
@@ -99,7 +138,6 @@ CDNReady.exec = function(sourcePath, destinationPath, segmentSize, callback) {
                                     if (err) {
                                         return nexttitle(err2);
                                     }
-
                                     return nexttitle(err);
                                 });
                             }
@@ -113,15 +151,64 @@ CDNReady.exec = function(sourcePath, destinationPath, segmentSize, callback) {
 	            if (err) {
 	                return callback(err);
 	            }
-                beep(5);
 
-	            return callback(null, '');
+                //write file which contains file sizes (for download progress)
+                fs.outputJson(dataFilePath, datafile, function (err) {
+                    if (err) {
+                        return callback(err);
+                    }
+                    beep(5);
+
+	                return callback();
+                });
 	        });
         });
     });
 };
 
-CDNReady.compressFile = function(buffer, segmentSize) {
+CDNReady.compressFile = function(path, filename, segmentSize, callback) {
+
+    var self = this;
+
+    //open file
+    fs.readFile(path, function(err, buffer) {
+        if (err) {
+            return nextfileorfolder(err);
+        }
+
+        var compressedSegments = self.compressFileIntoSegements(path, filename, buffer, segmentSize);
+
+        //add line to file
+        var output = '"' + Main.compress.string(filename) + '":' + JSON.stringify(compressedSegments);
+
+        callback(null, output)
+    });
+};
+
+CDNReady.writeFile = function(destinationPath, title, fileorfolder, output, callback) {
+
+    var filename = Main.compress.string(title + fileorfolder);
+
+    //write output file
+    //create our cdn file, the name of this file is the title+(file or folder) compressed
+    fs.outputFile(destinationPath + '/' + encodeURIComponent(filename) + '.json', output, function (err) {
+        if (err) {
+            return callback(err);
+        }
+
+        fs.stat(destinationPath + '/' + encodeURIComponent(filename) + '.json', function(err, stat) {
+            if (err) {
+                return callback(err);
+            }
+
+            console.log('cdnready: ' + title + ' --> ' + fileorfolder + '\r\nFile size: ' + stat.size + '\r\nFile is called: ' + filename + '.json');
+        
+            callback(null, stat.size);
+        });
+    });
+};
+
+CDNReady.compressFileIntoSegements = function(path, filename, buffer, segmentSize) {
 
     var totalsegments = Math.ceil(buffer.length / segmentSize);
     var bufferPosition = 0;
@@ -130,8 +217,8 @@ CDNReady.compressFile = function(buffer, segmentSize) {
 
     var i = 0;
     for (i; i < totalsegments; ++i) {
+        console.log(filename + ' --> Starting segment ' + i);
         if (i === (totalsegments - 1)) {
-            console.log('starting final segment');
             var ab = new ArrayBuffer(buffer.length - bufferPosition);
             var view = new Uint8Array(ab);
             for (var j = bufferPosition; j < buffer.length; ++j) {
@@ -139,7 +226,6 @@ CDNReady.compressFile = function(buffer, segmentSize) {
                 bufferPosition++;
             }
         } else {
-            console.log('starting segment ' + i);
             var ab = new ArrayBuffer(segmentSize);
             var view = new Uint8Array(ab);
             for (var j = 0; j < segmentSize; ++j) {

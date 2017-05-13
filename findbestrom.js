@@ -84,6 +84,10 @@ FindBestRom.exec = function(files, officialscore) {
         var item = files[i];
         var currentrank = 500;  //starts high, decrements on each pass
 
+        if (item === '.DS_Store') {
+            continue;
+        }
+
         //first must pass only one of the extra regex's coming in (usually file ext)
         // var pass = false;
         // for (j = 0; j < reExtra.length; ++j) {

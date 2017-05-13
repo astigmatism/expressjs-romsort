@@ -41,6 +41,9 @@
 		"gen": {
 			"platform": ["Sega Genesis", "Sega Mega Drive"]
 		},
+		"segacd": {
+			"platform": ["Sega CD"]
+		},
 		"32x": {
 			"platform": ["Sega 32X"]
 		},

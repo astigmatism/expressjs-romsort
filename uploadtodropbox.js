@@ -19,6 +19,8 @@ UploadToDropBox.roms = function(system, version, sourcePath, callback) {
             return callback(err);
         }
 
+        console.log('There are ' + titles.length + ' for ' + system);
+
         //loop over all file contents
 	    async.eachSeries(titles, function(title, nexttitle) {
             
@@ -32,6 +34,8 @@ UploadToDropBox.roms = function(system, version, sourcePath, callback) {
                 if (err) {
                     return nexttitle(err);
                 }
+
+                console.log('\r\nStarting --> ' + system + '/' + version + '/' + title);
 
                 dbx.filesUpload({
                     path: config.get("dropboxroot") + '/roms/' + system + '/' + version + '/' + title, 
