@@ -153,7 +153,7 @@ CDNReady.exec = function(sourcePath, destinationPath, dataFilePath, segmentSize,
 	            }
 
                 //write file which contains file sizes (for download progress)
-                fs.outputFile(dataFilePath, datafile, function (err) {
+                fs.outputFile(dataFilePath, JSON.stringify(datafile), function (err) {
                     if (err) {
                         return callback(err);
                     }
