@@ -47,8 +47,10 @@ CDNReady.exec = function(sourcePath, destinationPath, dataFilePath, segmentSize,
                                 return nextfileorfolder();
                             }
 
+                            var compressedName = Main.compress.string(fileorfolder);
+
                             //output file for filesize
-                            datafile[fileorfolder] = {
+                            datafile[compressedName] = {
                                 size: 0
                             };
 
@@ -56,7 +58,7 @@ CDNReady.exec = function(sourcePath, destinationPath, dataFilePath, segmentSize,
                             //if its a file: we compressed it to be included in the emulator file system
                             //if its a folder: we compress all files within it to be included in the emulator file system
                             
-                            console.log('\r\nStarting --> ' + fileorfolder);
+                            console.log('\r\nStarting --> ' + fileorfolder + ' : ' + compressedName);
 
                             //what are we working with?
                             fs.stat(sourcePath + '/' + title + '/' + fileorfolder, function(err, stats) {
@@ -77,7 +79,7 @@ CDNReady.exec = function(sourcePath, destinationPath, dataFilePath, segmentSize,
                                             if (err) {
                                                 return nextfileorfolder(err);
                                             }
-                                            datafile[fileorfolder].size = filesize;
+                                            datafile[compressedName].size = filesize;
 
                                             return nextfileorfolder();
                                         });
@@ -122,7 +124,7 @@ CDNReady.exec = function(sourcePath, destinationPath, dataFilePath, segmentSize,
                                                 if (err) {
                                                     return nextfileorfolder(err);
                                                 }
-                                                datafile[fileorfolder].size = filesize;
+                                                datafile[compressedName].size = filesize;
                                                 return nextfileorfolder();
                                             });
                                         });
