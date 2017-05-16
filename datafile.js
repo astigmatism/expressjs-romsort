@@ -9,6 +9,7 @@ DataFile = function() {
 DataFile.exec = function(sourcePath, destinationFile, callback) {
 
     var datafile = {};
+    var compress = true; //only set to false for debugging
 
 	//open source folder
 	fs.readdir(sourcePath, function(err, gameFolders) {
@@ -28,10 +29,13 @@ DataFile.exec = function(sourcePath, destinationFile, callback) {
                     return nextfolder(null);
                 }
 
+                var compressedFolderName = Main.compress.string(folder);
+                var datafileProperty = compress ? compressedFolderName : folder;
+
                 //create object for title
-                datafile[folder] = {
-                    best: '',         //key for files object which represents the best file suited for emulation play
-                    files: {}
+                var entry = datafile[datafileProperty] = {
+                    b: '',          //b = best. key for files object which represents the best file suited for emulation play
+                    f: {}           //f = files
                 };
 
                 //read title folder
@@ -49,7 +53,7 @@ DataFile.exec = function(sourcePath, destinationFile, callback) {
                         summary[details.rank] = 1;
                     }
 
-                    datafile[folder].best = details.game;  //key into files maps which represents the best playable file
+                    entry.b = details.game;  //key into files maps which represents the best playable file
 
                     var file = sourcePath + '/' + folder + '/' + details.game;
                     var f = Main.getFileNameAndExt(file);					    
@@ -57,7 +61,11 @@ DataFile.exec = function(sourcePath, destinationFile, callback) {
                     //get rank of each file
                     for (var j = 0; j < files.length; ++j) {
                         var filedetails = FindBestRom.exec([files[j]]);
-                        datafile[folder].files[files[j]] = filedetails.rank;
+                        entry.f[files[j]] = filedetails.rank;
+                    }
+
+                    if (compress) {
+                        datafile[datafileProperty] = Main.compress.json(entry);
                     }
 
                     console.log(folder + ' --> ' + details.rank + ' ' + details.game);
