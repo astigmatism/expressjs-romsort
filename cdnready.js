@@ -50,8 +50,9 @@ CDNReady.exec = function(sourcePath, destinationPath, dataFilePath, segmentSize,
                             var compressedName = Main.compress.string(fileorfolder);
 
                             //output file for filesize
+                            //i'm attempting to abbriviate names and properties for better performance?
                             datafile[compressedName] = {
-                                size: 0
+                                s: 0
                             };
 
                             //ok, so here's the deal:
@@ -79,7 +80,7 @@ CDNReady.exec = function(sourcePath, destinationPath, dataFilePath, segmentSize,
                                             if (err) {
                                                 return nextfileorfolder(err);
                                             }
-                                            datafile[compressedName].size = filesize;
+                                            datafile[compressedName].s = filesize;
 
                                             return nextfileorfolder();
                                         });
@@ -124,7 +125,7 @@ CDNReady.exec = function(sourcePath, destinationPath, dataFilePath, segmentSize,
                                                 if (err) {
                                                     return nextfileorfolder(err);
                                                 }
-                                                datafile[compressedName].size = filesize;
+                                                datafile[compressedName].s = filesize;
                                                 return nextfileorfolder();
                                             });
                                         });

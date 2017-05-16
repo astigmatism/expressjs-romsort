@@ -73,6 +73,7 @@ TheGamesDB.exec = function(system, wordmatchscore, updateOption, sourcePath, des
 
 	        	console.log('-----------------------\n' + game + '\n-----------------------');
 	        	var report = reportdata[game] = {};
+				var compressedName = Main.compress.string(game);
 
 	        	self.getGameList(game, function(err, list) {
 	        		if (err) {
@@ -235,7 +236,8 @@ TheGamesDB.exec = function(system, wordmatchscore, updateOption, sourcePath, des
 									//game specific details stored here
 									if (data.Data && data.Data.Game) {
 										
-										datafile[game] = data.Data.Game;
+										//compress it all
+										datafile[compressedName] = Main.compress.string(JSON.stringify(data.Data.Game));
 
 										self.writeResult(destinationFile, datafile, function(err) {
 											if (err) {
@@ -282,7 +284,7 @@ TheGamesDB.exec = function(system, wordmatchscore, updateOption, sourcePath, des
 	            	
 	            	} else {
 	            		//no list.Data or list.Data.Game
-	            		datafile[game] = {};
+	            		datafile[compressedName] = {};
 
 						self.writeResult(destinationFile, datafile, function(err) {
 							if (err) {
