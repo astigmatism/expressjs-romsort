@@ -27,7 +27,7 @@ var BoxArt = function() {
 			$.each(data, function(title, details) {
 
 				var topranking = 0;
-				$.each(details.files, function(file, rank) {
+				$.each(details.f, function(file, rank) {
 					rank = parseInt(rank, 10);
 					topranking = rank > topranking ? rank : topranking;
 				});
@@ -125,7 +125,7 @@ var BoxArt = function() {
 				$checkwrapper.append($checkbox);
 
 				if (title in boxartdata) {
-					if (boxartdata[title].hasOwnProperty('ts')) {
+					if (boxartdata[title].hasOwnProperty('t')) {
 						$checkbox.prop('checked', true);
 					}
 				}

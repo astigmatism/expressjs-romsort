@@ -9,12 +9,13 @@ var score = require('string_score');
 TheGamesDB = function() {
 };
 
-TheGamesDB.exec = function(system, wordmatchscore, updateOption, sourcePath, destinationFile, reportFile, callback) {
+TheGamesDB.exec = function(system, wordmatchscore, updateOption, masterFilePath, destinationFile, reportFile, callback) {
 
     var self = this;
+	var compress = true;
     var details = config.get('thegamesdb')[system];
-    var datafile = {};
     var fuzzyScore = 0.5
+	var thegamesdbdata = {};
     var reportdata = {
     	header: {
     		config: details,
@@ -22,7 +23,7 @@ TheGamesDB.exec = function(system, wordmatchscore, updateOption, sourcePath, des
     		system: system,
     		wordmatchscore: wordmatchscore,
     		updateOption: updateOption,
-    		sourcePath: sourcePath,
+    		masterFilePath: masterFilePath,
     		destinationFile: destinationFile,
     		reportFile: reportFile,
     		fuzziness: fuzzyScore
@@ -30,55 +31,54 @@ TheGamesDB.exec = function(system, wordmatchscore, updateOption, sourcePath, des
     };
 
 
-    self.getExistingData(destinationFile, function (err, datafile) {
+    self.getExistingData(destinationFile, function (err, thegamesdbFileData) {
     	if (err) {
     		return callback(err);
     	}
 
-    	//read data file
-		fs.readJson(sourcePath + '/' + system + '.json', function (err, content) {
+    	//read master file
+		fs.readJson(masterFilePath, function (err, masterFile) {
 			if (err) {
 	            return callback(err);            
 	        }
 
 	        //async does not provide a good object iterator (they state their reasons well)
-	        var games = [];
-	        for (game in content) {
+	        var titles = [];
+	        for (title in masterFile) {
 
 	        	//if update is all, take all
 	        	if (updateOption === 'all') {
-	            	games.push(game);
+	            	titles.push(title);
 	            
 	            } else if (updateOption === 'missing') {
 
-	            	//only add games which are not in the datafile already
-	            	if (datafile[game] === undefined) {
-	            		games.push(game);
+	            	//only add games which are not in the thegamesdb already
+	            	if (thegamesdbFileData[title] === undefined) {
+	            		titles.push(title);
 	            	}
 	            } else if (updateOption === 'empty') {
 
 	            	//those that are in the gamesdb datafile but last time did not return any data
-	            	if (datafile[game] && datafile[game].id === undefined) {
-	            		games.push(game);
+	            	if (thegamesdbFileData[title] && thegamesdbFileData[title].id === undefined) {
+	            		titles.push(title);
 	            	}
 
-	            } else if (updateOption === game) {
+	            } else if (updateOption === title) {
 	            	//if we have an exact match, use it only
-	            	games.push(updateOption);
+	            	titles.push(updateOption);
 	            }
 	        }
 
-	        //loop over games
-	        async.eachSeries(games, function(game, nextgame) {
+	        //loop over titles
+	        async.eachSeries(titles, function(title, nexttitle) {
 
-	        	console.log('-----------------------\n' + game + '\n-----------------------');
-	        	var report = reportdata[game] = {};
-				var compressedName = Main.compress.string(game);
+	        	console.log('-----------------------\n' + title + '\n-----------------------');
+	        	var report = reportdata[title] = {};
 
-	        	self.getGameList(game, function(err, list) {
+	        	self.getGameList(title, function(err, list) {
 	        		if (err) {
 	                	console.log(err);
-	                	return nextgame(err);
+	                	return nexttitle(err);
 	            	}
 
 	            	if (list && list.Data && list.Data.Game) {
@@ -89,7 +89,7 @@ TheGamesDB.exec = function(system, wordmatchscore, updateOption, sourcePath, des
 	            		var platformMatches = [];
 	            		var matchedOtherGamesBetter = [];
 
-	            		report.correctedName = self.correctName(game);
+	            		report.correctedName = self.correctName(title);
 	            		report.gamelistresults = gamesList.length;
 
 	            		//loop over games result in list
@@ -112,7 +112,7 @@ TheGamesDB.exec = function(system, wordmatchscore, updateOption, sourcePath, des
 	            				
 	            				
 
-	            				var matchscore = self.correctName(game).score(listtitle, fuzzyScore); //0.5 is a fuzziness score. without it we're scoring exact
+	            				var matchscore = self.correctName(title).score(listtitle, fuzzyScore); //0.5 is a fuzziness score. without it we're scoring exact
 
 	            				//only care about games higher than the max score
 	            				if (matchscore >= wordmatchscore) {
@@ -127,16 +127,16 @@ TheGamesDB.exec = function(system, wordmatchscore, updateOption, sourcePath, des
 	            					//in order to be considered for a match, must match platform
 	            					if (platformmatch) {
 
-		            					for (title in content) {
-		            						var otherscore = self.correctName(title).score(listtitle, fuzzyScore);
+		            					for (otherTitle in masterFile) {
+		            						var otherscore = self.correctName(otherTitle).score(listtitle, fuzzyScore);
 		            						
 		            						//if something else scored higher, our match is better suited for something else.
 		            						//note that the same game will return the same match score and is not greater than.
-		            						if (otherscore > matchscore && title !== game) {
+		            						if (otherscore > matchscore && otherTitle !== title) {
 		            							otherGameScoredHigher = true;
-		            							console.log('list item "' + listtitle + '" scored high (' + matchscore + ') but is higher with: "' + title + '": ' + otherscore);
+		            							console.log('list item "' + listtitle + '" scored high (' + matchscore + ') but is higher with: "' + otherTitle + '": ' + otherscore);
 		            							matchedOtherGamesBetter.push({
-					            					title: title,
+					            					title: otherTitle,
 					            					score: otherscore
 					            				});
 		            						}
@@ -176,7 +176,7 @@ TheGamesDB.exec = function(system, wordmatchscore, updateOption, sourcePath, des
 
 	            		}, function(err) {
 	            			if (err) {
-					            return nextgame(err);
+					            return nexttitle(err);
 					        }
 
 					        report.platformMatches = {};
@@ -230,24 +230,24 @@ TheGamesDB.exec = function(system, wordmatchscore, updateOption, sourcePath, des
 
 								TheGamesDB.getGame(highestScore.item.id, function(err, data) {
 									if (err) {
-										return nextgame(err);
+										return nexttitle(err);
 									}
 
 									//game specific details stored here
 									if (data.Data && data.Data.Game) {
 										
 										//compress it all
-										datafile[compressedName] = Main.compress.string(JSON.stringify(data.Data.Game));
+										thegamesdbdata[title] = JSON.stringify(data.Data.Game);
 
-										self.writeResult(destinationFile, datafile, function(err) {
+										self.writeResult(destinationFile, thegamesdbdata, function(err) {
 											if (err) {
-												return nextgame(err); //fatal
+												return nexttitle(err); //fatal
 											}
 
 											console.log('success. data retrieved for ' + highestScore.item.GameTitle);
 											report.getgamesuccess = true;
 											self.writeReport(reportFile, reportdata);
-											nextgame();
+											nexttitle();
 										});
 
 
@@ -255,19 +255,19 @@ TheGamesDB.exec = function(system, wordmatchscore, updateOption, sourcePath, des
 										//no data on getGame result
 										console.log('weird!? no data returned for ' + highestScore.item.GameTitle + ' with id ' + highestScore.item.id);
 										self.writeReport(reportFile, reportdata);
-										nextgame();
+										nexttitle();
 									}
 								});
 
 							} else {
 								//no highest scoring item made, write game to file with empty data so that we know it was searched against
-								datafile[game] = {};
+								thegamesdbdata[title] = {};
 
 								for (match in report.platformMatches) {
 									console.log('top match: ' + match + ': ' + report.platformMatches[match]);
 								}
 
-								self.writeResult(destinationFile, datafile, function(err) {
+								self.writeResult(destinationFile, thegamesdbdata, function(err) {
 									if (err) {
 										console.log('self.writeResult ERROR:', err);
 										return callback(err); //fatal
@@ -277,16 +277,16 @@ TheGamesDB.exec = function(system, wordmatchscore, updateOption, sourcePath, des
 									
 									self.writeReport(reportFile, reportdata);
 
-									nextgame();
+									nexttitle();
 								});
 							}
 	            		});
 	            	
 	            	} else {
 	            		//no list.Data or list.Data.Game
-	            		datafile[compressedName] = {};
+	            		thegamesdbdata[title] = {};
 
-						self.writeResult(destinationFile, datafile, function(err) {
+						self.writeResult(destinationFile, thegamesdbdata, function(err) {
 							if (err) {
 								console.log('self.writeResult ERROR:', err);
 								return callback(err); //fatal
@@ -296,7 +296,7 @@ TheGamesDB.exec = function(system, wordmatchscore, updateOption, sourcePath, des
 							self.writeReport(reportFile, reportdata);
 							
 							console.log('no list returned from thegamesdb. moving on...');
-							nextgame();
+							nexttitle();
 						});
 	            	}
 	        	});

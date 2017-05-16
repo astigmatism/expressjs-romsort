@@ -28,8 +28,8 @@ block content
 	span#clearromfolders
 	br
 	br
-	button(onclick='$("#datafile").text("working");$.get("/datafile?system=" + $("#system").val(), function() { $("#datafile").text("complete"); })') datafile 
-	span#datafile
+	button(onclick='$("#masterfile").text("working");$.get("/masterfile?system=" + $("#system").val(), function() { $("#masterfile").text("complete"); })') masterfile 
+	span#masterfile
 	br
 	br
 	label override low score threshold for all task:
@@ -51,8 +51,8 @@ block content
 	button(onclick='window.open("/boxart/" + $("#system").val(), "_blank")') open box art
 	br
 	br
-	button(onclick='$("#boxartdatafile").text("working");$.get("/datafile/boxart?system=" + $("#system").val(), function() { $("#boxartdatafile").text("complete"); })') box art datafile
-	span#boxartdatafile
+	button(onclick='$("#boxartmasterfile").text("working");$.get("/masterfile/boxart?system=" + $("#system").val(), function() { $("#boxartmasterfile").text("complete"); })') box art masterfile
+	span#boxartmasterfile
 	br
 	br
 	button(onclick='$("#cdnreadyboxes").text("working");$.get("/cdnboxready/" + $("#system").val(), function() { $("#cdnreadyboxes").text("complete"); })') cdnready boxes

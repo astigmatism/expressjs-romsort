@@ -7,7 +7,7 @@ var CompressFiles = require('../compressfiles');
 var AlphaSort = require('../alphasort');
 var TopChoice = require('../topchoice');
 var CDNReady = require('../cdnready');
-var DataFile = require('../datafile');
+var MasterFile = require('../masterfile');
 var RomFolders = require('../romfolders');
 var GetBoxArt = require('../getboxart');
 var CDNBoxReady = require('../cdnboxready');
@@ -144,14 +144,14 @@ router.get('/hacksort/:folder', function(req, res, next) {
 	});
 });
 
-router.get('/datafile', function(req, res, next) {
+router.get('/masterfile', function(req, res, next) {
 	
 	var folder = req.query.system;
 
 	if (!folder)
 		return res.json('system is a required query param. Maps to folder name (gen, snes, n64, gb...)');
 
-	DataFile.exec(Main.getPath('decompressed') + folder, Main.getPath('datafiles') + '/' + folder + '_master', function(err, data) {
+	MasterFile.exec(Main.getPath('decompressed') + folder, Main.getPath('datafiles') + '/' + folder + '_master', function(err, data) {
 		if (err) {
             return res.json(err);
         }
@@ -159,14 +159,14 @@ router.get('/datafile', function(req, res, next) {
 	});
 });
 
-router.get('/datafile/boxart', function(req, res, next) {
+router.get('/masterfile/boxart', function(req, res, next) {
 
 	var folder = req.query.system;
 
 	if (!folder)
 		return res.json('system is a required query param. Maps to folder name (gen, snes, n64, gb...)');
 		
-	DataFile.boxart(Main.getPath('datafiles') + '/' + folder + '.json', Main.getPath('webboxart') + folder, Main.getPath('datafiles') + '/' + folder + '_boxart.json', function(err, result) {
+	MasterFile.boxart(Main.getPath('datafiles') + '/' + folder + '_master', Main.getPath('webboxart') + folder, Main.getPath('datafiles') + '/' + folder + '_boxart', function(err, result) {
 		if (err) {
 			return res.json(err);
 		}
@@ -267,7 +267,7 @@ router.get('/thegamesdb', function(req, res, next) {
 
 	score = parseFloat(score);
 
-	TheGamesDB.exec(system, score, update, Main.getPath('datafiles'), Main.getPath('datafiles') + '/' + system + '_thegamesdb', Main.getPath('datafiles') + '/' + system + '_thegamesdb_report.json', function(err, data){
+	TheGamesDB.exec(system, score, update, Main.getPath('datafiles') + '/' + system + '_master', Main.getPath('datafiles') + '/' + system + '_thegamesdb', Main.getPath('datafiles') + '/' + system + '_thegamesdb_report.json', function(err, data){
 		if (err) {
             return res.json(err);
         }
@@ -304,18 +304,18 @@ router.get('/boxart/:system', function(req, res, next) {
         }
 
         //get contents of data file
-        fs.readJson(Main.getPath('datafiles') + '/' + system + '.json', function(err, datafile) {
+        fs.readJson(Main.getPath('datafiles') + '/' + system + '_master', function(err, masterFile) {
 	        if (err) {
 	            return callback(err);
 	        }
 
 			//get contents of the boxart data file, if exists!
-			fs.exists(Main.getPath('datafiles') + '/' + system + '_boxart.json', function(exists) {
+			fs.exists(Main.getPath('datafiles') + '/' + system + '_boxart', function(exists) {
 
 				var onComplete = function(boxartdata) {
 
 					res.render('boxart', {
-						data: JSON.stringify(datafile),
+						data: JSON.stringify(masterFile),
 						webtitles: JSON.stringify(webtitles),
 						system: system,
 						boxartdata: JSON.stringify(boxartdata)
@@ -325,7 +325,7 @@ router.get('/boxart/:system', function(req, res, next) {
 
 				if (exists) {
 					
-					fs.readJson(Main.getPath('datafiles') + '/' + system + '_boxart.json', function(err, boxartdatafile) {
+					fs.readJson(Main.getPath('datafiles') + '/' + system + '_boxart', function(err, boxartdatafile) {
 						if (err) {
 							return callback(err);
 						}
@@ -391,7 +391,7 @@ router.post('/boxart/meta', function(req, res, next) {
 	var topsuggestion = req.body.topsuggestion;
 
 	//read system data file
-	GetBoxArt.updateMeta(Main.getPath('datafiles') + '/' + system + '_boxart.json', title, topsuggestion, function(err) {
+	GetBoxArt.updateMeta(Main.getPath('datafiles') + '/' + system + '_boxart', title, topsuggestion, function(err) {
         if (err) {
             return callback(err);
         }

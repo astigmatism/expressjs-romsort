@@ -347,7 +347,7 @@ GetBoxArt.updateMeta = function(datafileSource, title, topsuggestion, callback) 
 
             if (title in datafile) {
                 
-                datafile[title].ts = topsuggestion;
+                datafile[title].t = topsuggestion;
             }
             else {
                 delete datafile[title].ts;

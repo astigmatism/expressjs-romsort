@@ -7,10 +7,10 @@ var Main = require('./main.js');
 CDNReady = function() {
 };
 
-CDNReady.exec = function(sourcePath, destinationPath, dataFilePath, segmentSize, callback) {
+CDNReady.exec = function(sourcePath, destinationPath, fileDataPath, segmentSize, callback) {
 
     var self = this;
-    var datafile = {};
+    var fileData = {};
 
 	//open source folder
 	fs.readdir(sourcePath, function(err, titles) {
@@ -50,8 +50,8 @@ CDNReady.exec = function(sourcePath, destinationPath, dataFilePath, segmentSize,
                             var compressedName = Main.compress.string(fileorfolder);
 
                             //output file for filesize
-                            //i'm attempting to abbriviate names and properties for better performance?
-                            datafile[compressedName] = {
+                            //compress the file name, I was running into issues with filenames with weird characters
+                            fileData[compressedName] = {
                                 s: 0
                             };
 
@@ -80,7 +80,7 @@ CDNReady.exec = function(sourcePath, destinationPath, dataFilePath, segmentSize,
                                             if (err) {
                                                 return nextfileorfolder(err);
                                             }
-                                            datafile[compressedName].s = filesize;
+                                            fileData[compressedName].s = filesize;
 
                                             return nextfileorfolder();
                                         });
@@ -125,7 +125,7 @@ CDNReady.exec = function(sourcePath, destinationPath, dataFilePath, segmentSize,
                                                 if (err) {
                                                     return nextfileorfolder(err);
                                                 }
-                                                datafile[compressedName].s = filesize;
+                                                fileData[compressedName].s = filesize;
                                                 return nextfileorfolder();
                                             });
                                         });
@@ -156,7 +156,7 @@ CDNReady.exec = function(sourcePath, destinationPath, dataFilePath, segmentSize,
 	            }
 
                 //write file which contains file sizes (for download progress)
-                fs.outputFile(dataFilePath, JSON.stringify(datafile), function (err) {
+                fs.outputFile(fileDataPath, JSON.stringify(fileData), function (err) {
                     if (err) {
                         return callback(err);
                     }
