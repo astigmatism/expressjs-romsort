@@ -203,7 +203,7 @@ router.get('/cdnready', function(req, res, next) {
 
 	source = source === "topchoice" ? Main.getPath('topchoice') + folder : Main.getPath('decompressed') + folder;
 
-	CDNReady.exec(source, Main.getPath('cdnready') + folder, Main.getPath('datafiles') + '/' + folder + '_cdndata.json', segmentsize, function(err, data) {
+	CDNReady.exec(source, Main.getPath('cdnready') + folder, Main.getPath('datafiles') + '/' + folder + '_filedata', segmentsize, function(err, data) {
 		if (err) {
             return res.json(err);
         }
@@ -267,7 +267,7 @@ router.get('/thegamesdb', function(req, res, next) {
 
 	score = parseFloat(score);
 
-	TheGamesDB.exec(system, score, update, Main.getPath('datafiles'), Main.getPath('datafiles') + '/' + system + '_thegamesdb.json', Main.getPath('datafiles') + '/' + system + '_thegamesdb_report.json', function(err, data){
+	TheGamesDB.exec(system, score, update, Main.getPath('datafiles'), Main.getPath('datafiles') + '/' + system + '_thegamesdb', Main.getPath('datafiles') + '/' + system + '_thegamesdb_report.json', function(err, data){
 		if (err) {
             return res.json(err);
         }
