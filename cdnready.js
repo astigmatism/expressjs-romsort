@@ -155,7 +155,7 @@ CDNReady.exec = function(sourcePath, destinationPath, dataFilePath, segmentSize,
 	            }
 
                 //write file which contains file sizes (for download progress)
-                fs.outputJson(dataFilePath, datafile, function (err) {
+                fs.outputFile(dataFilePath, JSON.stringify(datafile), function (err) {
                     if (err) {
                         return callback(err);
                     }
@@ -193,17 +193,17 @@ CDNReady.writeFile = function(destinationPath, title, fileorfolder, output, call
 
     //write output file
     //create our cdn file, the name of this file is the title+(file or folder) compressed
-    fs.outputFile(destinationPath + '/' + encodeURIComponent(filename) + '.json', output, function (err) {
+    fs.outputFile(destinationPath + '/' + encodeURIComponent(filename), output, function (err) {
         if (err) {
             return callback(err);
         }
 
-        fs.stat(destinationPath + '/' + encodeURIComponent(filename) + '.json', function(err, stat) {
+        fs.stat(destinationPath + '/' + encodeURIComponent(filename), function(err, stat) {
             if (err) {
                 return callback(err);
             }
 
-            console.log('cdnready: ' + title + ' --> ' + fileorfolder + '\r\nFile size: ' + stat.size + '\r\nFile is called: ' + filename + '.json');
+            console.log('cdnready: ' + title + ' --> ' + fileorfolder + '\r\nFile size: ' + stat.size + '\r\nFile is called: ' + filename);
         
             callback(null, stat.size);
         });
