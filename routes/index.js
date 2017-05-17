@@ -228,7 +228,7 @@ router.get('/cdnboxready/:folder', function(req, res, next) {
 
 	var folder = req.params.folder;	
 
-	CDNBoxReady.exec(Main.getPath('datafiles') + '/' + folder + '.json', Main.getPath('webboxart')  + folder, Main.getPath('cdnboxready') + folder, function(err, data) {
+	CDNBoxReady.exec(Main.getPath('datafiles') + '/' + folder + '_master', Main.getPath('webboxart')  + folder, Main.getPath('cdnboxready') + folder, function(err, data) {
 		if (err) {
             return res.json(err);
         }
