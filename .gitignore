@@ -10,7 +10,8 @@ workspace/15 - spcs/*
 workspace/16 - supportfiles/*
 workspace/99 - decompressed/*
 workspace/cdnboxready/*
-workspace/cdnready/*
+workspace/cdnready/
+workspace/cdnready
 workspace/cdnsupportready/*
 workspace/spcsready/*
 public/boxart/*
