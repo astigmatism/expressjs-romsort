@@ -12,6 +12,7 @@ UploadToDropBox.roms = function(system, version, sourcePath, callback) {
     var dbx = new Dropbox({ 
         accessToken: config.get('dropboxaccesstoken')
     });
+    var uploadDelay = 2000;
     
     //open source folder
 	fs.readdir(sourcePath, function(err, titles) {
@@ -20,6 +21,7 @@ UploadToDropBox.roms = function(system, version, sourcePath, callback) {
         }
 
         console.log('There are ' + titles.length + ' for ' + system);
+        var remaining = titles.length;
 
         //loop over all file contents
 	    async.eachSeries(titles, function(title, nexttitle) {
@@ -43,9 +45,16 @@ UploadToDropBox.roms = function(system, version, sourcePath, callback) {
                 })
                 .then(function (response) {
                     console.log('upload complete --> ' + system + '/' + version + '/' + title);
-                    return nexttitle();
+                    
+                    remaining--;
+                    console.log('remaining: ' + remaining + ' of ' + titles.length);
+                    
+                    setTimeout(function() {
+                        return nexttitle();
+                    }, uploadDelay);
                 })
                 .catch(function (err) {
+                    console.log('there was an error: ' + err.message)
                     return nexttitle(err);
                 });
             });
