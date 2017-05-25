@@ -200,6 +200,8 @@ UploadToDropBox.FilesListFolder = function(dbx, path, callback) {
 
                 callback(null, entries);
             });
+        } else {
+            callback(null, entries);
         }
 
     })
