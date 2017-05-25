@@ -7,6 +7,7 @@
   },
   "dependencies": {
     "async": "^1.5.0",
+    "atob": "^2.0.3",
     "beepbeep": "^1.2.0",
     "body-parser": "~1.13.2",
     "btoa": "^1.1.2",

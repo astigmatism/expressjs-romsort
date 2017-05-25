@@ -20,16 +20,13 @@ UploadToDropBox.roms = function(system, version, sourcePath, callback) {
             return callback(err);
         }
 
-        console.log('There are ' + titles.length + ' for ' + system);
+        console.log('There are ' + titles.length + ' files for ' + system);
         var remaining = titles.length;
 
         //first take a listing of all existing files
-        dbx.filesListFolder({
-            path: config.get("dropboxroot") + '/roms/' + system + '/' + version
-        })
-        .then(function(response) {
+        UploadToDropBox.FilesListFolder(dbx, config.get("dropboxroot") + '/roms/' + system + '/' + version, function(err, entries) {
 
-            //console.log(response);
+            console.log('Dropbox reports ' + entries.length + ' files');
 
             //loop over all file contents
             async.eachSeries(titles, function(title, nexttitle) {
@@ -44,19 +41,23 @@ UploadToDropBox.roms = function(system, version, sourcePath, callback) {
                         return nexttitle(err);
                     }
 
+                    console.log('\r\nStarting --> ' + title);
+
                     //okay, before we just upload, we want to ensure that the file doesn't exist
                     //or if it does, then the file sizes must match
 
-                    for (var i = 0, len = response.entries.length; i < len; ++i) {
-                        if (title === response.entries[i].name) {
+                    for (var i = 0, len = entries.length; i < len; ++i) {
+                        if (title === entries[i].name) {
 
-                            console.log('The file ' + title + ' was already found on dropbox');
 
-                            if (response.entries[i].size === stat.size) {
+                            console.log(title + ' was already found on dropbox');
+
+                            if (entries[i].size === stat.size) {
 
                                 console.log('The files share the same size (' + stat.size + '), no upload necessary.');
                                 
                                 remaining--;
+
                                 console.log('remaining: ' + remaining + ' of ' + titles.length);
                                 return nexttitle();
                             } else {
@@ -72,14 +73,14 @@ UploadToDropBox.roms = function(system, version, sourcePath, callback) {
                             return nexttitle(err);
                         }
 
-                        console.log('\r\nStarting --> ' + system + '/' + version + '/' + title);
+                        console.log('Reading: ' + system + '/' + version + '/' + title);
 
                         dbx.filesUpload({
                             path: config.get("dropboxroot") + '/roms/' + system + '/' + version + '/' + title, 
                             contents: contents 
                         })
                         .then(function (response) {
-                            console.log('upload complete --> ' + system + '/' + version + '/' + title);
+                            console.log('upload complete: ' + system + '/' + version + '/' + title);
                             
                             remaining--;
                             console.log('remaining: ' + remaining + ' of ' + titles.length);
@@ -104,9 +105,6 @@ UploadToDropBox.roms = function(system, version, sourcePath, callback) {
             });
 
 
-        })
-        .catch(function(error) {
-            console.error(error);
         });
     });
 };
@@ -175,6 +173,75 @@ UploadToDropBox.boxes = function(system, version, sourcePath, callback) {
             return callback(null, '');
         });
     });
+};
+
+UploadToDropBox.FilesListFolder = function(dbx, path, callback) {
+
+    var entries = [];
+
+    console.log('Getting file list from Dropbox: ' + path);
+
+    dbx.filesListFolder({
+        path: path
+    })
+    .then(function(response) {
+        
+        console.log(response.entries.length + ' files returned');
+
+        entries = response.entries.concat(entries);
+
+        if (response.has_more) {
+
+            UploadToDropBox.FilesListFolderContinue(dbx, response.cursor, function(err, entriesContinued) {
+                if (err) {
+                    return callback(err);
+                }
+                entries = entriesContinued.concat(entries);
+
+                callback(null, entries);
+            });
+        }
+
+    })
+    .catch(function (err) {
+        return callback(err);
+    });
+};
+
+UploadToDropBox.FilesListFolderContinue = function(dbx, cursor, callback) {
+
+    console.log('Getting more files from Dropbox...');
+
+    var entries = [];
+
+    dbx.filesListFolderContinue({
+        cursor: cursor
+    })
+    .then(function(response) {
+        
+        console.log(response.entries.length + ' files returned');
+
+        entries = response.entries.concat(entries);
+
+        if (response.has_more) {
+
+            UploadToDropBox.FilesListFolderContinue(dbx, response.cursor, function(err, entriesContinued) {
+                if (err) {
+                    return callback(err);
+                }
+                entries = entriesContinued.concat(entries);
+
+                return callback(null, entries);
+            });
+        } else {
+
+            return callback(null, entries);
+        }
+    })
+    .catch(function (err) {
+        return callback(err);
+    });
+
 };
 
 module.exports = UploadToDropBox;

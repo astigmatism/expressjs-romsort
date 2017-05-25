@@ -2,6 +2,7 @@ var fs = require('fs-extra');
 var async = require('async');
 var pako = require('pako');
 var btoa = require('btoa');
+var atob = require('atob');
 var nodeZip = require('node-zip');
 var config = require('config');
 
@@ -271,6 +272,24 @@ Main.compress = {
             title: title,
             file: file
         });
+    }
+};
+
+Main.decompress = {
+    bytearray: function(item) {
+        var decoded = new Uint8Array(atob(item).split('').map(function(c) {return c.charCodeAt(0);}));
+        return pako.inflate(decoded);
+    },
+    json: function(item) {
+        var base64 = atob(item);
+        var inflate = pako.inflate(base64, {to: 'string'});
+        var json = JSON.parse(inflate);
+        return json;
+    },
+    string: function(item) {
+        var base64 = atob(item);
+        var inflate = pako.inflate(base64, {to: 'string'});
+        return inflate;
     }
 };
 
