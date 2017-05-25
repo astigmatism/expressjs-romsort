@@ -13,6 +13,7 @@ UploadToDropBox.roms = function(system, version, sourcePath, callback) {
         accessToken: config.get('dropboxaccesstoken')
     });
     var uploadDelay = 0;
+    var lastTenUploadTimes = [];
     
     //open source folder
 	fs.readdir(sourcePath, function(err, titles) {
@@ -20,91 +21,125 @@ UploadToDropBox.roms = function(system, version, sourcePath, callback) {
             return callback(err);
         }
 
-        console.log('There are ' + titles.length + ' files for ' + system);
         var remaining = titles.length;
+        var dropboxFolder = config.get("dropboxroot") + '/roms/' + system + '/' + version;
 
-        //first take a listing of all existing files
-        UploadToDropBox.FilesListFolder(dbx, config.get("dropboxroot") + '/roms/' + system + '/' + version, function(err, entries) {
+        console.log('There are ' + remaining + ' files for ' + system);
 
-            console.log('Dropbox reports ' + entries.length + ' files');
+        UploadToDropBox.CreateFolderIfNotExist(dbx, dropboxFolder, function(err) {
+            if (err) {
+                return callback(err);
+            }
 
-            //loop over all file contents
-            async.eachSeries(titles, function(title, nexttitle) {
-                
-                //dumb DS_Store
-                if (title == '.DS_Store') {
-                    return nexttitle();
+            //first take a listing of all existing files
+            UploadToDropBox.FilesListFolder(dbx, dropboxFolder, function(err, entries) {
+                if (err) {
+                    return callback(err);
                 }
 
-                fs.stat(sourcePath + '/' + title, function(err, stat) {
-                    if (err) {
-                        return nexttitle(err);
+                console.log('Dropbox reports ' + entries.length + ' files');
+
+                //loop over all file contents
+                async.eachSeries(titles, function(title, nexttitle) {
+                    
+                    //dumb DS_Store
+                    if (title == '.DS_Store') {
+                        return nexttitle();
                     }
 
-                    console.log('\r\nStarting --> ' + title);
+                    var startTime = Date.now();
 
-                    //okay, before we just upload, we want to ensure that the file doesn't exist
-                    //or if it does, then the file sizes must match
-
-                    for (var i = 0, len = entries.length; i < len; ++i) {
-                        if (title === entries[i].name) {
-
-
-                            console.log(title + ' was already found on dropbox');
-
-                            if (entries[i].size === stat.size) {
-
-                                console.log('The files share the same size (' + stat.size + '), no upload necessary.');
-                                
-                                remaining--;
-
-                                console.log('remaining: ' + remaining + ' of ' + titles.length);
-                                return nexttitle();
-                            } else {
-
-                                console.log('The files DO NOT have the same size, perhaps a failure in upload occurred --> Dropbox: ' + response.entries[i].size + ', file: ' + stat.size);
-                            }
-                        }
-                    }
-
-                    //open file
-                    fs.readFile(sourcePath + '/' + title, function(err, contents) {
+                    fs.stat(sourcePath + '/' + title, function(err, stat) {
                         if (err) {
                             return nexttitle(err);
                         }
 
-                        console.log('Reading: ' + system + '/' + version + '/' + title);
+                        console.log('\r\nStarting --> ' + title);
 
-                        dbx.filesUpload({
-                            path: config.get("dropboxroot") + '/roms/' + system + '/' + version + '/' + title, 
-                            contents: contents 
-                        })
-                        .then(function (response) {
-                            console.log('upload complete: ' + system + '/' + version + '/' + title);
-                            
-                            remaining--;
-                            console.log('remaining: ' + remaining + ' of ' + titles.length);
-                            
-                            setTimeout(function() {
-                                return nexttitle();
-                            }, uploadDelay);
-                        })
-                        .catch(function (err) {
-                            console.log(err)
-                            return nexttitle(err);
+                        //okay, before we just upload, we want to ensure that the file doesn't exist
+                        //or if it does, then the file sizes must match
+
+                        for (var i = 0, len = entries.length; i < len; ++i) {
+                            if (title === entries[i].name) {
+
+
+                                console.log(title + ' was already found on dropbox');
+
+                                if (entries[i].size === stat.size) {
+
+                                    console.log('The files share the same size (' + stat.size + '), no upload necessary.');
+                                    
+                                    remaining--;
+
+                                    console.log('remaining: ' + remaining + ' of ' + titles.length);
+                                    return nexttitle();
+                                } else {
+
+                                    console.log('The files DO NOT have the same size, perhaps a failure in upload occurred --> Dropbox: ' + response.entries[i].size + ', file: ' + stat.size);
+                                }
+                            }
+                        }
+
+                        //open file
+                        fs.readFile(sourcePath + '/' + title, function(err, contents) {
+                            if (err) {
+                                return nexttitle(err);
+                            }
+
+                            console.log('Reading: ' + system + '/' + version + '/' + title);
+
+                            dbx.filesUpload({
+                                path: config.get("dropboxroot") + '/roms/' + system + '/' + version + '/' + title, 
+                                contents: contents 
+                            })
+                            .then(function (response) {
+                                console.log('upload complete: ' + system + '/' + version + '/' + title);
+
+                                var finishTime = Date.now();
+                                var dateDiff = finishTime - startTime;
+                                
+                                lastTenUploadTimes.unshift(dateDiff);
+                                lastTenUploadTimes = lastTenUploadTimes.slice(0, 9);
+
+                                //calculate avg time for last tne uploads
+                                var averageTime = 0;
+                                var timeSum = 0;
+                                for (var i = 0, len = lastTenUploadTimes.length; i < len; ++i) {
+                                    timeSum += lastTenUploadTimes[i];
+                                }
+                                averageTime = timeSum / lastTenUploadTimes.length;
+                                
+                                remaining--;
+                                
+                                var totalEstimatedRemainingTime = averageTime * remaining;
+                                var hours = Math.floor((totalEstimatedRemainingTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                                var minutes = Math.floor((totalEstimatedRemainingTime % (1000 * 60 * 60)) / (1000 * 60));
+                                var seconds = Math.floor((totalEstimatedRemainingTime % (1000 * 60)) / 1000);
+
+                                console.log('remaining: ' + remaining + ' of ' + titles.length);
+                                console.log('remaining time: ' + hours + ':' + minutes + ':' + seconds);
+                                
+                                setTimeout(function() {
+                                    return nexttitle();
+                                }, uploadDelay);
+                            })
+                            .catch(function (err) {
+                                console.log(err)
+                                return nexttitle(err);
+                            });
                         });
                     });
+
+                }, function(err, result) {
+                    if (err) {
+                        return callback(err);
+                    }
+                    console.log('uploading roms to dropbox complete');
+                    return callback(null, '');
                 });
 
-            }, function(err, result) {
-                if (err) {
-                    return callback(err);
-                }
-                console.log('uploading roms to dropbox complete');
-                return callback(null, '');
+
             });
-
-
         });
     });
 };
@@ -244,6 +279,31 @@ UploadToDropBox.FilesListFolderContinue = function(dbx, cursor, callback) {
         return callback(err);
     });
 
+};
+
+UploadToDropBox.CreateFolderIfNotExist = function(dbx, path, callback) {
+
+    dbx.filesAlphaGetMetadata({
+        path: path
+    })
+    .then(function(response) {
+        //folder exists
+        return callback();
+    })
+    .catch(function (err) {
+        //the folder does not exist
+
+        dbx.filesCreateFolder({
+            path: path
+        })
+        .then(function(response) {
+            //folder exists now
+            return callback();
+        })
+        .catch(function (err) {
+            return callback(err);
+        });
+    });
 };
 
 module.exports = UploadToDropBox;
