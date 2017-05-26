@@ -13,7 +13,8 @@ UploadToDropBox.roms = function(system, version, sourcePath, callback) {
         accessToken: config.get('dropboxaccesstoken')
     });
     var uploadDelay = 0;
-    var lastTenUploadTimes = [];
+    var lastUploadTimes = [];
+    var numberOfSamples = 50;
     
     //open source folder
 	fs.readdir(sourcePath, function(err, titles) {
@@ -98,16 +99,17 @@ UploadToDropBox.roms = function(system, version, sourcePath, callback) {
                                 var finishTime = Date.now();
                                 var dateDiff = finishTime - startTime;
                                 
-                                lastTenUploadTimes.unshift(dateDiff);
-                                lastTenUploadTimes = lastTenUploadTimes.slice(0, 9);
+                                //insert the last diff and slice the array down to size
+                                lastUploadTimes.unshift(dateDiff);
+                                lastUploadTimes = lastUploadTimes.slice(0, numberOfSamples - 1);
 
                                 //calculate avg time for last tne uploads
                                 var averageTime = 0;
                                 var timeSum = 0;
-                                for (var i = 0, len = lastTenUploadTimes.length; i < len; ++i) {
-                                    timeSum += lastTenUploadTimes[i];
+                                for (var i = 0, len = lastUploadTimes.length; i < len; ++i) {
+                                    timeSum += lastUploadTimes[i];
                                 }
-                                averageTime = timeSum / lastTenUploadTimes.length;
+                                averageTime = timeSum / lastUploadTimes.length;
                                 
                                 remaining--;
                                 
