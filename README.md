@@ -6,6 +6,8 @@ This project was designed to manage and sort large rom file sets. Specifically, 
 requirements
 __________________
 - brew install imagemagick --with-webp
+- brew install graphicsmagick
+- npm install gm
 
 
 getting started

@@ -44,15 +44,15 @@ Decompress.exec = function(sourcePath, destinationPath, callback) {
 
 
 	            	//for nintendo ds
-	            	//f.name = f.name.replace(/^(\d{4}|xxxx)\s{1}\-?\s?/,''); //remove prefix for nds
+	            	f.name = f.name.replace(/^(\d{4}|xxxx)\s{1}\-?\s?/,''); //remove prefix for nds
 	            	
 	            	//for vectrex
-	            	var year = 2000;
-	            	yearmatch = f.name.match(/\((\d{4})\)/);
+	            	// var year = 2000;
+	            	// yearmatch = f.name.match(/\((\d{4})\)/);
 
-	            	if (yearmatch && yearmatch.length > 0) {
-	            		year = yearmatch[1];
-	            	}
+	            	// if (yearmatch && yearmatch.length > 0) {
+	            	// 	year = yearmatch[1];
+	            	// }
 					// end vect
 
 	            	//all systems - remove everything in paran

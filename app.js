@@ -67,7 +67,8 @@ app.use(function(err, req, res, next) {
   });
 });
 
-var server = app.listen(app.get('port'));
+var port = app.get('port') || 8000;
+var server = app.listen(port);
 
 server.timeout = 10800000; //3 hours repsonse timeout
 
