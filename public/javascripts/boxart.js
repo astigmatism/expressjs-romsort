@@ -100,7 +100,7 @@ var BoxArt = function() {
 				loadImage(imagewrapper, size, system, title);
 
 				li.append('<div>Score: ' + topranking + '</div>');
-				li.append('<div>Top File: ' + details.best + '</div>');
+				li.append('<div>Top File: ' + details.b + '</div>');
 
 				var $checkbox = $('<input type="checkbox" />');
 				$checkbox.click(function(e) {
