@@ -2,6 +2,7 @@ var fs = require('fs-extra');
 var async = require('async');
 var Main = require('./main.js');
 var FindBestRom = require('./findbestrom.js');
+const path = require('path');
 
 MasterFile = function() {
 };
@@ -18,7 +19,7 @@ MasterFile.exec = function(sourcePath, destinationFile, callback) {
 
         var summary = {};
 
-		//loop over all file contents
+		//loop over all title folders
         async.eachSeries(gameFolders, function(folder, nextfolder) {
 
         	fs.stat(sourcePath + '/' + folder, function(err, stats) {
@@ -34,8 +35,10 @@ MasterFile.exec = function(sourcePath, destinationFile, callback) {
                     f: {}           //f = files
                 };
 
+                var titlePath = path.join(sourcePath, folder);
+
                 //read title folder
-                fs.readdir(sourcePath + '/' + folder, function(err, files) {
+                fs.readdir(titlePath, function(err, files) {
                     if (err) {
                         return nextfolder(err);
                     }
@@ -54,7 +57,7 @@ MasterFile.exec = function(sourcePath, destinationFile, callback) {
                     var file = sourcePath + '/' + folder + '/' + details.game;
                     var f = Main.getFileNameAndExt(file);					    
 
-                    //get rank of each file
+                    //get rank of each file (or folder)
                     for (var j = 0; j < files.length; ++j) {
                         var filedetails = FindBestRom.exec([files[j]]);
                         entry.f[files[j]] = filedetails.rank;

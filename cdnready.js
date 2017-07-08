@@ -3,6 +3,7 @@ var async = require('async');
 var pako = require('pako');
 var beep = require('beepbeep');
 var Main = require('./main.js');
+const path = require('path');
 
 CDNReady = function() {
 };
@@ -61,8 +62,10 @@ CDNReady.exec = function(sourcePath, destinationPath, fileDataPath, segmentSize,
                             
                             console.log('\r\nStarting --> ' + fileorfolder + ' : ' + compressedName);
 
+                            var sourceFilePath = path.join(sourcePath, title, fileorfolder);
+
                             //what are we working with?
-                            fs.stat(sourcePath + '/' + title + '/' + fileorfolder, function(err, stats) {
+                            fs.stat(sourceFilePath, function(err, stats) {
 
                                 if (stats.isFile()) {
 
@@ -71,24 +74,24 @@ CDNReady.exec = function(sourcePath, destinationPath, fileDataPath, segmentSize,
                                     var file = fileorfolder;
 
                                     //begin by writing an empty title file which we can append to
-                                    self.CreateFile(destinationPath, title, file, '{', function(err, filepath, filename) {
+                                    self.CreateFile(destinationPath, title, file, '{', function(err, destinationFilePath, filename) {
                                         if (err) {
                                             return nextfileorfolder(err);
                                         }
 
-                                        self.WriteGameFile(filepath, sourcePath, title, file, segmentSize, (err, filesize) => {
+                                        self.WriteGameFile(destinationFilePath, sourceFilePath, file, segmentSize, (err, filesize) => {
                                             if (err) {
                                                 return nextfileorfolder(err);
                                             }
 
                                             //close output json with bracket
-                                            fs.appendFile(filepath, '}', (err) => {
+                                            fs.appendFile(destinationFilePath, '}', (err) => {
                                                 if (err) {
                                                     return nextfileorfolder(err);
                                                 }
                                                 
                                                 //get resulting filesize
-                                                fs.stat(filepath, (err, stat) => {
+                                                fs.stat(destinationFilePath, (err, stat) => {
 
                                                     fileData[compressedName].s = stats.size;
 
@@ -112,13 +115,13 @@ CDNReady.exec = function(sourcePath, destinationPath, fileDataPath, segmentSize,
                                     //file is a folder, compress all files into a single
 
                                     //read folder
-                                    fs.readdir(sourcePath + '/' + title + '/' + folder, function(err, files) {
+                                    fs.readdir(sourceFilePath, function(err, files) {
                                         if (err) {
                                             return nextfileorfolder();
                                         }
 
                                         //begin by writing an empty title file which we can append to
-                                        self.CreateFile(destinationPath, title, fileorfolder, '{', function(err, filepath, filename) {
+                                        self.CreateFile(destinationPath, title, folder, '{', function(err, destinationFilePath, filename) {
                                             if (err) {
                                                 return nextfileorfolder(err);
                                             }
@@ -126,31 +129,25 @@ CDNReady.exec = function(sourcePath, destinationPath, fileDataPath, segmentSize,
                                             //loop over reach rom file or folder
                                             async.eachOfSeries(files, function(file, i, nextfile) {
 
-                                                self.WriteGameFile(filepath, sourcePath, title, file, segmentSize, (err, filesize) => {
+                                                var sourceFilePathFile = path.join(sourceFilePath, file);
+
+                                                self.WriteGameFile(destinationFilePath, sourceFilePathFile, file, segmentSize, (err, filesize) => {
                                                     if (err) {
                                                         return nextfile(err);
                                                     }
 
-                                                    //close output json with bracket
-                                                    fs.appendFile(filepath, '}', (err) => {
-                                                        if (err) {
-                                                            return nextfile(err);
-                                                        }
-                                                        
-                                                        //are there more files? If so, append a comma
-                                                        if (i !== (files.length -1)) {
-                                                            fs.appendFile(filepath, ',', (err) => {
-                                                                if (err) {
-                                                                    return nextfile(err);
-                                                                }
-                                                                return nextfile();
-                                                            });
-                                                        } 
-                                                        else {
+                                                    //are there more files? If so, append a comma
+                                                    if (i !== (files.length -1)) {
+                                                        fs.appendFile(destinationFilePath, ',', (err) => {
+                                                            if (err) {
+                                                                return nextfile(err);
+                                                            }
                                                             return nextfile();
-                                                        }
-
-                                                    });
+                                                        });
+                                                    } 
+                                                    else {
+                                                        return nextfile();
+                                                    }
                                                 });
 
                                             }, function(err, result) {
@@ -158,13 +155,13 @@ CDNReady.exec = function(sourcePath, destinationPath, fileDataPath, segmentSize,
                                                 }
 
                                                 //close output json with bracket
-                                                fs.appendFile(filepath, '}', (err) => {
+                                                fs.appendFile(destinationFilePath, '}', (err) => {
                                                     if (err) {
                                                         return nextfileorfolder(err);
                                                     }
                                                     
                                                     //get resulting filesize
-                                                    fs.stat(filepath, (err, stat) => {
+                                                    fs.stat(destinationFilePath, (err, stat) => {
 
                                                         fileData[compressedName].s = stat.size;
 
@@ -230,19 +227,19 @@ CDNReady.CreateFile = function(destinationPath, title, fileorfolder, output, cal
     });
 };
 
-CDNReady.WriteGameFile = function(filepath, sourcePath, title, file, segmentSize, callback) {
+CDNReady.WriteGameFile = function(destinationFilePath, sourceFilePath, filename, segmentSize, callback) {
 
     var self = this;
 
-    self.compressFile(sourcePath + '/' + title + '/' + file, file, segmentSize, function(err, compressedSegments) {
+    self.compressFile(sourceFilePath, filename, segmentSize, function(err, compressedSegments) {
         if (err) {
-            return nextfile(err);
+            return callback(err);
         }
 
         //json property is compressed filename
-        fs.appendFile(filepath, '"' + Main.compress.string(file) + '": [', (err) => {
+        fs.appendFile(destinationFilePath, '"' + Main.compress.string(filename) + '": [', (err) => {
             if (err) {
-                return nextfile(err);
+                return callback(err);
             }
 
             //loop over each segment
@@ -259,9 +256,9 @@ CDNReady.WriteGameFile = function(filepath, sourcePath, title, file, segmentSize
                 }
 
                 //append segment to file
-                fs.appendFile(filepath, segment, (err) => {
+                fs.appendFile(destinationFilePath, segment, (err) => {
                     if (err) {
-                        return nextfile(err);
+                        return callback(err);
                     }
                     return nextSegment();
                 });
@@ -283,7 +280,7 @@ CDNReady.compressFile = function(path, filename, segmentSize, callback) {
     //open file
     fs.readFile(path, function(err, buffer) {
         if (err) {
-            return nextfileorfolder(err);
+            return callback(err);
         }
 
         //returns array
