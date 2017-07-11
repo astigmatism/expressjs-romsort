@@ -8,6 +8,8 @@ const path = require('path');
 CDNReady = function() {
 };
 
+var _compressEverything = false; //for debugging
+
 CDNReady.exec = function(sourcePath, destinationPath, fileDataPath, segmentSize, callback) {
 
     var self = this;
@@ -48,11 +50,13 @@ CDNReady.exec = function(sourcePath, destinationPath, fileDataPath, segmentSize,
                                 return nextfileorfolder();
                             }
 
-                            var compressedName = Main.compress.string(fileorfolder);
+                            //the resulting file name will be the combination of title and file (or folder) for uniquness
+                            var destinationFileName = Main.compress.string(title + fileorfolder);
+                            destinationFileName = encodeURIComponent(destinationFileName);
 
                             //output file for filesize
                             //compress the file name, I was running into issues with filenames with weird characters
-                            fileData[compressedName] = {
+                            fileData[destinationFileName] = {
                                 s: 0
                             };
 
@@ -60,7 +64,7 @@ CDNReady.exec = function(sourcePath, destinationPath, fileDataPath, segmentSize,
                             //if its a file: we compressed it to be included in the emulator file system
                             //if its a folder: we compress all files within it to be included in the emulator file system
                             
-                            console.log('\r\nStarting --> ' + fileorfolder + ' : ' + compressedName);
+                            console.log('\r\nStarting --> ' + fileorfolder);
 
                             var sourceFilePath = path.join(sourcePath, title, fileorfolder);
 
@@ -70,16 +74,18 @@ CDNReady.exec = function(sourcePath, destinationPath, fileDataPath, segmentSize,
                                 if (stats.isFile()) {
 
                                     //file
-                                    console.log('...is a file!');
+                                    console.log('... this is a file');
                                     var file = fileorfolder;
+                                    var destinationFilePath = path.join(destinationPath, destinationFileName);
 
-                                    //begin by writing an empty title file which we can append to
-                                    self.CreateFile(destinationPath, title, file, '{', function(err, destinationFilePath, filename) {
+                                    //begin by writing an empty json file which we can append details to
+                                    self.CreateFile(destinationFilePath, '{', function(err) {
                                         if (err) {
                                             return nextfileorfolder(err);
                                         }
 
-                                        self.WriteGameFile(destinationFilePath, sourceFilePath, file, segmentSize, (err, filesize) => {
+                                        //files are written as json properties
+                                        self.WriteGameFileAsJson(sourceFilePath, destinationFilePath, file, segmentSize, (err) => {
                                             if (err) {
                                                 return nextfileorfolder(err);
                                             }
@@ -93,9 +99,9 @@ CDNReady.exec = function(sourcePath, destinationPath, fileDataPath, segmentSize,
                                                 //get resulting filesize
                                                 fs.stat(destinationFilePath, (err, stat) => {
 
-                                                    fileData[compressedName].s = stats.size;
+                                                    fileData[destinationFileName].s = stats.size;
 
-                                                    console.log('cdnready: ' + title + ' --> ' + file + '\r\nFile size: ' + stat.size + '\r\nFile is called: ' + filename);
+                                                    console.log('cdnready: ' + title + ' + ' + file + '\r\nFile size: ' + stat.size + '\r\n');
                                                     return nextfileorfolder();     
                                                 });
 
@@ -109,7 +115,7 @@ CDNReady.exec = function(sourcePath, destinationPath, fileDataPath, segmentSize,
                                     //this is different enough from the task if it were a file
                                     //for a folder, write one destination file with all the files as properties
 
-                                    console.log('...is a folder!');
+                                    console.log('...this is a folder');
 
                                     var folder = fileorfolder;
                                     //file is a folder, compress all files into a single
@@ -120,18 +126,23 @@ CDNReady.exec = function(sourcePath, destinationPath, fileDataPath, segmentSize,
                                             return nextfileorfolder();
                                         }
 
+                                        var destinationFilePath = path.join(destinationPath, destinationFileName);
+
                                         //begin by writing an empty title file which we can append to
-                                        self.CreateFile(destinationPath, title, folder, '{', function(err, destinationFilePath, filename) {
+                                        self.CreateFile(destinationFilePath, '{', function(err) {
                                             if (err) {
                                                 return nextfileorfolder(err);
                                             }
 
-                                            //loop over reach rom file or folder
+                                            //since this game has a multiple file structure, we need to decide which file to bootstrap in the emulator
+                                            var bestBootCandidate = Main.compress.string(self.DetermineBootCandidate(files));
+
+                                            //loop over reach rom file in folder folder
                                             async.eachOfSeries(files, function(file, i, nextfile) {
 
-                                                var sourceFilePathFile = path.join(sourceFilePath, file);
+                                                var sourceFolderPathFile = path.join(sourceFilePath, file);
 
-                                                self.WriteGameFile(destinationFilePath, sourceFilePathFile, file, segmentSize, (err, filesize) => {
+                                                self.WriteGameFileAsJson(sourceFolderPathFile, destinationFilePath, file, segmentSize, (err) => {
                                                     if (err) {
                                                         return nextfile(err);
                                                     }
@@ -152,23 +163,31 @@ CDNReady.exec = function(sourcePath, destinationPath, fileDataPath, segmentSize,
 
                                             }, function(err, result) {
                                                 if (err) {
+                                                    return nextfileorfolder(err);
                                                 }
 
-                                                //close output json with bracket
-                                                fs.appendFile(destinationFilePath, '}', (err) => {
+                                                //we'll need to inform the emulator which file to bootstrap, lets write it here
+                                                fs.appendFile(destinationFilePath, ',\"_b\":\"' + bestBootCandidate + '\"', (err) => {
                                                     if (err) {
                                                         return nextfileorfolder(err);
                                                     }
                                                     
-                                                    //get resulting filesize
-                                                    fs.stat(destinationFilePath, (err, stat) => {
+                                                    //close output json with bracket
+                                                    fs.appendFile(destinationFilePath, '}', (err) => {
+                                                        if (err) {
+                                                            return nextfileorfolder(err);
+                                                        }
+                                                        
+                                                        //get resulting filesize
+                                                        fs.stat(destinationFilePath, (err, stat) => {
 
-                                                        fileData[compressedName].s = stat.size;
+                                                            fileData[destinationFileName].s = stats.size;
 
-                                                        console.log('cdnready: ' + title + ' --> ' + fileorfolder + '\r\nFile size: ' + stat.size + '\r\nFile is called: ' + filename);
-                                                        return nextfileorfolder();
+                                                            console.log('cdnready: ' + title + ' + ' + folder + '\r\nFile size: ' + stat.size + '\r\n');
+                                                            return nextfileorfolder();     
+                                                        });
+
                                                     });
-
                                                 });
                                             });
                                         });
@@ -212,32 +231,35 @@ CDNReady.exec = function(sourcePath, destinationPath, fileDataPath, segmentSize,
     });
 };
 
-CDNReady.CreateFile = function(destinationPath, title, fileorfolder, output, callback) {
+CDNReady.CreateFile = function(destinationFilePath, output, callback) {
 
-    var filename = Main.compress.string(title + fileorfolder);
-    var path = destinationPath + '/' + encodeURIComponent(filename);
+    console.log('Creating destination file --> ' + destinationFilePath);
 
     //write output file
     //create our cdn file, the name of this file is the title+(file or folder) compressed
-    fs.outputFile(path, output, function (err) {
+    fs.outputFile(destinationFilePath, output, function (err) {
         if (err) {
             return callback(err);
         }
-        callback(null, path, filename);
+        callback();
     });
 };
 
-CDNReady.WriteGameFile = function(destinationFilePath, sourceFilePath, filename, segmentSize, callback) {
+CDNReady.WriteGameFileAsJson = function(sourceFilePath, destinationFilePath, filename, segmentSize, callback) {
 
     var self = this;
 
-    self.compressFile(sourceFilePath, filename, segmentSize, function(err, compressedSegments) {
+    self.compressFile(sourceFilePath, segmentSize, function(err, compressedSegments) {
         if (err) {
             return callback(err);
         }
 
+        var compressedFileName = Main.compress.string(filename);
+
         //json property is compressed filename
-        fs.appendFile(destinationFilePath, '"' + Main.compress.string(filename) + '": [', (err) => {
+        console.log('Appending file to json --> ' + compressedFileName);
+
+        fs.appendFile(destinationFilePath, '"' + compressedFileName + '": [', (err) => {
             if (err) {
                 return callback(err);
             }
@@ -267,39 +289,44 @@ CDNReady.WriteGameFile = function(destinationFilePath, sourceFilePath, filename,
                 if (err) {
                     return callback(err);
                 }
-                return callback();
+
+                console.log('file has ' + compressedSegments.length + ' segment(s)');
+
+                return callback(null, compressedFileName);
             });
         });
     });
 };
 
-CDNReady.compressFile = function(path, filename, segmentSize, callback) {
+CDNReady.compressFile = function(sourceFilePath, segmentSize, callback) {
 
     var self = this;
 
     //open file
-    fs.readFile(path, function(err, buffer) {
+    fs.readFile(sourceFilePath, function(err, buffer) {
         if (err) {
             return callback(err);
         }
 
         //returns array
-        var compressedSegments = self.compressFileIntoSegements(path, filename, buffer, segmentSize);
+        var compressedSegments = self.compressFileIntoSegements(buffer, segmentSize);
 
         callback(null, compressedSegments);
     });
 };
 
-CDNReady.compressFileIntoSegements = function(path, filename, buffer, segmentSize) {
+CDNReady.compressFileIntoSegements = function(buffer, segmentSize) {
 
     var totalsegments = Math.ceil(buffer.length / segmentSize);
     var bufferPosition = 0;
 
     var compressedSegments = [];
 
+    console.log('compressing buffer into segments');
+
     var i = 0;
     for (i; i < totalsegments; ++i) {
-        console.log(filename + ' --> Starting segment ' + i);
+        console.log('Starting segment --> ' + i);
         if (i === (totalsegments - 1)) {
             var finalSegementLength = buffer.length - bufferPosition;
             var ab = new ArrayBuffer(finalSegementLength);
@@ -319,11 +346,30 @@ CDNReady.compressFileIntoSegements = function(path, filename, buffer, segmentSiz
             }
         }
 
+        console.log('segment written with length --> ' + view.length);
+
         var deflated = pako.deflate(view, {to: 'string'});
         compressedSegments[i] = Main.compress.string(deflated);
     }
 
     return compressedSegments;
+};
+
+CDNReady.DetermineBootCandidate = function(files) {
+
+    var best = files[0];
+
+    for (var i = 0, len = files.length; i < len; ++i) {
+        
+        var details = path.parse(files[i]);
+
+        if (details.ext === '.cue') {
+            best = files[i];
+        }
+    }
+
+    console.log('found best file to boot: ' + best);
+    return best;
 };
 
 module.exports = CDNReady;
