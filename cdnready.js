@@ -301,10 +301,12 @@ CDNReady.compressFileIntoSegements = function(path, filename, buffer, segmentSiz
     for (i; i < totalsegments; ++i) {
         console.log(filename + ' --> Starting segment ' + i);
         if (i === (totalsegments - 1)) {
-            var ab = new ArrayBuffer(buffer.length - bufferPosition);
+            var finalSegementLength = buffer.length - bufferPosition;
+            var ab = new ArrayBuffer(finalSegementLength);
             var view = new Uint8Array(ab);
-            for (var j = bufferPosition; j < buffer.length; ++j) {
+            for (var j = 0; j < finalSegementLength; ++j) {
                 view[j] = buffer[bufferPosition];
+                //console.log(bufferPosition + ': ' + view[j]);
                 bufferPosition++;
             }
         } else {
@@ -312,9 +314,11 @@ CDNReady.compressFileIntoSegements = function(path, filename, buffer, segmentSiz
             var view = new Uint8Array(ab);
             for (var j = 0; j < segmentSize; ++j) {
                 view[j] = buffer[bufferPosition];
+                //console.log(bufferPosition + ': ' + view[j]);
                 bufferPosition++;
             }
         }
+
         var deflated = pako.deflate(view, {to: 'string'});
         compressedSegments[i] = Main.compress.string(deflated);
     }
