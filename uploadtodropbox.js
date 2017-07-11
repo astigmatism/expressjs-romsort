@@ -7,6 +7,10 @@ var Dropbox = require('dropbox');
 UploadToDropBox = function() {
 };
 
+var dbx = new Dropbox({ 
+    accessToken: config.get('dropboxaccesstoken')
+});
+
 UploadToDropBox.roms = function(system, version, sourcePath, callback) {
 
     var dbx = new Dropbox({ 
@@ -60,9 +64,41 @@ UploadToDropBox.roms = function(system, version, sourcePath, callback) {
                         //okay, before we just upload, we want to ensure that the file doesn't exist
                         //or if it does, then the file sizes must match
 
+                        var TimeCalc = function(system, version, title) {
+                            console.log('upload complete: ' + system + '/' + version + '/' + title);
+
+                            var finishTime = Date.now();
+                            var dateDiff = finishTime - startTime;
+                            
+                            //insert the last diff and slice the array down to size
+                            lastUploadTimes.unshift(dateDiff);
+                            lastUploadTimes = lastUploadTimes.slice(0, numberOfSamples - 1);
+
+                            //calculate avg time for last tne uploads
+                            var averageTime = 0;
+                            var timeSum = 0;
+                            for (var i = 0, len = lastUploadTimes.length; i < len; ++i) {
+                                timeSum += lastUploadTimes[i];
+                            }
+                            averageTime = timeSum / lastUploadTimes.length;
+                            
+                            remaining--;
+                            
+                            var totalEstimatedRemainingTime = averageTime * remaining;
+                            var hours = Math.floor((totalEstimatedRemainingTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                            var minutes = Math.floor((totalEstimatedRemainingTime % (1000 * 60 * 60)) / (1000 * 60));
+                            var seconds = Math.floor((totalEstimatedRemainingTime % (1000 * 60)) / 1000);
+
+                            console.log('remaining: ' + remaining + ' of ' + titles.length);
+                            console.log('remaining time: ' + hours + ':' + minutes + ':' + seconds);
+                        }
+
+                        var allGood = false;
+                        var replaceFile = false;
+
+                        //scan existing file entries
                         for (var i = 0, len = entries.length; i < len; ++i) {
                             if (title === entries[i].name) {
-
 
                                 console.log(title + ' was already found on dropbox');
 
@@ -73,63 +109,52 @@ UploadToDropBox.roms = function(system, version, sourcePath, callback) {
                                     remaining--;
 
                                     console.log('remaining: ' + remaining + ' of ' + titles.length);
-                                    return nexttitle();
+                                    allGood = true;
                                 } else {
 
-                                    console.log('The files DO NOT have the same size, perhaps a failure in upload occurred --> Dropbox: ' + response.entries[i].size + ', file: ' + stat.size);
+                                    console.log('The files DO NOT have the same size, perhaps a failure in upload occurred --> Dropbox: ' + entries[i].size + ', file: ' + stat.size);
+                                    replaceFile = true;
                                 }
                             }
                         }
 
-                        //open file
-                        fs.readFile(sourcePath + '/' + title, function(err, contents) {
-                            if (err) {
-                                return nexttitle(err);
-                            }
+                        if (replaceFile) {
 
-                            console.log('Reading: ' + system + '/' + version + '/' + title);
-
-                            dbx.filesUpload({
-                                path: config.get("dropboxroot") + '/roms/' + system + '/' + version + '/' + title, 
-                                contents: contents 
+                            //delete the existing file
+                            dbx.filesDelete({
+                                path: config.get("dropboxroot") + '/roms/' + system + '/' + version + '/' + title,
                             })
                             .then(function (response) {
-                                console.log('upload complete: ' + system + '/' + version + '/' + title);
-
-                                var finishTime = Date.now();
-                                var dateDiff = finishTime - startTime;
                                 
-                                //insert the last diff and slice the array down to size
-                                lastUploadTimes.unshift(dateDiff);
-                                lastUploadTimes = lastUploadTimes.slice(0, numberOfSamples - 1);
-
-                                //calculate avg time for last tne uploads
-                                var averageTime = 0;
-                                var timeSum = 0;
-                                for (var i = 0, len = lastUploadTimes.length; i < len; ++i) {
-                                    timeSum += lastUploadTimes[i];
-                                }
-                                averageTime = timeSum / lastUploadTimes.length;
-                                
-                                remaining--;
-                                
-                                var totalEstimatedRemainingTime = averageTime * remaining;
-                                var hours = Math.floor((totalEstimatedRemainingTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                                var minutes = Math.floor((totalEstimatedRemainingTime % (1000 * 60 * 60)) / (1000 * 60));
-                                var seconds = Math.floor((totalEstimatedRemainingTime % (1000 * 60)) / 1000);
-
-                                console.log('remaining: ' + remaining + ' of ' + titles.length);
-                                console.log('remaining time: ' + hours + ':' + minutes + ':' + seconds);
-                                
-                                setTimeout(function() {
+                                UploadToDropBox.upload(sourcePath, system, title, version, (err) => {
+                                    if (err) {
+                                        return nexttitle(err);
+                                    }
+                                    TimeCalc(system, version, title);
                                     return nexttitle();
-                                }, uploadDelay);
+                                });
                             })
                             .catch(function (err) {
                                 console.log(err)
                                 return nexttitle(err);
                             });
-                        });
+                        }
+                        else if (!allGood) {
+                            console.log('The file was not found on Dropbox, uploading...');
+                            UploadToDropBox.upload(sourcePath, system, title, version, (err) => {
+                                if (err) {
+                                    return nextentry(err);
+                                }
+                                TimeCalc(system, version, title);
+                                setTimeout(function() {
+                                    return nexttitle();
+                                }, uploadDelay);
+                            });
+                        } else {
+                            setTimeout(function() {
+                                return nexttitle();
+                            }, uploadDelay);
+                        }
                     });
 
                 }, function(err, result) {
@@ -145,6 +170,30 @@ UploadToDropBox.roms = function(system, version, sourcePath, callback) {
         });
     });
 };
+
+UploadToDropBox.upload = function(sourcePath, system, title, version, callback) {
+
+    //open file
+    fs.readFile(sourcePath + '/' + title, function(err, contents) {
+        if (err) {
+            return callback(err);
+        }
+
+        console.log('Reading: ' + system + '/' + version + '/' + title);
+
+        dbx.filesUpload({
+            path: config.get("dropboxroot") + '/roms/' + system + '/' + version + '/' + title, 
+            contents: contents 
+        })
+        .then(function (response) {
+            return callback();
+        })
+        .catch(function (err) {
+            console.log(err)
+            return callback(err);
+        });
+    });
+}
 
 UploadToDropBox.boxes = function(system, version, sourcePath, callback) {
 
