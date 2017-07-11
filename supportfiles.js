@@ -81,11 +81,12 @@ SupportFiles.compressFile = function(buffer, segmentSize) {
     var i = 0;
     for (i; i < totalsegments; ++i) {
         if (i === (totalsegments - 1)) {
-            console.log('starting final segment');
-            var ab = new ArrayBuffer(buffer.length - bufferPosition);
+            var finalSegementLength = buffer.length - bufferPosition;
+            var ab = new ArrayBuffer(finalSegementLength);
             var view = new Uint8Array(ab);
-            for (var j = bufferPosition; j < buffer.length; ++j) {
+            for (var j = 0; j < finalSegementLength; ++j) {
                 view[j] = buffer[bufferPosition];
+                //console.log(bufferPosition + ': ' + view[j]);
                 bufferPosition++;
             }
         } else {

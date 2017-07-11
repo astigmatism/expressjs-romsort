@@ -194,7 +194,7 @@ router.get('/cdnready', function(req, res, next) {
 	
 	var folder = req.query.system;
 	var source = req.query.source;
-	var segmentsize = 250; //req.query.segmentsize || 25000000;
+	var segmentsize = req.query.segmentsize || 25000000;
 
 	if (!folder)
 		return res.json('system is a required query param. Maps to folder name (gen, snes, n64, gb...)');
