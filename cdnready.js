@@ -249,7 +249,7 @@ CDNReady.WriteGameFileAsJson = function(sourceFilePath, destinationFilePath, fil
 
     var self = this;
 
-    self.compressFile(sourceFilePath, segmentSize, function(err, compressedSegments) {
+    self.compressFile(sourceFilePath, segmentSize, function(err, compressedSegments, bufferLength) {
         if (err) {
             return callback(err);
         }
@@ -292,7 +292,7 @@ CDNReady.WriteGameFileAsJson = function(sourceFilePath, destinationFilePath, fil
 
                 console.log('file has ' + compressedSegments.length + ' segment(s)');
 
-                return callback(null, compressedFileName);
+                return callback(null, compressedFileName, bufferLength);
             });
         });
     });
@@ -311,7 +311,7 @@ CDNReady.compressFile = function(sourceFilePath, segmentSize, callback) {
         //returns array
         var compressedSegments = self.compressFileIntoSegements(buffer, segmentSize);
 
-        callback(null, compressedSegments);
+        callback(null, compressedSegments, buffer.length);
     });
 };
 
