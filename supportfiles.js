@@ -17,7 +17,7 @@ SupportFiles.exec = function(system, segmentSize, sourcePath, destinationPath, c
             return callback(err);
         }
 
-        var output = 'c({';
+        var output = '{';
 
         //loop over all title (game) folders
         async.eachSeries(files, function(file, nextfile) {
@@ -53,14 +53,24 @@ SupportFiles.exec = function(system, segmentSize, sourcePath, destinationPath, c
 
             //close up file
             output = output.substring(0, output.length - 1); //remove final comma
-            output += '})';
+            output += '}';
 
             //write output file
             //create our cdn file, the name of this file is the title+(file or folder) compressed
-            fs.outputFile(destinationPath + '/' + system + '.json', output, function (err) {
+            fs.outputFile(destinationPath + '/' + system, output, function (err) {
                 if (err) {
                     return callback(err);
                 }
+
+                //get resulting filesize
+                // fs.stat(destinationFilePath, (err, stat) => {
+
+                //     fileData[destinationFileName].s = stats.size;
+
+                //     console.log('cdnready: ' + title + ' + ' + file + '\r\nFile size: ' + stat.size + '\r\n');
+                //     return nextfileorfolder();     
+                // });
+
                 console.log('SupportFiles complete');
                 
                 beep(5);
