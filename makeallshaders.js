@@ -152,7 +152,7 @@ MakeAllShaders.treeNode = function(sourcePath, destinationPath, cgPath, cdnShade
 
 						            //success
 						            CompressShaders.exec(savename.name, destinationPath, cdnShaderReady, function(err) {
-
+										
 						            	return nextfile();
 						            });
 						        });

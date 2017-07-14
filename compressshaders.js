@@ -36,7 +36,8 @@ CompressShaders.exec = function(name, sourcePath, destinationPath, callback) {
 
                         //dumb DS_Store
                         if (item !== '.DS_Store') {
-                            result[item] = Main.compress.bytearray(content);
+                            var compressedFileName = Main.compress.string(item);
+                            result[compressedFileName] = Main.compress.bytearray(content);
                         }
 
                         return nextitem();
@@ -49,10 +50,10 @@ CompressShaders.exec = function(name, sourcePath, destinationPath, callback) {
                 return callback(err);
             }
 
-            var contents = 'b("' + Main.compress.json(result) + '")'; //wrap compressed content in jsonpdelegate call (for xdomain)
+            //var contents = '"' + Main.compress.json(result) + '"';
 
             //write result to file using name parameter
-            fs.writeFile(destinationPath + '/' + name + '.json', contents, 'utf8', function(err) {
+            fs.writeFile(destinationPath + '/' + name, JSON.stringify(result), 'utf8', function(err) {
                 if (err) {
                     return callback(err);
                 }
