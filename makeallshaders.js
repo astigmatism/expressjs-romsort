@@ -14,38 +14,18 @@ MakeAllShaders = function() {
 
 MakeAllShaders.exec = function(sourcePath, destinationPath, cgPath, cdnShaderReady, callback) {
 
-    MakeAllShaders.treeNode(sourcePath, destinationPath, cgPath, cdnShaderReady, function(err, data) {
+    MakeAllShaders.treeNode(sourcePath, destinationPath, cgPath, cdnShaderReady, {}, function(err, data) {
         if (err) {
             return callback(err);
         }
 
-        var shaderjson = [];
+        console.log(data);
 
-        //open source folder
-        fs.readdir(cdnShaderReady, function(err, files) {
-            if (err) {
-                return callback(err);
-            }
-            //loop over all file contents
-            async.eachSeries(files, function(file, nextfile) {
-
-                shaderjson.push(Main.getFileNameAndExt(file).name);
-                nextfile();
-
-            }, function(err, result) {
-                if (err) {
-                    return callback(err);
-                }                
-
-                console.log(shaderjson);
-
-                return callback(null, shaderjson);
-            });
-        });
+        return callback(null, data);
     });
 };
 
-MakeAllShaders.treeNode = function(sourcePath, destinationPath, cgPath, cdnShaderReady, callback, prefix) {
+MakeAllShaders.treeNode = function(sourcePath, destinationPath, cgPath, cdnShaderReady, fileManifest, callback, prefix) {
 
 	var prefix = prefix || '';
 
@@ -69,7 +49,7 @@ MakeAllShaders.treeNode = function(sourcePath, destinationPath, cgPath, cdnShade
             		var newprefix = (prefix.length > 0) ? prefix + '-' + file : file;
 
             		//if folder, go into it and look for glslp
-            		MakeAllShaders.treeNode(sourcePath + '/' + file, destinationPath, cgPath + '/' + file, cdnShaderReady, function(err, data) {
+            		MakeAllShaders.treeNode(sourcePath + '/' + file, destinationPath, cgPath + '/' + file, cdnShaderReady, fileManifest, function(err, data) {
             			if (err) {
             				return nextfile(err);
             			}
@@ -84,7 +64,7 @@ MakeAllShaders.treeNode = function(sourcePath, destinationPath, cgPath, cdnShade
             		if (f.ext === 'glslp') {
 
                         var savename = Main.getFileNameAndExt(prefix + '-' + file); //generate a unique name for this shader which includes the origin path
-                        var destinationLocation = destinationPath; // + '-' + savename.name;
+						var destinationLocation = destinationPath; // + '-' + savename.name;
 
             			//empty destination directory each time we work with a new glslp file
     					fs.emptyDir(destinationLocation, function (err) {
@@ -150,8 +130,12 @@ MakeAllShaders.treeNode = function(sourcePath, destinationPath, cgPath, cdnShade
 						                return callback(err);
 						            }
 
-						            //success
-						            CompressShaders.exec(savename.name, destinationPath, cdnShaderReady, function(err) {
+									//record this shader
+									fileManifest[savename.name] = {};
+									
+						            CompressShaders.exec(savename.name, destinationPath, cdnShaderReady, function(err, filesize) {
+										
+										fileManifest[savename.name].s = filesize;
 
 						            	return nextfile();
 						            });
@@ -170,7 +154,7 @@ MakeAllShaders.treeNode = function(sourcePath, destinationPath, cgPath, cdnShade
             if (err) {
                 return callback(err);
             }
-            return callback();
+            return callback(null, fileManifest);
         });
     });
 };

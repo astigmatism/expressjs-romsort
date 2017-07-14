@@ -112,7 +112,7 @@ CDNReady.exec = function(sourcePath, destinationPath, fileDataPath, segmentSize,
                                                 //get resulting filesize
                                                 fs.stat(destinationFilePath, (err, stat) => {
 
-                                                    fileData[destinationFileName].s = stats.size;
+                                                    fileData[destinationFileName].s = stat.size;
 
                                                     console.log('cdnready: ' + title + ' + ' + file + '\r\nFile size: ' + stat.size + '\r\n');
                                                     return nextfileorfolder();     
@@ -211,7 +211,7 @@ CDNReady.exec = function(sourcePath, destinationPath, fileDataPath, segmentSize,
                                                         //get resulting filesize
                                                         fs.stat(destinationFilePath, (err, stat) => {
 
-                                                            fileData[destinationFileName].s = stats.size;
+                                                            fileData[destinationFileName].s = stat.size;
 
                                                             console.log('cdnready: ' + title + ' + ' + folder + '\r\nFile size: ' + stat.size + '\r\n');
                                                             return nextfileorfolder();     
@@ -248,7 +248,7 @@ CDNReady.exec = function(sourcePath, destinationPath, fileDataPath, segmentSize,
 	            }
 
                 //write file which contains file sizes (for download progress)
-                fs.outputFile(fileDataPath, JSON.stringify(fileData), function (err) {
+                fs.outputJson(fileDataPath, fileData, function (err) {
                     if (err) {
                         return callback(err);
                     }
