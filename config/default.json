@@ -91,6 +91,9 @@
 		},
 		"vect": {
 			"platform": ["Vectrex"]
+		},
+		"psx": {
+			"platform": ["Sony Playstation"]
 		}
 	}
 }
