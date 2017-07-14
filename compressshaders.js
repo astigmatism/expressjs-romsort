@@ -13,6 +13,9 @@ CompressShaders.exec = function(name, sourcePath, destinationPath, callback) {
 
     var result = {};
 
+    //files
+    result.f = {};
+
     fs.readdir(sourcePath, function(err, items) {
         if (err) {
             return callback(err);
@@ -37,7 +40,7 @@ CompressShaders.exec = function(name, sourcePath, destinationPath, callback) {
                         //dumb DS_Store
                         if (item !== '.DS_Store') {
                             var compressedFileName = Main.compress.string(item);
-                            result[compressedFileName] = Main.compress.bytearray(content);
+                            result.f[compressedFileName] = Main.compress.bytearray(content);
                         }
 
                         return nextitem();
@@ -53,11 +56,19 @@ CompressShaders.exec = function(name, sourcePath, destinationPath, callback) {
             //var contents = '"' + Main.compress.json(result) + '"';
 
             //write result to file using name parameter
-            fs.writeFile(destinationPath + '/' + name, JSON.stringify(result), 'utf8', function(err) {
+            fs.outputJson(destinationPath + '/' + name, result, 'utf8', function(err) {
                 if (err) {
                     return callback(err);
                 }
-                callback(null, 'file saved.');
+
+                //get filesize
+                fs.stat(destinationPath + '/' + name, (err, stat) => {
+                    if (err) {
+                        return callback(err);
+                    }
+
+                    callback(null, stat.size);
+                });
             });
         });
     });
