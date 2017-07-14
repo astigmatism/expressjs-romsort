@@ -74,12 +74,25 @@ CDNReady.exec = function(sourcePath, destinationPath, fileDataPath, segmentSize,
                                 if (stats.isFile()) {
 
                                     //file
+                                    /*
+
+                                    key:
+                                    f: files
+
+                                    object:
+                                    {
+                                        f: {
+                                            filename: [string, string, ...]
+                                        }
+                                    }
+
+                                    */
                                     console.log('... this is a file');
                                     var file = fileorfolder;
                                     var destinationFilePath = path.join(destinationPath, destinationFileName);
 
                                     //begin by writing an empty json file which we can append details to
-                                    self.CreateFile(destinationFilePath, '{', function(err) {
+                                    self.CreateFile(destinationFilePath, '{"f":{', function(err) {
                                         if (err) {
                                             return nextfileorfolder(err);
                                         }
@@ -91,7 +104,7 @@ CDNReady.exec = function(sourcePath, destinationPath, fileDataPath, segmentSize,
                                             }
 
                                             //close output json with bracket
-                                            fs.appendFile(destinationFilePath, '}', (err) => {
+                                            fs.appendFile(destinationFilePath, '}}', (err) => {
                                                 if (err) {
                                                     return nextfileorfolder(err);
                                                 }
@@ -121,6 +134,23 @@ CDNReady.exec = function(sourcePath, destinationPath, fileDataPath, segmentSize,
                                     //file is a folder, compress all files into a single
 
                                     //read folder
+                                    /*
+
+                                    key:
+                                    f: files
+                                    b: best game to boot in emaultor
+
+                                    object:
+                                    {
+                                        f: {
+                                            filename1: [string, string, ...],
+                                            filename2: [string],
+                                            ...
+                                        },
+                                        b: string
+                                    }
+
+                                    */
                                     fs.readdir(sourceFilePath, function(err, files) {
                                         if (err) {
                                             return nextfileorfolder();
@@ -129,7 +159,7 @@ CDNReady.exec = function(sourcePath, destinationPath, fileDataPath, segmentSize,
                                         var destinationFilePath = path.join(destinationPath, destinationFileName);
 
                                         //begin by writing an empty title file which we can append to
-                                        self.CreateFile(destinationFilePath, '{', function(err) {
+                                        self.CreateFile(destinationFilePath, '{"f":{', function(err) {
                                             if (err) {
                                                 return nextfileorfolder(err);
                                             }
@@ -147,7 +177,7 @@ CDNReady.exec = function(sourcePath, destinationPath, fileDataPath, segmentSize,
                                                         return nextfile(err);
                                                     }
 
-                                                    //are there more files? If so, append a comma
+                                                    //are there more files? If so, append a comma between object properties
                                                     if (i !== (files.length -1)) {
                                                         fs.appendFile(destinationFilePath, ',', (err) => {
                                                             if (err) {
@@ -167,7 +197,7 @@ CDNReady.exec = function(sourcePath, destinationPath, fileDataPath, segmentSize,
                                                 }
 
                                                 //we'll need to inform the emulator which file to bootstrap, lets write it here
-                                                fs.appendFile(destinationFilePath, ',\"_b\":\"' + bestBootCandidate + '\"', (err) => {
+                                                fs.appendFile(destinationFilePath, '},\"b\":\"' + bestBootCandidate + '\"', (err) => {
                                                     if (err) {
                                                         return nextfileorfolder(err);
                                                     }
