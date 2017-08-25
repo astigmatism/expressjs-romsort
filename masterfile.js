@@ -7,7 +7,7 @@ const path = require('path');
 MasterFile = function() {
 };
 
-MasterFile.exec = function(sourcePath, destinationFile, callback) {
+MasterFile.exec = function(system, sourcePath, destinationFile, callback) {
 
     var masterFile = {};
 
@@ -57,10 +57,16 @@ MasterFile.exec = function(sourcePath, destinationFile, callback) {
                     var file = sourcePath + '/' + folder + '/' + details.game;
                     var f = Main.getFileNameAndExt(file);					    
 
-                    //get rank of each file (or folder)
+                    //build file data
                     for (var j = 0; j < files.length; ++j) {
                         var filedetails = FindBestRom.exec([files[j]]);
-                        entry.f[files[j]] = filedetails.rank;
+                        
+                        var gameKey = Main.compress.json([system, folder, files[j]]);
+
+                        entry.f[files[j]] = {
+                            rank: parseFloat(filedetails.rank),
+                            gk: gameKey
+                        }
                     }
 
                     console.log(folder + ' --> ' + details.rank + ' ' + details.game);
