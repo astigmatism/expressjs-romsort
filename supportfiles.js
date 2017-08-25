@@ -63,19 +63,16 @@ SupportFiles.exec = function(system, segmentSize, sourcePath, destinationPath, c
                 }
 
                 //get resulting filesize
-                // fs.stat(destinationFilePath, (err, stat) => {
+                fs.stat(destinationPath + '/' + system, (err, stat) => {
 
-                //     fileData[destinationFileName].s = stats.size;
+                    console.log('filesize (copy to config): ' + stat.size);
 
-                //     console.log('cdnready: ' + title + ' + ' + file + '\r\nFile size: ' + stat.size + '\r\n');
-                //     return nextfileorfolder();     
-                // });
-
-                console.log('SupportFiles complete');
+                    console.log('SupportFiles complete');
                 
-                beep(5);
+                    beep(5);
 
-                return callback(null, '');
+                    return callback(null, '');
+                });
             });
         });
     });
