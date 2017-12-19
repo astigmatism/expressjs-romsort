@@ -2,12 +2,11 @@ var fs = require('fs-extra');
 var async = require('async');
 var Main = require('./main.js');
 var FindBestRom = require('./findbestrom.js');
-const path = require('path');
 
 MasterFile = function() {
 };
 
-MasterFile.exec = function(system, sourcePath, destinationFile, callback) {
+MasterFile.exec = function(sourcePath, destinationFile, callback) {
 
     var masterFile = {};
 
@@ -19,7 +18,7 @@ MasterFile.exec = function(system, sourcePath, destinationFile, callback) {
 
         var summary = {};
 
-		//loop over all title folders
+		//loop over all file contents
         async.eachSeries(gameFolders, function(folder, nextfolder) {
 
         	fs.stat(sourcePath + '/' + folder, function(err, stats) {
@@ -35,10 +34,8 @@ MasterFile.exec = function(system, sourcePath, destinationFile, callback) {
                     f: {}           //f = files
                 };
 
-                var titlePath = path.join(sourcePath, folder);
-
                 //read title folder
-                fs.readdir(titlePath, function(err, files) {
+                fs.readdir(sourcePath + '/' + folder, function(err, files) {
                     if (err) {
                         return nextfolder(err);
                     }
@@ -57,16 +54,10 @@ MasterFile.exec = function(system, sourcePath, destinationFile, callback) {
                     var file = sourcePath + '/' + folder + '/' + details.game;
                     var f = Main.getFileNameAndExt(file);					    
 
-                    //build file data
+                    //get rank of each file
                     for (var j = 0; j < files.length; ++j) {
                         var filedetails = FindBestRom.exec([files[j]]);
-                        
-                        var gameKey = Main.compress.json([system, folder, files[j]]);
-
-                        entry.f[files[j]] = {
-                            rank: parseFloat(filedetails.rank),
-                            gk: gameKey
-                        }
+                        entry.f[files[j]] = filedetails.rank;
                     }
 
                     console.log(folder + ' --> ' + details.rank + ' ' + details.game);

@@ -44,7 +44,7 @@ Decompress.exec = function(sourcePath, destinationPath, callback) {
 
 
 	            	//for nintendo ds
-	            	f.name = f.name.replace(/^(\d{4}|xxxx)\s{1}\-?\s?/,''); //remove prefix for nds
+	            	//f.name = f.name.replace(/^(\d{4}|xxxx)\s{1}\-?\s?/,''); //remove prefix for nds
 	            	
 	            	//for vectrex
 	            	// var year = 2000;

@@ -1,0 +1,21 @@
+id=MagickCache
+magick-signature=1805670844
+class=DirectClass  colors=0  alpha-trait=Undefined
+number-channels=1  number-meta-channels=0
+columns=300  rows=273 depth=8
+colorspace=Gray
+compression=JPEG  quality=75
+units=PixelsPerInch
+resolution=72x72
+page=300x273+0+0
+rendering-intent=Perceptual
+gamma=0.454545
+red-primary=0.64,0.33  green-primary=0.3,0.6  blue-primary=0.15,0.06
+white-point=0.3127,0.329
+comment={File source: http://commons.wikimedia.org/wiki/File:Nintendo-DS-Fat-Blue.png}
+date:create=2017-11-23T22:01:25-08:00
+date:modify=2017-11-23T22:01:25-08:00
+jpeg:colorspace=2
+jpeg:sampling-factor=2x2,1x1,1x1
+
+:

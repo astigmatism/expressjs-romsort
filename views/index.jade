@@ -2,77 +2,179 @@ extends layout
 
 block content
 
-	label system id (a7800): 
-	input#system
-	br
-	label boxart term ([title] genesis box):
-	input#term
-	br
-	label delay in getboxart:
-	input#delay
-	br
-	br
-	button(onclick='$("#decompress").text("working");$.get("/decompress?system=" + $("#system").val(), function() { $("#decompress").text("complete"); })') decompress
-	span#decompress
-	br
-	br
-	button(onclick='$("#romfolders").text("working");$.get("/romfolders", function() { $("#romfolders").text("complete"); })') rom folders 
-	span#romfolders
+	div(class="systemid")
+		h3 System ID
+		p This is a required definition for most of the functionality below. It usually defines the folder name denoting a system type (eg nes, gen, gb, gba, a2600). Please be sure to fill this in otherwise the commands below will not work!
+		input#system
+	
+	div(class="panel")
+		h3 Decompress
+		p 
+			| Put all files (7z compressed) of a GoodMerged set into 
+			span(class="folder") /00 - starthere/[system id]/
+			| . This will command will decompress all those files into folders in 
+			span(class="folder") /01 - decopressed/[system id]/
+			
+		button(onclick='$("#decompress").text("working");$.get("/decompress?system=" + $("#system").val(), function() { $("#decompress").text("complete"); })') GO!
+		span#decompress
+	
+	div(class="panel")
+		h3 Rom Folders
+		p 
+			| First, let's ensure our two working folders (
+			span(class="folder") /07 - romfiles/
+			|  and 
+			span(class="folder") /08 - romfiles/
+			| ) are empty.
+		button(onclick='$("#clearromfolders").text("working");$.get("/clearromfolders", function() { $("#clearromfolders").text("complete"); })') Clean Up 
+		span#clearromfolders
+
+		p 
+			| Now, copy all files in 
+			span(class="folder") /01 - decompressed/[systemid]/Public Domain/
+			|  into 
+			span(class="folder") /07 - romfiles/
+			| . This command will put each file into their own folder at 
+			span(class="folder") /08 - romfolders/
+			| .
+		button(onclick='$("#romfolders").text("working");$.get("/romfolders", function() { $("#romfolders").text("complete"); })') GO!
+		span#romfolders
+		p
+			| Finally, copy all folders from 
+			span(class="folder") /08 - romfolders/ 
+			| and paste back into 
+			span(class="folder") /01 - decompressed/[systemid]/
+		p
+			| Now delete the original 
+			span(class="folder") /01 - decompressed/[systemid]/Public Domain/
+			|  folder.
+	
+	div(class="panel")
+		h3 Create Masterfile
+		p(class="requied") REQUIED: The decompressed command is completed, ideally the rom folders command as well.
+		p 
+			| This command will parse each folder in 
+			span(class="folder") /01 - decompressed/[systemid]/
+			|  and assign a score to each rom file based on its file name. The goal is to find the rom file which is most suitable for playing (the top choice as I call it). For instance, a file name with (U) and [!] will score very high since these denote a US game which has been verified. See the 
+			span(class="file") findbestrom.js
+			|  file for how scoring is determined. The resulting file is called 
+			span(class="file") [system id]_master
+			|  and can be found in 
+			span(class="folder") /06 - datafile/
+			|  . It is a json formatted (not human consumable) file which contains the score for each file in a rom folder as well as denoting the top scoring file.
+		button(onclick='$("#masterfile").text("working");$.get("/masterfile?system=" + $("#system").val(), function() { $("#masterfile").text("complete"); })') GO!
+		span#masterfile
+		
+	div(class="panel boxart")
+		h3 Get Box Art
+		p(class="requied") REQUIED: a generated masterfile for this System ID which we can use to understand scoring of domestic and forgien titles.
+		p
+			| Iterate over a rom collection and scrape google image search with the intent to hopefully get the correct box art automatically.
+		p
+			| First, define the search term. Use the phrase "[title]" as a placeholder for where the game's title will be used. Game titles come from the folder names in 
+			span(class="folder") /01 - decompressed/[systemid]/
+			| ). A common helper might also include the system's name and the term "box" resulting in something like: "[title] genesis box"
+		div Search term:  
+			input#term
+			|  (eg [title] nintendo box)
+		p
+			| Second, define a delay between searches in ms (sometimes google would terminate my auto searching if I had too many requests within a given timeframe)
+		div Optional delay between search: 
+			input#delay
+			|  (in ms)
+		p
+			| Third, by default, we do NOT replace existing downloaded box art if is exists, check this if you are sure you want to replace
+		div Override existing downloaded box art: 
+			input(type="checkbox")#overridebox
+		p 
+			| Finally, we can filter which titles we want to obtain box art for using the masterfile. Titles I determine as domestic score above 400. While foreign titles (Europe and Asia) likely score between 250 and 400. See the 
+			span(class="file") findbestrom.js
+			|  file for how the scoring works. The resulting box art is downloaded outside of the workspace into 
+			span(class="folder") /public/boxart/[systemid]/[title]/original.jpg
+			|  where is remains for the next step, which is to optionally modify it.
+		div
+			button(onclick='$("#getboxart").text("working");$.get("/getboxart?delay=" + $("#delay").val() + "&system=" + $("#system").val() + "&term=" + $("#term").val() + "&lower=400&override=" + $("#overridebox").is(":checked"), function() { $("#getboxart").text("complete"); })') Get Domestic (400 and up only)
+		div
+			button(onclick='$("#getboxart").text("working");$.get("/getboxart?delay=" + $("#delay").val() + "&system=" + $("#system").val() + "&term=" + $("#term").val() + "&lower=250&upper=400&override=" + $("#overridebox").is(":checked"), function() { $("#getboxart").text("complete"); })') Get Foreign (250 to 400 only)
+		p
+			| Optionally, you can define the range of scores you want to use as a box art filter. If going this route, please be sure to define upper and lower values. The maximum score a title can have is 500 and the lowest is 0.
+		div
+			input#lowscore(value="0")
+			input#highscore(value="500")
+		div
+			button(onclick='$("#getboxart").text("working");$.get("/getboxart?delay=" + $("#delay").val() + "&system=" + $("#system").val() + "&term=" + $("#term").val() + "&upper=" + $("#highscore").val() + "&lower=" + $("#lowscore").val() + "&override=" + $("#overridebox").is(":checked"), function() { $("#getboxart").text("complete"); })') GO!
+			span#getboxart
+
+		p After starting, watch the console window to see box art coming in. If it doesn't look accurate, stop the app and restart to try again.
+		
+	div(class="panel boxart")
+		h3 Modify Box Art
+		p 
+			| This will open a new tab with the box art modification tools. It will use the box art downloaded to
+			span(class="folder") /public/boxart/[systemid]/
+		button(onclick='window.open("/boxart/" + $("#system").val(), "_blank")') OPEN
+	
+	div(class="panel boxart")
+		h3 Create Box Art Masterfile
+		p(class="requied") REQUIED: You have some downloaded box art for this System ID and have optionally modified it as well.
+		p 
+			| Just like with roms, we want to create a manifest for crazyerics which defined which titles have boxart downloaded for them. The resulting file will be located in 
+			span(class="folder") /06 - datafile/[systemid]_boxart/
+		button(onclick='$("#boxartmasterfile").text("working");$.get("/masterfile/boxart?system=" + $("#system").val(), function() { $("#boxartmasterfile").text("complete"); })') GO!
+		span#boxartmasterfile
+
+	div(class="panel boxart")
+		h3 The GamesDB
+
+	div(class="panel cdn")
+		h3 CDN Prepare Roms
+		p(class="requied") REQUIED: Decompress, Rom Folders and Masterfile steps. Files are only obtainable on the CDN when an associated masterfile is defined. It isn't required here really, but strongly recommended you generate one first.
+		p
+			| Iterate over all rom files in 
+			span(class="folder") /01 - decompressed/[systemid]/
+			|  and compress them into a custom format for use on crazyerics. The resuting files are json formatted. The resulting file names are also compressed to avoid users hitting the cdn with specific known values. As the compression routine converts byte arrays into strings, its possible for a file to be so large the resulting string can overflow and fail on decompression. To get around this, I define a "segment size" in 
+			span(class="file") /routes/index.js
+			|  for the "cdnready" route. The default value should be ok but you can change this if necessary. I won't expose a control here for it. This process also creates the file 
+			span(class="folder") /06 - datafile/[systemid]_filedata
+			|  which is a manifest of compressed file sizes which I once used for crazyerics to know the size of a file before download (for the progress bar) but I no longer use it since I got the response header to provide this data.
+		
+		button(onclick='$("#cdnready").text("working");$.get("/cdnready?system=" + $("#system").val() + "&source=decompressed", function() { $("#cdnready").text("complete"); })') GO!
+		span#cdnready
+		p 
+			| On completion, you'll need to copy the resulting folder at 
+			span(class="folder") /cdnready/[systemid]/
+			|  to your CDN in the appropriate location. For versioning, I like to use something descriptive, such as a the GoodRoms version (eg GoodNes-3.23b). This name then has to be supplied to the crazyerics config file at 
+			span(class="file") /config/default.json
+			|  so that the crazyerics app pulls content from that location for a given system.
+
+
+	div(class="panel cdn")
+		h3 CDN Prepare Box Art
+		p(class="requied") REQUIED: Image Magick. I use this app to create the required thumbnails in this step. Install with: brew install imagemagick --with-webp. Also, Box Art Masterfile. Box art can only be obtained on the CDN by crazyerics through an associated box art masterfile.
+		p
+			| Iterate over all folders in 
+			span(class="folder") /public/boxart/[systemid]/
+			|  and generate thumbnails using the 
+			span(class="file") original.jpg
+			|  file as a source for each title in that location. The thumbnail sizes I generate are defined in 
+			span(class="file") cdnboxready.js
+			| . This includes textures I use for webgl.
+
+		button(onclick='$("#cdnreadyboxes").text("working");$.get("/cdnboxready/" + $("#system").val(), function() { $("#cdnreadyboxes").text("complete"); })') cdnready boxes
+		span#cdnreadyboxes
+
+		p 
+			| On completion, you'll need to copy the resulting folder at 
+			span(class="folder") /cdnboxready/[systemid]/
+			|  to your CDN in the appropriate location. For versioning, I like to use the date I complied the box art since I'm updating on a regular basis. Something like 2017-12-02. This name then has to be supplied to the crazyerics config file at 
+			span(class="file") /config/default.json
+			|  so that the crazyerics app pulls box art from that location for a given system.
+		
+
+
 	br
 	br
 	button(onclick='$("#supportfiles").text("working");$.get("/supportfiles?system=" + $("#system").val(), function() { $("#supportfiles").text("complete"); })') compress support files
 	span#supportfiles
 	br
 	br
-	button(onclick='$("#clearromfolders").text("working");$.get("/clearromfolders", function() { $("#clearromfolders").text("complete"); })') clear rom folders 
-	span#clearromfolders
-	br
-	br
-	button(onclick='$("#masterfile").text("working");$.get("/masterfile?system=" + $("#system").val(), function() { $("#masterfile").text("complete"); })') masterfile 
-	span#masterfile
-	br
-	br
-	label override low score threshold for all task:
-	input#lowscore(value="250")
-	br
-	button(onclick='$("#getboxart").text("working");$.get("/getboxart?delay=" + $("#delay").val() + "&system=" + $("#system").val() + "&term=" + $("#term").val() + "&lower=400&override=" + $("#overridebox").is(":checked"), function() { $("#getboxart").text("complete"); })') getboxart (domestic)
-	button(onclick='$("#getboxart").text("working");$.get("/getboxart?delay=" + $("#delay").val() + "&system=" + $("#system").val() + "&term=" + $("#term").val() + "&lower=250&upper=400&override=" + $("#overridebox").is(":checked"), function() { $("#getboxart").text("complete"); })') getboxart (foreign)
-	button(onclick='$("#getboxart").text("working");$.get("/getboxart?delay=" + $("#delay").val() + "&system=" + $("#system").val() + "&term=" + $("#term").val() + "&lower=" + $("#lowscore").val() + "&override=" + $("#overridebox").is(":checked"), function() { $("#getboxart").text("complete"); })') getboxart (all)
-	span#getboxart
-	br
-	div
-		input(type="checkbox")#overridebox
-		span Override existing downloaded box art
-	br
-	button(onclick='$("#thegamesdb").text("working");$.get("/thegamesdb?system=" + $("#system").val() + "&update=all", function() { $("#thegamesdb").text("complete"); })') thegamesdb 
-	span#thegamesdb
-	br
-	br
-	button(onclick='window.open("/boxart/" + $("#system").val(), "_blank")') open box art
-	br
-	br
-	button(onclick='$("#boxartmasterfile").text("working");$.get("/masterfile/boxart?system=" + $("#system").val(), function() { $("#boxartmasterfile").text("complete"); })') box art masterfile
-	span#boxartmasterfile
-	br
-	br
-	button(onclick='$("#cdnreadyboxes").text("working");$.get("/cdnboxready/" + $("#system").val(), function() { $("#cdnreadyboxes").text("complete"); })') cdnready boxes
-	span#cdnreadyboxes
-	br
-	br
-	button(onclick='$("#cdnready").text("working");$.get("/cdnready?system=" + $("#system").val() + "&source=decompressed", function() { $("#cdnready").text("complete"); })') cdnready roms
-	span#cdnready
-	br
-	br
-	label cdn box version (2.0.2):
-	input#cdnboxversion
-	br
-	button(onclick='$("#uploadboxestodropbox").text("working");$.get("/dropbox/boxes?system=" + $("#system").val() + "&version=" + $("#cdnboxversion").val(), function() { $("#uploadboxestodropbox").text("complete"); })') upload boxes to dropbox
-	span#uploadboxestodropbox
-	br
-	br
-	label cdn roms version (2.0.3):
-	input#cdnromsversion
-	br
-	br
-	button(onclick='$("#uploadromstodropbox").text("working");$.get("/dropbox/roms?system=" + $("#system").val() + "&version=" + $("#cdnromsversion").val(), function() { $("#uploadromstodropbox").text("complete"); })') upload roms to dropbox
-	span#uploadromstodropbox

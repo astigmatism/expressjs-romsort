@@ -6,7 +6,7 @@ var gm = require('gm');
 CDNBoxReady = function() {
 };
 
-CDNBoxReady.resizes = [200, 170, 120, 50];
+CDNBoxReady.widthResizes = ['256x256', 200, 170, 120, 50];
 CDNBoxReady.outputFormat = 'jpg';
 
 CDNBoxReady.exec = function(datafilePath, sourcePath, destinationPath, callback) {
@@ -117,16 +117,33 @@ CDNBoxReady.resize = function(source, destination, callback) {
     var self = this;
 
     //loop over resizes
-    async.eachSeries(self.resizes, function(resize, nextresize) {
+    async.eachSeries(self.widthResizes, function(resize, nextresize) {
 
-        gm(source).resize(resize).setFormat(self.outputFormat).quality(100).write(destination + '/' + resize + '.' + self.outputFormat, function (err) {
-            if (err) {
-                return nextresize(err)
-            }
+        //determine
+        if (resize.match && resize.match(/x/g)) {
+            var matches = resize.match(/(\d+)/g);
 
-            console.log(resize + ' resize compelte');
-            return nextresize();
-        });
+            //! means force resize and ignore aspect
+            gm(source).resize(matches[0], matches[1] + '!').setFormat(self.outputFormat).quality(100).write(destination + '/' + resize + '.' + self.outputFormat, function (err) {
+                if (err) {
+                    return nextresize(err)
+                }
+    
+                console.log(resize + ' resize compelte');
+                return nextresize();
+            });
+        } 
+        else {
+            
+            gm(source).resize(resize).setFormat(self.outputFormat).quality(100).write(destination + '/' + resize + '.' + self.outputFormat, function (err) {
+                if (err) {
+                    return nextresize(err)
+                }
+    
+                console.log(resize + ' resize compelte');
+                return nextresize();
+            });
+        }
 
     }, function(err) {
         if (err) {

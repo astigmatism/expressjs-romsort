@@ -2,6 +2,8 @@ workspace/00 - starthere/
 workspace/00 - starthere
 workspace/01 - decompressed/
 workspace/01 - decompressed
+workspace/02 - compressedfiles
+workspace/02 - compressedfiles/
 workspace/04 - alphasorted/*
 workspace/05 - topchoice/*
 workspace/07 - romfiles/*
@@ -11,6 +13,8 @@ workspace/15 - spcs/*
 workspace/16 - supportfiles/*
 workspace/99 - decompressed/*
 workspace/cdnboxready/*
+workspace/cdnshaderready
+workspace/cdnshaderready/
 workspace/cdnready/
 workspace/cdnready
 workspace/cdnsupportready/*

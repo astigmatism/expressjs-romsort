@@ -17,7 +17,7 @@ SupportFiles.exec = function(system, segmentSize, sourcePath, destinationPath, c
             return callback(err);
         }
 
-        var output = '{';
+        var output = 'c({';
 
         //loop over all title (game) folders
         async.eachSeries(files, function(file, nextfile) {
@@ -53,26 +53,19 @@ SupportFiles.exec = function(system, segmentSize, sourcePath, destinationPath, c
 
             //close up file
             output = output.substring(0, output.length - 1); //remove final comma
-            output += '}';
+            output += '})';
 
             //write output file
             //create our cdn file, the name of this file is the title+(file or folder) compressed
-            fs.outputFile(destinationPath + '/' + system, output, function (err) {
+            fs.outputFile(destinationPath + '/' + system + '.json', output, function (err) {
                 if (err) {
                     return callback(err);
                 }
-
-                //get resulting filesize
-                fs.stat(destinationPath + '/' + system, (err, stat) => {
-
-                    console.log('filesize (copy to config): ' + stat.size);
-
-                    console.log('SupportFiles complete');
+                console.log('SupportFiles complete');
                 
-                    beep(5);
+                beep(5);
 
-                    return callback(null, '');
-                });
+                return callback(null, '');
             });
         });
     });
@@ -88,12 +81,11 @@ SupportFiles.compressFile = function(buffer, segmentSize) {
     var i = 0;
     for (i; i < totalsegments; ++i) {
         if (i === (totalsegments - 1)) {
-            var finalSegementLength = buffer.length - bufferPosition;
-            var ab = new ArrayBuffer(finalSegementLength);
+            console.log('starting final segment');
+            var ab = new ArrayBuffer(buffer.length - bufferPosition);
             var view = new Uint8Array(ab);
-            for (var j = 0; j < finalSegementLength; ++j) {
+            for (var j = bufferPosition; j < buffer.length; ++j) {
                 view[j] = buffer[bufferPosition];
-                //console.log(bufferPosition + ': ' + view[j]);
                 bufferPosition++;
             }
         } else {
