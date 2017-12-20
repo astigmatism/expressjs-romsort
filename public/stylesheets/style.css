@@ -22,11 +22,18 @@ div.boxart {
 div.cdn {
 	background-color: PaleGoldenRod;
 }
+div.util {
+	background-color: Aquamarine;
+}
+
+div.response {
+	margin: 10px 0px;
+	color: red;
+}
 
 p.requied {
 	color: MediumOrchid;
 }
-
 span.folder {
 	color: blue;
 }

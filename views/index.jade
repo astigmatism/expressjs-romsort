@@ -171,7 +171,37 @@ block content
 			span(class="file") /config/default.json
 			|  so that the crazyerics app pulls box art from that location for a given system.
 		
-
+	div(class="panel util")
+		h3 Compress
+		p(class="requied") REQUIED: Decompress
+		p
+			| Here we compress individual rom files from each title folder in 
+			span(class="folder") /01 - decompressed/[systemid]/
+			| . Can you filter out which rom files are compressed as well to reduce the set. The resulting files will be placed in 
+			span(class="folder") /02 - compressed/[systemid]/
+		p
+			| Specify which compression method to use:
+		div
+			input(type="radio", name="compresstype", value="none")
+			| None
+		div
+			input(type="radio", name="compresstype", value="zip", checked)
+			| Zip 
+		p
+			| You can also specify which rom files you want to compress. Please read the descriptions of each of the following:
+		div
+			input(type="radio", name="compressfilter", value="0", checked)
+			| None. All rom files will be compressed.
+		div
+			input(type="radio", name="compressfilter", value="1")
+			| Verified Only. Any file with the verified flag in its filename [!], will be compressed, all others will be ignored
+		div
+			input(type="radio", name="compressfilter", value="2")
+			| Unverified in subfolder. In this mode, the verified files (with [!] in their name) will be compressed in the base title folder while all others will be compressed into a subfolder.
+		br
+		button(onclick='$("#compress").text("working");$.get("/compress?system=" + $("#system").val() + "&compression=" + $("input[name=compresstype]:checked").val() + "&filter=" + $("input[name=compressfilter]:checked").val(), function(response) { $("#compress").text(response); })') GO!
+		div#compress(class="response")
+			
 
 	br
 	br

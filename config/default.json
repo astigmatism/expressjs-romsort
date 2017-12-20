@@ -1,10 +1,8 @@
 {
-	"dropboxaccesstoken": "m62ox__hvx4AAAAAAAhOSoQif_E-mwTn_gH-mwyR7deR7a5pDpBIz1FmkxOKBQZt",
-	"dropboxroot": "/Public/crazyerics",
 	"paths": {
 		"start": "/workspace/00 - starthere/",
 		"decompressed": "/workspace/01 - decompressed/",
-		"compressed": "/workspace/02 - compressedfiles/",
+		"compressed": "/workspace/02 - compressed/",
 		"hacksorted": "/workspace/03 - hacksorted/",
 		"alphasorted": "/workspace/04 - alphasorted/",
 		"topchoice": "/workspace/05 - topchoice/",

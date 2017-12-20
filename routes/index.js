@@ -1,9 +1,10 @@
 var express = require('express');
 var fs = require('fs-extra');
+var path = require('path');
 var async = require('async');
 var Main = require('../main');
 var Decompress = require('../decompress');
-var CompressFiles = require('../compressfiles');
+var Compress = require('../compress');
 var AlphaSort = require('../alphasort');
 var TopChoice = require('../topchoice');
 var CDNReady = require('../cdnready');
@@ -11,7 +12,6 @@ var MasterFile = require('../masterfile');
 var RomFolders = require('../romfolders');
 var GetBoxArt = require('../getboxart');
 var CDNBoxReady = require('../cdnboxready');
-var UploadToDropBox = require('../uploadtodropbox.js');
 var SupportFiles = require('../supportfiles.js');
 //var NeoGeoRename = require('../neogeorename');
 var TheGamesDB = require('../thegamesdb');
@@ -51,7 +51,7 @@ router.get('/decompress', function(req, res, next) {
 	});
 });
 
-router.get('/compressfiles', function(req, res, next) {
+router.get('/compress', function(req, res, next) {
 	
 	var folder = req.query.system;
 	var compressiontype = req.query.compression;
@@ -60,14 +60,15 @@ router.get('/compressfiles', function(req, res, next) {
 	if (!folder)
 		return res.json('system is a required query param. Maps to folder name (gen, snes, n64, gb...)');
 	if (!compressiontype)
-		return res.json('compression is a required query param: zip|7z');
+		return res.json('compression is a required query param: none|zip|7z');
 	if (!filter)
-		return res.json('filter is a required query param: verified|none');
+		return res.json('filter is a required query param: 0|1|2');
 
-	CompressFiles.exec(Main.getPath('decompressed') + folder, Main.getPath('compressed') + folder, compressiontype, filter, function(err, data) {
-		if (err) {
-            return res.json(err);
-        }
+	var source = path.join(Main.getPath('decompressed'), folder);
+	var destination = path.join(Main.getPath('compressed'), folder);
+
+	Compress.Exec(source, destination, compressiontype, filter, (err, data) => {
+		if (err) return res.json(err);
         res.json(data);
 	});
 });
@@ -448,32 +449,6 @@ router.get('/spcrename', function(req, res, next) {
             return res.json(err);
         }
         res.json(data);
-	});
-});
-
-router.get('/dropbox/roms', function(req, res, next) {
-
-	var system = req.query.system;
-	var cdnversion = req.query.version;
-
-	UploadToDropBox.roms(system, cdnversion, Main.getPath('cdnready') + system, function(err, response) {
-		if (err) {
-            return res.json(err);
-        }
-        res.json(response);
-	});
-});
-
-router.get('/dropbox/boxes', function(req, res, next) {
-
-	var system = req.query.system;
-	var cdnversion = req.query.version;
-
-	UploadToDropBox.boxes(system, cdnversion, Main.getPath('cdnboxready') + system, function(err, response) {
-		if (err) {
-            return res.json(err);
-        }
-        res.json(response);
 	});
 });
 
