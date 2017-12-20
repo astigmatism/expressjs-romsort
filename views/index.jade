@@ -14,9 +14,9 @@ block content
 			span(class="folder") /00 - starthere/[system id]/
 			| . This will command will decompress all those files into folders in 
 			span(class="folder") /01 - decopressed/[system id]/
-			
-		button(onclick='$("#decompress").text("working");$.get("/decompress?system=" + $("#system").val(), function() { $("#decompress").text("complete"); })') GO!
-		span#decompress
+
+		button(onclick='$("#decompress").text("working");$.get("/decompress?system=" + $("#system").val(), function(response) { $("#decompress").text(response); })') GO!
+		div#decompress(class="response")
 	
 	div(class="panel")
 		h3 Rom Folders
@@ -26,8 +26,8 @@ block content
 			|  and 
 			span(class="folder") /08 - romfiles/
 			| ) are empty.
-		button(onclick='$("#clearromfolders").text("working");$.get("/clearromfolders", function() { $("#clearromfolders").text("complete"); })') Clean Up 
-		span#clearromfolders
+		button(onclick='$("#clearromfolders").text("working");$.get("/clearromfolders", function(response) { $("#clearromfolders").text(response); })') Clean Up 
+		div#clearromfolders(class="response")
 
 		p 
 			| Now, copy all files in 
@@ -37,8 +37,8 @@ block content
 			| . This command will put each file into their own folder at 
 			span(class="folder") /08 - romfolders/
 			| .
-		button(onclick='$("#romfolders").text("working");$.get("/romfolders", function() { $("#romfolders").text("complete"); })') GO!
-		span#romfolders
+		button(onclick='$("#romfolders").text("working");$.get("/romfolders", function(response) { $("#romfolders").text(response); })') GO!
+		div#romfolders(class="response")
 		p
 			| Finally, copy all folders from 
 			span(class="folder") /08 - romfolders/ 
@@ -62,8 +62,8 @@ block content
 			|  and can be found in 
 			span(class="folder") /06 - datafile/
 			|  . It is a json formatted (not human consumable) file which contains the score for each file in a rom folder as well as denoting the top scoring file.
-		button(onclick='$("#masterfile").text("working");$.get("/masterfile?system=" + $("#system").val(), function() { $("#masterfile").text("complete"); })') GO!
-		span#masterfile
+		button(onclick='$("#masterfile").text("working");$.get("/masterfile?system=" + $("#system").val(), function(response) { $("#masterfile").text(response); })') GO!
+		div#masterfile(class="response")
 		
 	div(class="panel boxart")
 		h3 Get Box Art
@@ -201,11 +201,30 @@ block content
 		br
 		button(onclick='$("#compress").text("working");$.get("/compress?system=" + $("#system").val() + "&compression=" + $("input[name=compresstype]:checked").val() + "&filter=" + $("input[name=compressfilter]:checked").val(), function(response) { $("#compress").text(response); })') GO!
 		div#compress(class="response")
-			
 
-	br
-	br
-	button(onclick='$("#supportfiles").text("working");$.get("/supportfiles?system=" + $("#system").val(), function() { $("#supportfiles").text("complete"); })') compress support files
-	span#supportfiles
-	br
-	br
+	div(class="panel util")
+		h3 Alpha Sort
+		p(class="requied") REQUIED: Decompress or Compress
+		p
+			| In this step, we can place title folders from either 
+			span(class="folder") /01 - decompressed/[systemid]/
+			|  or 
+			span(class="folder") /02 - compressed/[systemid]/
+			|  and place them into higher level folders which represent the letter(s) that title begins with. This helps with browsing for the right title. The resulting structure can be found in 
+			span(class="folder") /04 - alphasort/[systemid]/
+			| .
+		p
+			| Specify the location from which to sort title folders from:
+		div
+			input(type="radio", name="alphasource", value="compressed", checked)
+			| Compressed
+		div
+			input(type="radio", name="alphasource", value="decompressed")
+			| Decompressed
+		p
+			| You can also override the number of letters to merge files into at the top level (eg 2 is A-B, C-D while 3 is A-C, D-F)
+		div
+			input#alphastep(value="1")
+		br
+		button(onclick='$("#alphasort").text("working");$.get("/alphasort?system=" + $("#system").val() + "&source=" + $("input[name=alphasource]:checked").val() + "&step=" + $("alphastep").val(), function(response) { $("#alphasort").text(response); })') GO!
+		div#alphasort(class="response")

@@ -77,16 +77,18 @@ router.get('/alphasort', function(req, res, next) {
 	
 	var folder = req.query.system;
 	var source = req.query.source;
+	var letterstep = req.query.step;
 
 	if (!folder)
 		return res.json('system is a required query param. Maps to folder name (gen, snes, n64, gb...)');
 	if (!source)
 		return res.json('source is a required query param: compressed|decompressed');
 
-	AlphaSort.exec(Main.getPath(source) + folder, Main.getPath('alphasorted') + folder, function(err, data) {
-		if (err) {
-            return res.json(err);
-        }
+	var sourceFolder = path.join(Main.getPath(source), folder);	
+	var destinationFolder = path.join(Main.getPath('alphasorted'), folder);
+
+	AlphaSort.Exec(sourceFolder,  destinationFolder, letterstep, (err, data) => {
+		if (err) return res.json(err);
         res.json(data);
 	});
 });
@@ -94,10 +96,8 @@ router.get('/alphasort', function(req, res, next) {
 router.get('/romfolders', function(req, res, next) {
 
 	RomFolders.exec(Main.getPath('romfiles'), Main.getPath('romfolders'), function(err, data) {
-		if (err) {
-            return res.json(err);
-        }
-        res.json(data);
+		if (err) return res.json(err);
+        res.json('complete');
 	});
 });
 
@@ -108,10 +108,8 @@ router.get('/clearromfolders', function(req, res, next) {
 			console.log(err);
 		}
 		Main.emptydir(Main.getPath('romfolders'), function(err) {
-			if (err) {
-				console.log(err);
-			}
-			return res.json({});
+			if (err) console.log(err);
+			return res.json('complete');
 		});
 	});
 	
@@ -153,10 +151,8 @@ router.get('/masterfile', function(req, res, next) {
 		return res.json('system is a required query param. Maps to folder name (gen, snes, n64, gb...)');
 
 	MasterFile.exec(folder, Main.getPath('decompressed') + folder, Main.getPath('datafiles') + '/' + folder + '_master', function(err, data) {
-		if (err) {
-            return res.json(err);
-        }
-        res.json(data);
+		if (err) return res.json(err);
+        res.json('complete');
 	});
 });
 
