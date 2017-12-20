@@ -2,31 +2,28 @@ var fs = require('fs-extra');
 var async = require('async');
 var Main = require('./main.js');
 var FindBestRom = require('./findbestrom.js');
+const path = require('path');
 
 MasterFile = function() {
 };
 
-MasterFile.exec = function(sourcePath, destinationFile, callback) {
+MasterFile.exec = function(system, sourcePath, destinationFile, callback) {
 
     var masterFile = {};
 
 	//open source folder
 	fs.readdir(sourcePath, function(err, gameFolders) {
-        if (err) {
-            return callback(err);
-        }
+        if (err) return callback(err);
 
         var summary = {};
 
-		//loop over all file contents
+		//loop over all title folders
         async.eachSeries(gameFolders, function(folder, nextfolder) {
 
         	fs.stat(sourcePath + '/' + folder, function(err, stats) {
                 
                 //bail if a file, folders only
-                if (stats.isFile()) {
-                    return nextfolder(null);
-                }
+                if (stats.isFile()) return nextfolder(null);
 
                 //create object for title
                 var entry = masterFile[folder] = {
@@ -34,8 +31,10 @@ MasterFile.exec = function(sourcePath, destinationFile, callback) {
                     f: {}           //f = files
                 };
 
+                var titlePath = path.join(sourcePath, folder);
+
                 //read title folder
-                fs.readdir(sourcePath + '/' + folder, function(err, files) {
+                fs.readdir(titlePath, function(err, files) {
                     if (err) {
                         return nextfolder(err);
                     }
@@ -54,10 +53,16 @@ MasterFile.exec = function(sourcePath, destinationFile, callback) {
                     var file = sourcePath + '/' + folder + '/' + details.game;
                     var f = Main.getFileNameAndExt(file);					    
 
-                    //get rank of each file
+                    //build file data
                     for (var j = 0; j < files.length; ++j) {
                         var filedetails = FindBestRom.exec([files[j]]);
-                        entry.f[files[j]] = filedetails.rank;
+                        
+                        var gameKey = Main.compress.json([system, folder, files[j]]);
+
+                        entry.f[files[j]] = {
+                            rank: parseFloat(filedetails.rank),
+                            gk: gameKey
+                        }
                     }
 
                     console.log(folder + ' --> ' + details.rank + ' ' + details.game);

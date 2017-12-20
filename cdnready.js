@@ -3,9 +3,12 @@ var async = require('async');
 var pako = require('pako');
 var beep = require('beepbeep');
 var Main = require('./main.js');
+const path = require('path');
 
 CDNReady = function() {
 };
+
+var _compressEverything = false; //for debugging
 
 CDNReady.exec = function(sourcePath, destinationPath, fileDataPath, segmentSize, callback) {
 
@@ -47,11 +50,13 @@ CDNReady.exec = function(sourcePath, destinationPath, fileDataPath, segmentSize,
                                 return nextfileorfolder();
                             }
 
-                            var compressedName = Main.compress.string(fileorfolder);
+                            //the resulting file name will be the combination of title and file (or folder) for uniquness
+                            var destinationFileName = Main.compress.string(title + fileorfolder);
+                            destinationFileName = encodeURIComponent(destinationFileName);
 
                             //output file for filesize
                             //compress the file name, I was running into issues with filenames with weird characters
-                            fileData[compressedName] = {
+                            fileData[destinationFileName] = {
                                 s: 0
                             };
 
@@ -59,74 +64,161 @@ CDNReady.exec = function(sourcePath, destinationPath, fileDataPath, segmentSize,
                             //if its a file: we compressed it to be included in the emulator file system
                             //if its a folder: we compress all files within it to be included in the emulator file system
                             
-                            console.log('\r\nStarting --> ' + fileorfolder + ' : ' + compressedName);
+                            console.log('\r\nStarting --> ' + fileorfolder);
+
+                            var sourceFilePath = path.join(sourcePath, title, fileorfolder);
 
                             //what are we working with?
-                            fs.stat(sourcePath + '/' + title + '/' + fileorfolder, function(err, stats) {
+                            fs.stat(sourceFilePath, function(err, stats) {
 
                                 if (stats.isFile()) {
 
                                     //file
-                                    console.log('...is a file!');
+                                    /*
 
-                                    var output = '{';                                   
+                                    key:
+                                    f: files
+
+                                    object:
+                                    {
+                                        f: {
+                                            filename: [string, string, ...]
+                                        }
+                                    }
+
+                                    */
+                                    console.log('... this is a file');
                                     var file = fileorfolder;
+                                    var destinationFilePath = path.join(destinationPath, destinationFileName);
 
-                                    self.compressFile(sourcePath + '/' + title + '/' + file, file, segmentSize, function(err, fileoutput) {
+                                    //begin by writing an empty json file which we can append details to
+                                    self.CreateFile(destinationFilePath, '{"f":{', function(err) {
+                                        if (err) {
+                                            return nextfileorfolder(err);
+                                        }
 
-                                        output += fileoutput + '}';
-
-                                        self.writeFile(destinationPath, title, fileorfolder, output, function(err, filesize) {
+                                        //files are written as json properties
+                                        self.WriteGameFileAsJson(sourceFilePath, destinationFilePath, file, segmentSize, (err) => {
                                             if (err) {
                                                 return nextfileorfolder(err);
                                             }
-                                            fileData[compressedName].s = filesize;
 
-                                            return nextfileorfolder();
+                                            //close output json with bracket
+                                            fs.appendFile(destinationFilePath, '}}', (err) => {
+                                                if (err) {
+                                                    return nextfileorfolder(err);
+                                                }
+                                                
+                                                //get resulting filesize
+                                                fs.stat(destinationFilePath, (err, stat) => {
+
+                                                    fileData[destinationFileName].s = stat.size;
+
+                                                    console.log('cdnready: ' + title + ' + ' + file + '\r\nFile size: ' + stat.size + '\r\n');
+                                                    return nextfileorfolder();     
+                                                });
+
+                                            });
                                         });
                                     });
 
                                 } else {
 
-                                    //folder
-                                    console.log('...is a folder!');
+                                    //is a folder
+                                    //this is different enough from the task if it were a file
+                                    //for a folder, write one destination file with all the files as properties
+
+                                    console.log('...this is a folder');
 
                                     var folder = fileorfolder;
-                                    var output = '{';
                                     //file is a folder, compress all files into a single
 
                                     //read folder
-                                    fs.readdir(sourcePath + '/' + title + '/' + folder, function(err, files) {
+                                    /*
+
+                                    key:
+                                    f: files
+                                    b: best game to boot in emaultor
+
+                                    object:
+                                    {
+                                        f: {
+                                            filename1: [string, string, ...],
+                                            filename2: [string],
+                                            ...
+                                        },
+                                        b: string
+                                    }
+
+                                    */
+                                    fs.readdir(sourceFilePath, function(err, files) {
                                         if (err) {
                                             return nextfileorfolder();
                                         }
 
-                                        //loop over reach rom file or folder
-                                        async.eachSeries(files, function(file, nextfile) {
-                                            
-                                            self.compressFile(sourcePath + '/' + title + '/' + folder + '/' + file, file, segmentSize, function(err, fileoutput) {
-                                                if (err) {
-                                                    return nextfile(err);
-                                                }
+                                        var destinationFilePath = path.join(destinationPath, destinationFileName);
 
-                                                output += fileoutput + ',';
-
-                                                return nextfile();
-                                            });
-
-                                        }, function(err, result) {
+                                        //begin by writing an empty title file which we can append to
+                                        self.CreateFile(destinationFilePath, '{"f":{', function(err) {
                                             if (err) {
+                                                return nextfileorfolder(err);
                                             }
 
-                                            output = output.slice(0, -1); //remove last comma
-                                            output += '}';
+                                            //since this game has a multiple file structure, we need to decide which file to bootstrap in the emulator
+                                            var bestBootCandidate = Main.compress.string(self.DetermineBootCandidate(files));
 
-                                            self.writeFile(destinationPath, title, fileorfolder, output, function(err, filesize) {
+                                            //loop over reach rom file in folder folder
+                                            async.eachOfSeries(files, function(file, i, nextfile) {
+
+                                                var sourceFolderPathFile = path.join(sourceFilePath, file);
+
+                                                self.WriteGameFileAsJson(sourceFolderPathFile, destinationFilePath, file, segmentSize, (err) => {
+                                                    if (err) {
+                                                        return nextfile(err);
+                                                    }
+
+                                                    //are there more files? If so, append a comma between object properties
+                                                    if (i !== (files.length -1)) {
+                                                        fs.appendFile(destinationFilePath, ',', (err) => {
+                                                            if (err) {
+                                                                return nextfile(err);
+                                                            }
+                                                            return nextfile();
+                                                        });
+                                                    } 
+                                                    else {
+                                                        return nextfile();
+                                                    }
+                                                });
+
+                                            }, function(err, result) {
                                                 if (err) {
                                                     return nextfileorfolder(err);
                                                 }
-                                                fileData[compressedName].s = filesize;
-                                                return nextfileorfolder();
+
+                                                //we'll need to inform the emulator which file to bootstrap, lets write it here
+                                                fs.appendFile(destinationFilePath, '},\"b\":\"' + bestBootCandidate + '\"', (err) => {
+                                                    if (err) {
+                                                        return nextfileorfolder(err);
+                                                    }
+                                                    
+                                                    //close output json with bracket
+                                                    fs.appendFile(destinationFilePath, '}', (err) => {
+                                                        if (err) {
+                                                            return nextfileorfolder(err);
+                                                        }
+                                                        
+                                                        //get resulting filesize
+                                                        fs.stat(destinationFilePath, (err, stat) => {
+
+                                                            fileData[destinationFileName].s = stat.size;
+
+                                                            console.log('cdnready: ' + title + ' + ' + folder + '\r\nFile size: ' + stat.size + '\r\n');
+                                                            return nextfileorfolder();     
+                                                        });
+
+                                                    });
+                                                });
                                             });
                                         });
                                     });
@@ -137,7 +229,7 @@ CDNReady.exec = function(sourcePath, destinationPath, fileDataPath, segmentSize,
                         }, function(err, result) {
                             if (err) {
                                 
-                                fs.appendFile(destinationPath + '/errors.json', 'Error: ' + JSON.stringify(err) + '\n', function(err2) {
+                                fs.appendFile(sourcePath + '/errors.json', 'Error: ' + JSON.stringify(err) + '\n', function(err2) {
                                     if (err) {
                                         return nexttitle(err2);
                                     }
@@ -156,7 +248,7 @@ CDNReady.exec = function(sourcePath, destinationPath, fileDataPath, segmentSize,
 	            }
 
                 //write file which contains file sizes (for download progress)
-                fs.outputFile(fileDataPath, JSON.stringify(fileData), function (err) {
+                fs.outputJson(fileDataPath, fileData, function (err) {
                     if (err) {
                         return callback(err);
                     }
@@ -169,63 +261,109 @@ CDNReady.exec = function(sourcePath, destinationPath, fileDataPath, segmentSize,
     });
 };
 
-CDNReady.compressFile = function(path, filename, segmentSize, callback) {
+CDNReady.CreateFile = function(destinationFilePath, output, callback) {
 
-    var self = this;
-
-    //open file
-    fs.readFile(path, function(err, buffer) {
-        if (err) {
-            return nextfileorfolder(err);
-        }
-
-        var compressedSegments = self.compressFileIntoSegements(path, filename, buffer, segmentSize);
-
-        //add line to file
-        var output = '"' + Main.compress.string(filename) + '":' + JSON.stringify(compressedSegments);
-
-        callback(null, output)
-    });
-};
-
-CDNReady.writeFile = function(destinationPath, title, fileorfolder, output, callback) {
-
-    var filename = Main.compress.string(title + fileorfolder);
+    console.log('Creating destination file --> ' + destinationFilePath);
 
     //write output file
     //create our cdn file, the name of this file is the title+(file or folder) compressed
-    fs.outputFile(destinationPath + '/' + encodeURIComponent(filename), output, function (err) {
+    fs.outputFile(destinationFilePath, output, function (err) {
+        if (err) {
+            return callback(err);
+        }
+        callback();
+    });
+};
+
+CDNReady.WriteGameFileAsJson = function(sourceFilePath, destinationFilePath, filename, segmentSize, callback) {
+
+    var self = this;
+
+    self.compressFile(sourceFilePath, segmentSize, function(err, compressedSegments, bufferLength) {
         if (err) {
             return callback(err);
         }
 
-        fs.stat(destinationPath + '/' + encodeURIComponent(filename), function(err, stat) {
+        var compressedFileName = Main.compress.string(filename);
+
+        //json property is compressed filename
+        console.log('Appending file to json --> ' + compressedFileName);
+
+        fs.appendFile(destinationFilePath, '"' + compressedFileName + '": [', (err) => {
             if (err) {
                 return callback(err);
             }
 
-            console.log('cdnready: ' + title + ' --> ' + fileorfolder + '\r\nFile size: ' + stat.size + '\r\nFile is called: ' + filename);
-        
-            callback(null, stat.size);
+            //loop over each segment
+            async.eachOfSeries(compressedSegments, function (segment, j, nextSegment) {
+                
+                segment = '"' + segment + '"';
+
+                //is this not the last segment?
+                if (j !== (compressedSegments.length -1)) {
+                    segment += ',';
+                }
+                else {
+                    segment += ']';
+                }
+
+                //append segment to file
+                fs.appendFile(destinationFilePath, segment, (err) => {
+                    if (err) {
+                        return callback(err);
+                    }
+                    return nextSegment();
+                });
+                
+            }, function(err, result) {
+                if (err) {
+                    return callback(err);
+                }
+
+                console.log('file has ' + compressedSegments.length + ' segment(s)');
+
+                return callback(null, compressedFileName, bufferLength);
+            });
         });
     });
 };
 
-CDNReady.compressFileIntoSegements = function(path, filename, buffer, segmentSize) {
+CDNReady.compressFile = function(sourceFilePath, segmentSize, callback) {
+
+    var self = this;
+
+    //open file
+    fs.readFile(sourceFilePath, function(err, buffer) {
+        if (err) {
+            return callback(err);
+        }
+
+        //returns array
+        var compressedSegments = self.compressFileIntoSegements(buffer, segmentSize);
+
+        callback(null, compressedSegments, buffer.length);
+    });
+};
+
+CDNReady.compressFileIntoSegements = function(buffer, segmentSize) {
 
     var totalsegments = Math.ceil(buffer.length / segmentSize);
     var bufferPosition = 0;
 
     var compressedSegments = [];
 
+    console.log('compressing buffer into segments');
+
     var i = 0;
     for (i; i < totalsegments; ++i) {
-        console.log(filename + ' --> Starting segment ' + i);
+        console.log('Starting segment --> ' + i);
         if (i === (totalsegments - 1)) {
-            var ab = new ArrayBuffer(buffer.length - bufferPosition);
+            var finalSegementLength = buffer.length - bufferPosition;
+            var ab = new ArrayBuffer(finalSegementLength);
             var view = new Uint8Array(ab);
-            for (var j = bufferPosition; j < buffer.length; ++j) {
+            for (var j = 0; j < finalSegementLength; ++j) {
                 view[j] = buffer[bufferPosition];
+                //console.log(bufferPosition + ': ' + view[j]);
                 bufferPosition++;
             }
         } else {
@@ -233,14 +371,35 @@ CDNReady.compressFileIntoSegements = function(path, filename, buffer, segmentSiz
             var view = new Uint8Array(ab);
             for (var j = 0; j < segmentSize; ++j) {
                 view[j] = buffer[bufferPosition];
+                //console.log(bufferPosition + ': ' + view[j]);
                 bufferPosition++;
             }
         }
+
+        console.log('segment written with length --> ' + view.length);
+
         var deflated = pako.deflate(view, {to: 'string'});
         compressedSegments[i] = Main.compress.string(deflated);
     }
 
     return compressedSegments;
+};
+
+CDNReady.DetermineBootCandidate = function(files) {
+
+    var best = files[0];
+
+    for (var i = 0, len = files.length; i < len; ++i) {
+        
+        var details = path.parse(files[i]);
+
+        if (details.ext === '.cue') {
+            best = files[i];
+        }
+    }
+
+    console.log('found best file to boot: ' + best);
+    return best;
 };
 
 module.exports = CDNReady;

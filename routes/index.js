@@ -151,7 +151,7 @@ router.get('/masterfile', function(req, res, next) {
 	if (!folder)
 		return res.json('system is a required query param. Maps to folder name (gen, snes, n64, gb...)');
 
-	MasterFile.exec(Main.getPath('decompressed') + folder, Main.getPath('datafiles') + '/' + folder + '_master', function(err, data) {
+	MasterFile.exec(folder, Main.getPath('decompressed') + folder, Main.getPath('datafiles') + '/' + folder + '_master', function(err, data) {
 		if (err) {
             return res.json(err);
         }

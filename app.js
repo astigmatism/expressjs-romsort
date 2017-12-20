@@ -43,8 +43,6 @@ app.use(function(req, res, next) {
   next(err);
 });
 
-var port = app.get('port') || 8000;
-
 // error handlers
 
 // development error handler
@@ -69,6 +67,7 @@ app.use(function(err, req, res, next) {
   });
 });
 
+var port = app.get('port') || 8000;
 var server = app.listen(port);
 
 server.timeout = 10800000; //3 hours repsonse timeout

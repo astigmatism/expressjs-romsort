@@ -21,8 +21,8 @@ GetBoxArt.exec = function(system, term, toolsDir, sourcePath, destinationPath, d
 
     var datafile = {};
     var self = this;
-    var lowerScore = lowerScoreThreshold || 250; //at 250 and below, we don't get box art (SEE FINDBESTROM.JS)
-    var higherScore = higherScoreThreshold || 500;
+    var lowerScore = parseInt(lowerScoreThreshold, 10) || 250; //at 250 and below, we don't get box art (SEE FIN.bROM.JS)
+    var higherScore = parseInt(higherScoreThreshold, 10) || 500;
 
 	//open source folder (datafiles)
 	fs.readdir(sourcePath, function(err, datafiles) {
@@ -33,7 +33,7 @@ GetBoxArt.exec = function(system, term, toolsDir, sourcePath, destinationPath, d
 		//loop over all datafiles
         async.eachSeries(datafiles, function(datafile, nextdatafile) {
 
-            if (system && system + '.json' !== datafile) {
+            if (system && system + '_master' !== datafile) {
                 return nextdatafile(null);
             }
 
@@ -63,7 +63,7 @@ GetBoxArt.exec = function(system, term, toolsDir, sourcePath, destinationPath, d
                         //async does not provide a good object iterator (they state their reasons well)
                         var games = [];
                         for (game in content) {
-                            if (content[game].files[content[game].best] > lowerScore && content[game].files[content[game].best] <= higherScoreThreshold) {
+                            if (content[game].f[content[game].b].rank > lowerScore && content[game].f[content[game].b].rank <= higherScoreThreshold) {
                                 games.push(game);
                             }
                         }
@@ -73,7 +73,7 @@ GetBoxArt.exec = function(system, term, toolsDir, sourcePath, destinationPath, d
 
                             console.log('----------------------------------------------------');
                             console.log(game);
-                            console.log(content[game].files[content[game].best]);
+                            console.log(content[game].f[content[game].b]);
 
                             //first check tp see if a folder already exists in the web folder
                             fs.exists(destinationPath + '/' + system + '/' + game, function(exists) {
