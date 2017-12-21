@@ -138,6 +138,8 @@ module.exports = new (function() {
 
 	var Zip = function(source, destination, callback) {
 
+		var parsedPath = path.parse(source);
+
 		fs.readFile(source, (err, buffer) => {
 			if (err) return callback(err);
 
@@ -149,7 +151,7 @@ module.exports = new (function() {
 			fs.writeFile(destination, zip.generate(options), 'binary', (err) => {
 				if (err) return callback(err);
 
-				console.log('compressing zip --> ' + source);
+				console.log('compressing zip --> ' + parsedPath.name);
 				return callback();
 			});
 		});

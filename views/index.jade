@@ -17,6 +17,64 @@ block content
 
 		button(onclick='$("#decompress").text("working");$.get("/decompress?system=" + $("#system").val(), function(response) { $("#decompress").text(response); })') GO!
 		div#decompress(class="response")
+
+	div(class="panel util")
+		h3 Compress
+		p(class="requied") REQUIED: Decompress
+		p
+			| Here we compress individual rom files from each title folder in 
+			span(class="folder") /01 - decompressed/[systemid]/
+			| . Can you filter out which rom files are compressed as well to reduce the set. The resulting files will be placed in 
+			span(class="folder") /02 - compressed/[systemid]/
+		p
+			| Specify which compression method to use:
+		div
+			input(type="radio", name="compresstype", value="none")
+			| None
+		div
+			input(type="radio", name="compresstype", value="zip", checked)
+			| Zip 
+		p
+			| You can also specify which rom files you want to compress. Please read the descriptions of each of the following:
+		div
+			input(type="radio", name="compressfilter", value="0", checked)
+			| None. All rom files will be compressed.
+		div
+			input(type="radio", name="compressfilter", value="1")
+			| Verified Only. Any file with the verified flag in its filename [!], will be compressed, all others will be ignored
+		div
+			input(type="radio", name="compressfilter", value="2")
+			| Unverified in subfolder. In this mode, the verified files (with [!] in their name) will be compressed in the base title folder while all others will be compressed into a subfolder.
+		br
+		button(onclick='$("#compress").text("working");$.get("/compress?system=" + $("#system").val() + "&compression=" + $("input[name=compresstype]:checked").val() + "&filter=" + $("input[name=compressfilter]:checked").val(), function(response) { $("#compress").text(response); })') GO!
+		div#compress(class="response")
+
+	div(class="panel util")
+		h3 Alpha Sort
+		p(class="requied") REQUIED: Decompress or Compress
+		p
+			| In this step, we can place title folders from either 
+			span(class="folder") /01 - decompressed/[systemid]/
+			|  or 
+			span(class="folder") /02 - compressed/[systemid]/
+			|  and place them into higher level folders which represent the letter(s) that title begins with. This helps with browsing for the right title. The resulting structure can be found in 
+			span(class="folder") /04 - alphasort/[systemid]/
+			| .
+		p
+			| Specify the location from which to sort title folders from:
+		div
+			input(type="radio", name="alphasource", value="compressed", checked)
+			| Compressed
+		div
+			input(type="radio", name="alphasource", value="decompressed")
+			| Decompressed
+		p
+			| You can also override the number of letters to merge files into at the top level (eg 2 is A-B, C-D while 3 is A-C, D-F)
+		div
+			input#alphastep(value="1")
+		br
+		button(onclick='$("#alphasort").text("working");$.get("/alphasort?system=" + $("#system").val() + "&source=" + $("input[name=alphasource]:checked").val() + "&step=" + $("alphastep").val(), function(response) { $("#alphasort").text(response); })') GO!
+		div#alphasort(class="response")
 	
 	div(class="panel")
 		h3 Rom Folders
@@ -102,8 +160,8 @@ block content
 			input#lowscore(value="0")
 			input#highscore(value="500")
 		div
-			button(onclick='$("#getboxart").text("working");$.get("/getboxart?delay=" + $("#delay").val() + "&system=" + $("#system").val() + "&term=" + $("#term").val() + "&upper=" + $("#highscore").val() + "&lower=" + $("#lowscore").val() + "&override=" + $("#overridebox").is(":checked"), function() { $("#getboxart").text("complete"); })') GO!
-			span#getboxart
+			button(onclick='$("#getboxart").text("working");$.get("/getboxart?delay=" + $("#delay").val() + "&system=" + $("#system").val() + "&term=" + $("#term").val() + "&upper=" + $("#highscore").val() + "&lower=" + $("#lowscore").val() + "&override=" + $("#overridebox").is(":checked"), function(response) { $("#getboxart").text(response); })') GO!
+			div#getboxart(class="response")
 
 		p After starting, watch the console window to see box art coming in. If it doesn't look accurate, stop the app and restart to try again.
 		
@@ -121,11 +179,35 @@ block content
 		p 
 			| Just like with roms, we want to create a manifest for crazyerics which defined which titles have boxart downloaded for them. The resulting file will be located in 
 			span(class="folder") /06 - datafile/[systemid]_boxart/
-		button(onclick='$("#boxartmasterfile").text("working");$.get("/masterfile/boxart?system=" + $("#system").val(), function() { $("#boxartmasterfile").text("complete"); })') GO!
-		span#boxartmasterfile
+		button(onclick='$("#boxartmasterfile").text("working");$.get("/masterfile/boxart?system=" + $("#system").val(), function(response) { $("#boxartmasterfile").text(response); })') GO!
+		div#boxartmasterfile(class="response")
 
-	div(class="panel boxart")
+
+
+
+
+	div(class="panel gamesdb")
 		h3 The GamesDB
+		p(class="requied") REQUIED: Masterfile
+		p
+			| Using the master file, iterator over all titles any hit thegamesgb.com api seeking details about the title. Will compare result to all others for likeliness of correction. You'll need to ensure a direct mapping of System ID to thegamesdb identifier (eg nes is "Nintendo Entertain System"). Add an entry in the config file at 
+			span(class="file") config/default.json
+			| .
+		p
+			| In case the previous search failed at any point, indicate how you'd like to update:
+		div
+			input(type="radio", name="thegamesdbtype", value="all", checked)
+			| All Titles
+		div
+			input(type="radio", name="thegamesdbtype", value="missing")
+			| Only Missing Titles (Continue)
+		br
+		button(onclick='$("#thegamesdb").text("working");$.get("/thegamesdb?system=" + $("#system").val() + "&update=" + $("input[name=thegamesdbtype]:checked").val(), function(response) { $("#thegamesdb").text(response); })') GO!
+		div#thegamesdb(class="response")
+
+
+
+	
 
 	div(class="panel cdn")
 		h3 CDN Prepare Roms
@@ -139,15 +221,14 @@ block content
 			span(class="folder") /06 - datafile/[systemid]_filedata
 			|  which is a manifest of compressed file sizes which I once used for crazyerics to know the size of a file before download (for the progress bar) but I no longer use it since I got the response header to provide this data.
 		
-		button(onclick='$("#cdnready").text("working");$.get("/cdnready?system=" + $("#system").val() + "&source=decompressed", function() { $("#cdnready").text("complete"); })') GO!
-		span#cdnready
+		button(onclick='$("#cdnready").text("working");$.get("/cdnready?system=" + $("#system").val() + "&source=decompressed", function(response) { $("#cdnready").text(response); })') GO!
+		div#cdnready(class="response")
 		p 
 			| On completion, you'll need to copy the resulting folder at 
 			span(class="folder") /cdnready/[systemid]/
 			|  to your CDN in the appropriate location. For versioning, I like to use something descriptive, such as a the GoodRoms version (eg GoodNes-3.23b). This name then has to be supplied to the crazyerics config file at 
 			span(class="file") /config/default.json
 			|  so that the crazyerics app pulls content from that location for a given system.
-
 
 	div(class="panel cdn")
 		h3 CDN Prepare Box Art
@@ -161,8 +242,8 @@ block content
 			span(class="file") cdnboxready.js
 			| . This includes textures I use for webgl.
 
-		button(onclick='$("#cdnreadyboxes").text("working");$.get("/cdnboxready/" + $("#system").val(), function() { $("#cdnreadyboxes").text("complete"); })') cdnready boxes
-		span#cdnreadyboxes
+		button(onclick='$("#cdnreadyboxes").text("working");$.get("/cdnboxready/" + $("#system").val(), function(response) { $("#cdnreadyboxes").text(response); })') GO!
+		div#cdnreadyboxes(class="response")
 
 		p 
 			| On completion, you'll need to copy the resulting folder at 
@@ -170,61 +251,3 @@ block content
 			|  to your CDN in the appropriate location. For versioning, I like to use the date I complied the box art since I'm updating on a regular basis. Something like 2017-12-02. This name then has to be supplied to the crazyerics config file at 
 			span(class="file") /config/default.json
 			|  so that the crazyerics app pulls box art from that location for a given system.
-		
-	div(class="panel util")
-		h3 Compress
-		p(class="requied") REQUIED: Decompress
-		p
-			| Here we compress individual rom files from each title folder in 
-			span(class="folder") /01 - decompressed/[systemid]/
-			| . Can you filter out which rom files are compressed as well to reduce the set. The resulting files will be placed in 
-			span(class="folder") /02 - compressed/[systemid]/
-		p
-			| Specify which compression method to use:
-		div
-			input(type="radio", name="compresstype", value="none")
-			| None
-		div
-			input(type="radio", name="compresstype", value="zip", checked)
-			| Zip 
-		p
-			| You can also specify which rom files you want to compress. Please read the descriptions of each of the following:
-		div
-			input(type="radio", name="compressfilter", value="0", checked)
-			| None. All rom files will be compressed.
-		div
-			input(type="radio", name="compressfilter", value="1")
-			| Verified Only. Any file with the verified flag in its filename [!], will be compressed, all others will be ignored
-		div
-			input(type="radio", name="compressfilter", value="2")
-			| Unverified in subfolder. In this mode, the verified files (with [!] in their name) will be compressed in the base title folder while all others will be compressed into a subfolder.
-		br
-		button(onclick='$("#compress").text("working");$.get("/compress?system=" + $("#system").val() + "&compression=" + $("input[name=compresstype]:checked").val() + "&filter=" + $("input[name=compressfilter]:checked").val(), function(response) { $("#compress").text(response); })') GO!
-		div#compress(class="response")
-
-	div(class="panel util")
-		h3 Alpha Sort
-		p(class="requied") REQUIED: Decompress or Compress
-		p
-			| In this step, we can place title folders from either 
-			span(class="folder") /01 - decompressed/[systemid]/
-			|  or 
-			span(class="folder") /02 - compressed/[systemid]/
-			|  and place them into higher level folders which represent the letter(s) that title begins with. This helps with browsing for the right title. The resulting structure can be found in 
-			span(class="folder") /04 - alphasort/[systemid]/
-			| .
-		p
-			| Specify the location from which to sort title folders from:
-		div
-			input(type="radio", name="alphasource", value="compressed", checked)
-			| Compressed
-		div
-			input(type="radio", name="alphasource", value="decompressed")
-			| Decompressed
-		p
-			| You can also override the number of letters to merge files into at the top level (eg 2 is A-B, C-D while 3 is A-C, D-F)
-		div
-			input#alphastep(value="1")
-		br
-		button(onclick='$("#alphasort").text("working");$.get("/alphasort?system=" + $("#system").val() + "&source=" + $("input[name=alphasource]:checked").val() + "&step=" + $("alphastep").val(), function(response) { $("#alphasort").text(response); })') GO!
-		div#alphasort(class="response")

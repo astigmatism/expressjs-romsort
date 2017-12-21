@@ -27,8 +27,8 @@ var BoxArt = function() {
 			$.each(data, function(title, details) {
 
 				var topranking = 0;
-				$.each(details.f, function(file, rank) {
-					rank = parseInt(rank, 10);
+				$.each(details.f, function(file, obj) {
+					rank = parseInt(obj.rank, 10);
 					topranking = rank > topranking ? rank : topranking;
 				});
 

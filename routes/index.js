@@ -164,10 +164,8 @@ router.get('/masterfile/boxart', function(req, res, next) {
 		return res.json('system is a required query param. Maps to folder name (gen, snes, n64, gb...)');
 		
 	MasterFile.boxart(Main.getPath('datafiles') + '/' + folder + '_master', Main.getPath('webboxart') + folder, Main.getPath('datafiles') + '/' + folder + '_boxart', function(err, result) {
-		if (err) {
-			return res.json(err);
-		}
-		res.json(result);
+		if (err) return res.json(err);
+		res.json('complete');
 	});
 });
 
@@ -201,10 +199,18 @@ router.get('/cdnready', function(req, res, next) {
 	source = source === "topchoice" ? Main.getPath('topchoice') + folder : Main.getPath('decompressed') + folder;
 
 	CDNReady.exec(source, Main.getPath('cdnready') + folder, Main.getPath('datafiles') + '/' + folder + '_filedata', segmentsize, function(err, data) {
-		if (err) {
-            return res.json(err);
-        }
-        res.json(data);
+		if (err) return res.json(err);
+        res.json('complete');
+	});
+});
+
+router.get('/cdnboxready/:folder', function(req, res, next) {
+
+	var folder = req.params.folder;	
+
+	CDNBoxReady.exec(Main.getPath('datafiles') + '/' + folder + '_master', Main.getPath('webboxart')  + folder, Main.getPath('cdnboxready') + folder, function(err, data) {
+		if (err) return res.json(err);
+        res.json('complete');
 	});
 });
 
@@ -221,18 +227,6 @@ router.get('/supportfiles', function(req, res, next) {
 	});
 });
 
-router.get('/cdnboxready/:folder', function(req, res, next) {
-
-	var folder = req.params.folder;	
-
-	CDNBoxReady.exec(Main.getPath('datafiles') + '/' + folder + '_master', Main.getPath('webboxart')  + folder, Main.getPath('cdnboxready') + folder, function(err, data) {
-		if (err) {
-            return res.json(err);
-        }
-        res.json(data);
-	});
-});
-
 router.get('/getboxart', function(req, res, next) {
 
 	var system = req.query.system;
@@ -243,11 +237,8 @@ router.get('/getboxart', function(req, res, next) {
 	var override = req.query.override;
 
 	GetBoxArt.exec(system, term, Main.getPath('tools'), Main.getPath('datafiles'), Main.getPath('webboxart'), delay, lowerThreshold, higherThreshold, override, function(err, data) {
-		if (err) {
-			console.log(err);
-            return res.json(err);
-        }
-        res.json(data);
+		if (err) return res.json(err);
+        res.json('complete');
 	});
 });
 
@@ -265,10 +256,8 @@ router.get('/thegamesdb', function(req, res, next) {
 	score = parseFloat(score);
 
 	TheGamesDB.exec(system, score, update, Main.getPath('datafiles') + '/' + system + '_master', Main.getPath('datafiles') + '/' + system + '_thegamesdb', Main.getPath('datafiles') + '/' + system + '_thegamesdb_report.json', function(err, data){
-		if (err) {
-            return res.json(err);
-        }
-        res.json(data);
+		if (err) return res.json(err);
+        res.json('complete');
 	});
 });
 
