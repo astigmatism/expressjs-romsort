@@ -219,10 +219,11 @@ router.get('/supportfiles', function(req, res, next) {
 	var system = req.query.system;
 	var segmentsize = req.query.segmentsize || 25000000;
 
+	if (!system)
+		return res.json('system is a required query param. Maps to folder name (gen, snes, n64, gb...)');
+
 	SupportFiles.exec(system, segmentsize, Main.getPath('supportfiles'), Main.getPath('cdnsupportready'), function(err, response) {
-		if (err) {
-			return res.json(err);
-		}
+		if (err) return res.json(err);
 		res.json(response);
 	});
 });

@@ -27,6 +27,9 @@
 		"tools": "/tools/"
 	},
 	"thegamesdb": {
+		"fds": {
+			"platform": ["Famicom Disk System"]
+		},
 		"snes": {
 			"platform": ["Super Nintendo (SNES)"]
 		},
@@ -52,7 +55,7 @@
 			"platform": ["Nintendo Game Boy", "Nintendo Game Boy Color"]
 		},
 		"nes": {
-			"platform": ["Famicom Disk System", "Nintendo Entertainment System (NES)"]
+			"platform": ["Nintendo Entertainment System (NES)"]
 		},
 		"n64": {
 			"platform": ["Nintendo 64"]

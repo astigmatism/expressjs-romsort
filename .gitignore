@@ -36,6 +36,7 @@ public/boxart/*
 !public/boxart/snes
 !public/boxart/a2600
 !public/boxart/nds
+!public/boxart/fds
 !public/boxart/a7800
 !public/boxart/32x
 !public/boxart/segacd

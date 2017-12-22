@@ -24,9 +24,14 @@ SupportFiles.exec = function(system, segmentSize, sourcePath, destinationPath, c
 
             fs.stat(sourcePath + '/' + file, function(err, stats) {
                 
+                //dumb DS_Store
+                if (file == '.DS_Store') {
+                    return nextfile();
+                }
+
                 //bail if a file, folders only for titles
                 if (!stats.isFile()) {
-                    return nextfile(null);
+                    return nextfile();
                 }
 
                 //open file
@@ -65,13 +70,8 @@ SupportFiles.exec = function(system, segmentSize, sourcePath, destinationPath, c
                 //get resulting filesize
                 fs.stat(destinationPath + '/' + system, (err, stat) => {
 
-                    console.log('filesize (copy to config): ' + stat.size);
-
                     console.log('SupportFiles complete');
-                
-                    beep(5);
-
-                    return callback(null, '');
+                    return callback(null, 'Filesize (copy to config): ' + stat.size);
                 });
             });
         });

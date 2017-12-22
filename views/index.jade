@@ -206,8 +206,23 @@ block content
 		div#thegamesdb(class="response")
 
 
-
-	
+	div(class="panel cdn")
+		h3 Prepare Support Files
+		p
+			| Support files are generally BIOS files needed by certain systems in order for the emulator to run. This step compresses all files in 
+			span(class="folder") /16 - supportfiles/
+			|  to a single file which can be found in 
+			span(class="file") /cdnsupportready/
+			|  upon completion. Ensure the files are named as they need to be read from the Retroarch file system.
+		br
+		button(onclick='$("#supportfiles").text("working");$.get("/supportfiles?system=" + $("#system").val(), function(response) { $("#supportfiles").text(response); })') GO!
+		div#supportfiles(class="response")
+		p
+			| Upon completion, the response will show a file size for the file generated. Copy it and put it in the crazyerics config definition for this system.
+		p
+			| You will then need to copy the resulting file in 
+			span(class="file") /cdnsupportready/
+			|  to its proper location on the CDN. The folder it should be placed in is equal to the emulator extention name for that system (eg 1.6.7-stable).
 
 	div(class="panel cdn")
 		h3 CDN Prepare Roms
