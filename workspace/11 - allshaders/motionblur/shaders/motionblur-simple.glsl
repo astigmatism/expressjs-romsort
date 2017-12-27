@@ -6,8 +6,8 @@
 #define COMPAT_ATTRIBUTE in
 #define COMPAT_TEXTURE texture
 #else
-#define COMPAT_VARYING varying
-#define COMPAT_ATTRIBUTE attribute
+#define COMPAT_VARYING varying 
+#define COMPAT_ATTRIBUTE attribute 
 #define COMPAT_TEXTURE texture2D
 #endif
 
@@ -67,8 +67,8 @@ COMPAT_ATTRIBUTE vec4 VertexCoord;
 COMPAT_ATTRIBUTE vec4 TexCoord;
  
 uniform mat4 MVPMatrix;
-uniform float FrameDirection;
-uniform float FrameCount;
+uniform COMPAT_PRECISION int FrameDirection;
+uniform COMPAT_PRECISION int FrameCount;
 uniform COMPAT_PRECISION vec2 OutputSize;
 uniform COMPAT_PRECISION vec2 TextureSize;
 uniform COMPAT_PRECISION vec2 InputSize;
@@ -137,7 +137,7 @@ struct input_dummy {
     vec2 _video_size;
     vec2 VARtexture_size;
     vec2 _output_dummy_size;
-    float _frame_count;
+    int _frame_count;
     float _frame_direction;
     float _frame_rotation;
 float _placeholder74;
@@ -180,8 +180,8 @@ uniform sampler2D Prev3Texture;
 uniform sampler2D Prev2Texture;
 uniform sampler2D Prev1Texture;
 uniform sampler2D PrevTexture;
-uniform float FrameDirection;
-uniform float FrameCount;
+uniform COMPAT_PRECISION int FrameDirection;
+uniform COMPAT_PRECISION int FrameCount;
 uniform COMPAT_PRECISION vec2 OutputSize;
 uniform COMPAT_PRECISION vec2 TextureSize;
 uniform COMPAT_PRECISION vec2 InputSize;

@@ -5,6 +5,7 @@ var nodeZip = require('node-zip');
 var beep = require('beepbeep');
 var Main = require('./main.js');
 var CompressShaders = require('./compressshaders');
+const path = require('path');
 
 /**
  * DataService Constructor
@@ -12,9 +13,9 @@ var CompressShaders = require('./compressshaders');
 MakeAllShaders = function() {
 };
 
-MakeAllShaders.exec = function(sourcePath, destinationPath, cgPath, cdnShaderReady, callback) {
+MakeAllShaders.exec = function(sourcePath, destinationPath, cdnShaderReady, callback) {
 
-    MakeAllShaders.treeNode(sourcePath, destinationPath, cgPath, cdnShaderReady, {}, function(err, data) {
+    MakeAllShaders.treeNode(sourcePath, destinationPath, cdnShaderReady, {}, function(err, data) {
         if (err) {
             return callback(err);
         }
@@ -25,7 +26,7 @@ MakeAllShaders.exec = function(sourcePath, destinationPath, cgPath, cdnShaderRea
     });
 };
 
-MakeAllShaders.treeNode = function(sourcePath, destinationPath, cgPath, cdnShaderReady, fileManifest, callback, prefix) {
+MakeAllShaders.treeNode = function(sourcePath, destinationPath, cdnShaderReady, fileManifest, callback, prefix) {
 
 	var prefix = prefix || '';
 
@@ -38,8 +39,10 @@ MakeAllShaders.treeNode = function(sourcePath, destinationPath, cgPath, cdnShade
 		//loop over all file contents
         async.eachSeries(files, function(file, nextfile) {
 
-        	//get file stats
-        	fs.stat(sourcePath + '/' + file, function(err, stats) {
+			//get file stats
+			var _file = path.join(sourcePath, file);
+
+        	fs.stat(_file, function(err, stats) {
         		if (err) {
                 	return nextfile(err);
             	}
@@ -49,7 +52,7 @@ MakeAllShaders.treeNode = function(sourcePath, destinationPath, cgPath, cdnShade
             		var newprefix = (prefix.length > 0) ? prefix + '-' + file : file;
 
             		//if folder, go into it and look for glslp
-            		MakeAllShaders.treeNode(sourcePath + '/' + file, destinationPath, cgPath + '/' + file, cdnShaderReady, fileManifest, function(err, data) {
+            		MakeAllShaders.treeNode(_file, destinationPath, cdnShaderReady, fileManifest, function(err, data) {
             			if (err) {
             				return nextfile(err);
             			}
@@ -73,7 +76,13 @@ MakeAllShaders.treeNode = function(sourcePath, destinationPath, cgPath, cdnShade
 	            			var ws = fs.createOutputStream(destinationLocation + '/' + file);
 
 	            			fs.readFile(sourcePath + '/' + file, 'utf8', function(err, data) {
-	            				var lines = data.split('\n');
+								if (err) {
+									return nextfile();
+								}
+
+								console.log('Reading file: ' + sourcePath + '/' + file);
+								
+								var lines = data.split('\n');
 	            				
 	            				//loop over each line in the glslp and correct paths, locate other glsl files
 	            				async.eachSeries(lines, function(line, nextline) {
@@ -112,10 +121,10 @@ MakeAllShaders.treeNode = function(sourcePath, destinationPath, cgPath, cdnShade
 
 	            						ws.write(resourcepath[1] + resourcefilename + '\n');
 
-	            						//find the resource in the cg shader tree
-	            						fs.copy(cgPath + '/' + resourcepath[2], destinationLocation + '/' + resourcefilename, function (err) {
+	            						//find the resource
+	            						fs.copy(sourcePath + '/' + resourcepath[2], destinationLocation + '/' + resourcefilename, function (err) {
 											if (err) {
-												//could not find the resource file in the cg folder
+												return nextline('Could not find resource file: ' + sourcePath + '/' + resourcepath[2]);
 											}
 											return nextline();
 										});
@@ -128,17 +137,27 @@ MakeAllShaders.treeNode = function(sourcePath, destinationPath, cgPath, cdnShade
 	            				}, function(err) {
 						            if (err) {
 						                return callback(err);
-						            }
+									}
 
-									//record this shader
-									fileManifest[savename.name] = {};
-									
-						            CompressShaders.exec(savename.name, destinationPath, cdnShaderReady, function(err, filesize) {
+									fs.readFile(destinationLocation + '/' + file, 'utf8', function(err, finalglsl) {
 										
-										fileManifest[savename.name].s = filesize;
+										console.log('Resulting file:');
+										console.log('.................................');
+										console.log(finalglsl);
+										console.log('.................................');
+										console.log('Finished: ' + destinationLocation + '/' + file);
+										console.log('------------------------------------------------------------------------------');
 
-						            	return nextfile();
-						            });
+										//record this shader
+										fileManifest[savename.name] = {};
+										
+										CompressShaders.exec(savename.name, destinationPath, cdnShaderReady, function(err, filesize) {
+											
+											fileManifest[savename.name].s = filesize;
+
+											return nextfile();
+										});
+									});
 						        });
 	            			});
 						});
@@ -151,9 +170,8 @@ MakeAllShaders.treeNode = function(sourcePath, destinationPath, cgPath, cdnShade
         	});
 
         }, function(err, result) {
-            if (err) {
-                return callback(err);
-            }
+			if (err) return callback(err);
+			
             return callback(null, fileManifest);
         });
     });

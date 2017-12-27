@@ -181,6 +181,3 @@ filter_linear8 = "true"
 scale_type8 = "viewport"
 mipmap_input8 = "true"
 texture_wrap_mode8 = "clamp_to_edge"
-
-
-
