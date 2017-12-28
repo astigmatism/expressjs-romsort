@@ -1,17 +1,17 @@
 # IMPORTANT:
 # Shader passes need to know details about the image in the mask_texture LUT
-# files, so set the following constants in user-cgp-constants.h accordingly:
+# files, so set the following constants in user-preset-constants.h accordingly:
 # 1.) mask_triads_per_tile = (number of horizontal triads in mask texture LUT's)
 # 2.) mask_texture_small_size = (texture size of mask*texture_small LUT's)
 # 3.) mask_texture_large_size = (texture size of mask*texture_large LUT's)
 # 4.) mask_grille_avg_color = (avg. brightness of mask_grille_texture* LUT's, in [0, 1])
 # 5.) mask_slot_avg_color = (avg. brightness of mask_slot_texture* LUT's, in [0, 1])
 # 6.) mask_shadow_avg_color = (avg. brightness of mask_shadow_texture* LUT's, in [0, 1])
-# Shader passes also need to know certain scales set in this .glslp, but their
-# compilation model doesn't currently allow the .glslp file to tell them.  Make
-# sure to set the following constants in user-cgp-constants.h accordingly too:
+# Shader passes also need to know certain scales set in this preset, but their
+# compilation model doesn't currently allow the preset file to tell them.  Make
+# sure to set the following constants in user-preset-constants.h accordingly too:
 # 1.) bloom_approx_scale_x = scale_x2
-# 2.) mask_resize_viewport_scale = float2(scale_x6, scale_y5)
+# 2.) mask_resize_viewport_scale = vec2(scale_x6, scale_y5)
 # Finally, shader passes need to know the value of geom_max_aspect_ratio used to
 # calculate scale_y5 (among other values):
 # 1.) geom_max_aspect_ratio = (geom_max_aspect_ratio used to calculate scale_y5)
@@ -71,7 +71,6 @@ scale_type_x1 = "source"
 scale_x1 = "1.0"
 scale_type_y1 = "viewport"
 scale_y1 = "1.0"
-#float_framebuffer1 = "true"
 srgb_framebuffer1 = "true"
 
 # Pass2: Do a small resize blur of ORIG_LINEARIZED at an absolute size, and
@@ -145,7 +144,7 @@ srgb_framebuffer4 = "true"
 # Given our default geom_max_aspect_ratio and min_allowed_viewport_triads:
 #   scale_y5 = 4.0/3.0 * 2.0/(341.33333 / 8.0) = 0.0625
 # IMPORTANT: The scales MUST be calculated in this way.  If you wish to change
-# geom_max_aspect_ratio, update that constant in user-cgp-constants.h!
+# geom_max_aspect_ratio, update that constant in user-preset-constants.h!
 shader5 = "shaders/crt-royale/src/crt-royale-mask-resize-vertical.glsl"
 filter_linear5 = "true"
 scale_type_x5 = "absolute"
@@ -172,7 +171,6 @@ alias7 = "MASKED_SCANLINES"
 filter_linear7 = "true" # This could just as easily be nearest neighbor.
 scale_type7 = "viewport"
 scale7 = "1.0"
-#float_framebuffer7 = "true"
 srgb_framebuffer7 = "true"
 
 # Pass 8: Compute a brightpass.  This will require reading the final mask.
@@ -201,6 +199,5 @@ srgb_framebuffer10 = "true"
 shader11 = "shaders/crt-royale/src/crt-royale-geometry-aa-last-pass.glsl"
 filter_linear11 = "true"
 scale_type11 = "viewport"
-mipmap_input11 = "true"
+mipmap_input11 = "false"
 texture_wrap_mode11 = "clamp_to_edge"
-

@@ -405,7 +405,7 @@ router.get('/makeallshaders', function(req, res, next) {
 
 	fs.emptyDir(Main.getPath('shaderfiles'), function (err) {
 
-		MakeAllShaders.exec(Main.getPath('allshaders'), Main.getPath('shaderfiles'), Main.getPath('cgshaders'), Main.getPath('cdnshaderready'), function(err, data) {
+		MakeAllShaders.exec(Main.getPath('allshaders'), Main.getPath('shaderfiles'), Main.getPath('cdnshaderready'), function(err, data) {
 			if (err) {
 	            return res.json(err);
 	        }

@@ -6,8 +6,8 @@
 #define COMPAT_ATTRIBUTE in
 #define COMPAT_TEXTURE texture
 #else
-#define COMPAT_VARYING varying
-#define COMPAT_ATTRIBUTE attribute
+#define COMPAT_VARYING varying 
+#define COMPAT_ATTRIBUTE attribute 
 #define COMPAT_TEXTURE texture2D
 #endif
 
@@ -51,8 +51,8 @@ COMPAT_VARYING vec4 TEX2;
 COMPAT_VARYING vec4 TEX3;
  
 uniform mat4 MVPMatrix;
-uniform float FrameDirection;
-uniform float FrameCount;
+uniform COMPAT_PRECISION int FrameDirection;
+uniform COMPAT_PRECISION int FrameCount;
 uniform COMPAT_PRECISION vec2 OutputSize;
 uniform COMPAT_PRECISION vec2 TextureSize;
 uniform COMPAT_PRECISION vec2 InputSize;
@@ -232,8 +232,8 @@ COMPAT_VARYING vec4 TEX1;
 COMPAT_VARYING vec4 TEX2;
 COMPAT_VARYING vec4 TEX3;
  
-uniform float FrameDirection;
-uniform float FrameCount;
+uniform COMPAT_PRECISION int FrameDirection;
+uniform COMPAT_PRECISION int FrameCount;
 uniform COMPAT_PRECISION vec2 OutputSize;
 uniform COMPAT_PRECISION vec2 TextureSize;
 uniform COMPAT_PRECISION vec2 InputSize;

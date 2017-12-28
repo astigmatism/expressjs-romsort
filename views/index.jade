@@ -266,3 +266,22 @@ block content
 			|  to your CDN in the appropriate location. For versioning, I like to use the date I complied the box art since I'm updating on a regular basis. Something like 2017-12-02. This name then has to be supplied to the crazyerics config file at 
 			span(class="file") /config/default.json
 			|  so that the crazyerics app pulls box art from that location for a given system.
+	
+	div(class="panel other")
+		h3 Prepare Shaders
+		p
+			| First, download the glsl shaders from GitHub at "https://github.com/libretro/glsl-shaders". 
+		p
+			| Unzip the package and place all its folders in  
+			span(class="folder") /11 - allshaders/
+			| . Click GO!
+
+		button(onclick='$("#buildshaders").text("working");$.get("/makeallshaders/", function(response) { var text = JSON.stringify(response); $("#buildshaders").text(text); })') GO!
+		div#buildshaders(class="response")
+
+		p
+			| The response will display the result of every shader compliation as a JSON object stringified. Copy this blob and paste it into the crazyerics config file under "shaders". The file size is necessary for the download progress bar when the user selects a shader to use.
+		p
+			| The resulting files will be in 
+			span(class="folder") /cdnshaderready/
+			| . Copy these files and place them in your cdn. You will need to version the shader files, I usually use a date for when I complied them (eg 2017-12-27). Then change the path from which shaders are loaded from in the configs under "paths".
