@@ -73,9 +73,34 @@ block content
 		div
 			input#alphastep(value="1")
 		br
-		button(onclick='$("#alphasort").text("working");$.get("/alphasort?system=" + $("#system").val() + "&source=" + $("input[name=alphasource]:checked").val() + "&step=" + $("alphastep").val(), function(response) { $("#alphasort").text(response); })') GO!
+		button(onclick='$("#alphasort").text("working");$.get("/alphasort?system=" + $("#system").val() + "&source=" + $("input[name=alphasource]:checked").val() + "&step=" + $("#alphastep").val(), function(response) { $("#alphasort").text(response); })') GO!
 		div#alphasort(class="response")
 	
+	div(class="panel util")
+		h3 Take Top Rom Choice
+		p(class="requied") REQUIED: Decompress, optionally Compress and the Rom Folders step too.
+		p
+			| This function might be useful when collecting roms for systems like RecalBox or RetroPie were we want a single romfile for each title and more than that, the most appropriate rom file :)
+		p
+			| In this step, we scan each title folder in
+			span(class="folder") /01 - decompressed/[systemid]/
+			|  and using the same "FindBestRom" function as used in generating the Masterfile, take the highest scoring rom file and copy to 
+			span(class="folder") /05 - topchoice/[systemid]/
+			| .
+		p
+			| You might want to set a lower limit for games to take. For instance, you may not want titles whose game's are scored too low. See the chart on the Masterfile step to determine what you might want to use. The score you define here is inclusive.
+		div
+			input#topchoicelowerlimit(value="250")
+		br
+		div
+			input(type="checkbox", name="topsource", checked)
+			| Zip the resulting file?
+		p
+			| As a side note, if you are collecting roms for an emulation system like RecalBox, you might want to consider that some games have pretty awesome hacks. Also consider Prototype versions of titles and maybe even Public Domain stuff. Keep in mind to remove or split out Public Domain files.
+		br
+		button(onclick='$("#topchoice").text("working");$.get("/topchoice?system=" + $("#system").val() + "&source=" + $("input[name=topsource]:checked").val() + "&lowerlimit=" + $("#topchoicelowerlimit").val() + "&flatten=true", function(response) { $("#topchoice").text(response); })') GO!
+		div#topchoice(class="response")
+
 	div(class="panel")
 		h3 Rom Folders
 		p 
@@ -120,6 +145,21 @@ block content
 			|  and can be found in 
 			span(class="folder") /06 - datafile/
 			|  . It is a json formatted (not human consumable) file which contains the score for each file in a rom folder as well as denoting the top scoring file.
+		p
+			| Ok! Let's try and provide some insight into your scoring system for each rom file here. Try and keep this up-to-date for reference:
+		p
+			| 499-450: pass over all english regions with playable [!] (english regions include (U),(E), etc)
+			br
+			| 449-400: pass over all english regions, no brackets
+			br
+			| 399-350: all non-english regions with playable [!] (this is the line between domestic and foreign)
+			br
+			| 349-300: pass over all non-english regions, no brackets.
+			br
+			| 299-250: has playable [!] with no matching region data
+			br
+			| 249- : all scores that fall below 250 are ranked based on a variety of factors. Typically we will not get boxart for titles that rank below 250.
+
 		button(onclick='$("#masterfile").text("working");$.get("/masterfile?system=" + $("#system").val(), function(response) { $("#masterfile").text(response); })') GO!
 		div#masterfile(class="response")
 		

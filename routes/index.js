@@ -172,12 +172,18 @@ router.get('/masterfile/boxart', function(req, res, next) {
 router.get('/topchoice', function(req, res, next) {
 	
 	var folder = req.query.system;
+	var lowerlimit = req.query.lowerlimit;
 	var flatten = req.query.flatten === "true" ? true : false;
+	var source = req.query.source;
 
 	if (!folder)
 		return res.json('system is a required query param');
+	if (!lowerlimit)
+		return res.json('lowerlimit is a required query param');
 
-	TopChoice.exec(Main.getPath('decompressed') + folder, Main.getPath('topchoice') + folder, flatten, function(err, data) {
+	var sourceFolder = path.join(Main.getPath(source), folder);
+
+	TopChoice.exec(sourceFolder, Main.getPath('topchoice') + folder, lowerlimit, flatten, function(err, data) {
 		if (err) {
             return res.json(err);
         }
@@ -282,6 +288,7 @@ router.get('/boxart/:system', function(req, res, next) {
 
 	var system = req.params.system;
 	var alpha = req.query.alpha;
+	var minimumScore = 250;
 
 	//read all titles from web folder
 	fs.readdir(Main.getPath('webboxart') + system, function(err, webtitles) {
@@ -305,7 +312,8 @@ router.get('/boxart/:system', function(req, res, next) {
 						data: JSON.stringify(masterFile),
 						webtitles: JSON.stringify(webtitles),
 						system: system,
-						boxartdata: JSON.stringify(boxartdata)
+						boxartdata: JSON.stringify(boxartdata),
+						minimumScore: minimumScore
 					});
 					return;
 				};

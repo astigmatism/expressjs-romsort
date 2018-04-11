@@ -6,7 +6,7 @@ var FindBestRom = require('./findbestrom.js');
 TopChoice = function() {
 };
 
-TopChoice.exec = function(sourcePath, destinationPath, flatten, callback) {
+TopChoice.exec = function(sourcePath, destinationPath, lowerlimit, flatten, callback) {
 
     var datafile = {};
 
@@ -60,8 +60,13 @@ TopChoice.exec = function(sourcePath, destinationPath, flatten, callback) {
                                     return nextfolder();
                                 }); 
                             });
-
                         };
+
+                        if (parseFloat(details.rank) < parseFloat(lowerlimit))
+                        {
+                            console.log('topchoice BELOW LIMIT: ' + folder + ' --> ' + details.rank + ' ' + details.game);
+                            return nextfolder();
+                        }
 
                         //if not flattening file structure, this means we'll put top choice in a title folder (like crazyerics.com expects from CDN)
                         if (!flatten) {

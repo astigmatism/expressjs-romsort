@@ -32,8 +32,8 @@ var BoxArt = function() {
 					topranking = rank > topranking ? rank : topranking;
 				});
 
-				//250 and below is the score at which we are not concerned about getting box art (see findbestrom.js for details) 
-				if (topranking <= 250) {
+				//minimumScore is 250 by default. 
+				if (topranking <= minimumScore) {
 					return;
 				}
 
