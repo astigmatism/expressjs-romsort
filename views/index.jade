@@ -91,10 +91,14 @@ block content
 			| You might want to set a lower limit for games to take. For instance, you may not want titles whose game's are scored too low. See the chart on the Masterfile step to determine what you might want to use. The score you define here is inclusive.
 		div
 			input#topchoicelowerlimit(value="250")
-		br
+		p
+			| Specify the location from which to source the best rom file from:
 		div
-			input(type="checkbox", name="topsource", checked)
-			| Zip the resulting file?
+			input(type="radio", name="topsource", value="compressed", checked)
+			| Compressed
+		div
+			input(type="radio", name="topsource", value="decompressed")
+			| Decompressed
 		p
 			| As a side note, if you are collecting roms for an emulation system like RecalBox, you might want to consider that some games have pretty awesome hacks. Also consider Prototype versions of titles and maybe even Public Domain stuff. Keep in mind to remove or split out Public Domain files.
 		br
