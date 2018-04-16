@@ -30,7 +30,8 @@ FindBestRom.exec = function(files, officialscore) {
         a:      new RegExp('\\(a\\)', 'ig'),        //Ausrilia release
         eb:     new RegExp('\\(eb\\)', 'ig'),        //Europe and Brazil
         e:      new RegExp('\\(e\\)', 'ig'),        //Europe release (last ditch check as can be english sometimes)
-        eng:    new RegExp('t\\+eng', 'ig')             //English translation of japanese game. I'm putting this up here so that it DOES appear in suggestions and searches
+        engn:    new RegExp('\\[t\\+eng(\d|\.).*\\]', 'ig'),
+        eng:    new RegExp('\\[t\\+eng', 'ig')             //English translation of japanese game. I'm putting this up here so that it DOES appear in suggestions and searches
     };
 
     //regions not in english are still important so that they arent ranked low
