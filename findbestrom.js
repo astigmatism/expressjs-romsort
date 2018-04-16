@@ -30,7 +30,7 @@ FindBestRom.exec = function(files, officialscore) {
         a:      new RegExp('\\(a\\)', 'ig'),        //Ausrilia release
         eb:     new RegExp('\\(eb\\)', 'ig'),        //Europe and Brazil
         e:      new RegExp('\\(e\\)', 'ig'),        //Europe release (last ditch check as can be english sometimes)
-        eng:    new RegExp('Eng', 'ig')             //English translation of japanese game. I'm putting this up here so that it DOES appear in suggestions and searches
+        eng:    new RegExp('t\\+eng', 'ig')             //English translation of japanese game. I'm putting this up here so that it DOES appear in suggestions and searches
     };
 
     //regions not in english are still important so that they arent ranked low
@@ -133,6 +133,16 @@ FindBestRom.exec = function(files, officialscore) {
         //pass over all english regions, no brackets 400 - 450
         for (re in reRegion) {
             if (item.match(reRegion[re]) && !item.match(reOption.b) && resultrank < currentrank) {
+                result = item;
+                resultindex = i;
+                resultrank = currentrank;
+            }
+            --currentrank;
+        }
+
+        //pass over all english regions brackets ok
+        for (re in reRegion) {
+            if (item.match(reRegion[re]) && resultrank < currentrank) {
                 result = item;
                 resultindex = i;
                 resultrank = currentrank;

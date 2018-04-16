@@ -33,6 +33,7 @@ var BoxArt = function() {
 				});
 
 				//minimumScore is 250 by default. 
+				console.log(minimumScore);
 				if (topranking <= minimumScore) {
 					return;
 				}
