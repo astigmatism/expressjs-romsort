@@ -13,23 +13,12 @@ FindBestRom.exec = function(files, officialscore) {
 
     //regular exp for region. order of importance. we're seeking a game which is probably in english
     var reRegion = {
-        w:      new RegExp('\\(w\\)', 'ig'),        //World release
-        u:      new RegExp('\\(u\\)', 'ig'),        //US region
-        us:      new RegExp('\\(us\\)', 'ig'),      //US region
-        ju:     new RegExp('\\(ju\\)', 'ig'),       //Japanese and US release
-        uj:     new RegExp('\\(uj\\)', 'ig'),       //Japanese and US release (alt)
-        ue:     new RegExp('\\(ue\\)', 'ig'),       //Europe and US release, or Europe only
-        eu:     new RegExp('\\(eu\\)', 'ig'),       //Europe and US release (alt)
-        ub:     new RegExp('\\(ub\\)', 'ig'),       //Brazil and US
-        ueb:    new RegExp('\\(ueb\\)', 'ig'),      //Brazil, Europe and US
-        jub:    new RegExp('\\(jub\\)', 'ig'),      //Japan, Brazil and US
-        jue:    new RegExp('\\(jue\\)', 'ig'),      //Japan, Europe and US
-        jeb:    new RegExp('\\(jeb\\)', 'ig'),      //Japan, Brazil and Europe
-        uk:     new RegExp('\\(uk\\)', 'ig'),       //UK release
-        c:      new RegExp('\\(c\\)', 'ig'),        //Canada release
-        a:      new RegExp('\\(a\\)', 'ig'),        //Ausrilia release
-        eb:     new RegExp('\\(eb\\)', 'ig'),        //Europe and Brazil
-        e:      new RegExp('\\(e\\)', 'ig')        //Europe release (last ditch check as can be english sometimes)
+        w:      new RegExp('\\([A-Z]*W[A-Z]*\\)', 'g'),        //World release
+        u:    new RegExp('\\([A-Z]*U[A-Z]*\\)', 'g'),    //US region but not Unl
+        uk:     new RegExp('\\(UK\\)', 'g'),       //UK release
+        a:      new RegExp('\\(A\\)', 'g'),        //Ausrilia release
+        four:      new RegExp('\\(4\\)', 'ig'),        //According to GoodTools this is used for (UB)
+        e:      new RegExp('\\([A-Z]*E[A-Z]*\\)', 'g')    //Europe somewhere inside (last ditch check as can be english sometimes),
     };
 
     var reTrans = {
@@ -68,7 +57,8 @@ FindBestRom.exec = function(files, officialscore) {
         c:      new RegExp('\\[C\\]', 'ig'),        //color!
         p:      new RegExp('\\[!\\]', 'ig'),        //The ROM is an exact copy of the original game; it has not had any hacks or modifications.
         f:      new RegExp('\\[f\d?\\]', 'ig'),        //A fixed dump is a ROM that has been altered to run better on a flashcart or an emulator.
-        b:      new RegExp('\\[', 'ig')
+        b:      new RegExp('\\[', 'ig'),
+        unl:    new RegExp('\\(unl','gi')           //unlisenced
     };
     var i;
     var j;
@@ -129,9 +119,9 @@ FindBestRom.exec = function(files, officialscore) {
         //end bonuses
 
 
-        //pass over all english regions with playable [!] //450 to 500
+        //pass over all english regions with playable, no unlisenced [!] //450 to 500
         for (re in reRegion) {
-            if (item.match(reRegion[re]) && item.match(reOption.p) && itemScore < fallingScore) {
+            if (item.match(reRegion[re]) && item.match(reOption.p) && !item.match(reOption.unl) && itemScore < fallingScore) {
                 itemScore = fallingScore;
             }
             --fallingScore;
@@ -139,9 +129,9 @@ FindBestRom.exec = function(files, officialscore) {
 
         fallingScore = 450;
 
-        //pass over all english regions, no brackets 400 - 450
+        //pass over all english regions, no brackets, no unlisenced 400 - 450
         for (re in reRegion) {
-            if (item.match(reRegion[re]) && !item.match(reOption.b) && itemScore < fallingScore) {
+            if (item.match(reRegion[re]) && !item.match(reOption.b) && !item.match(reOption.unl) && itemScore < fallingScore) {
                 itemScore = fallingScore;
             }
             --fallingScore;
@@ -158,6 +148,14 @@ FindBestRom.exec = function(files, officialscore) {
                 if (groups[1]) {
                     itemScore += parseFloat(groups[1]);
                 }
+            }
+            --fallingScore;
+        }
+
+        //pass over all english regions, no brackets, unlisenced ok 400 - 450
+        for (re in reRegion) {
+            if (item.match(reRegion[re]) && !item.match(reOption.b) && itemScore < fallingScore) {
+                itemScore = fallingScore;
             }
             --fallingScore;
         }

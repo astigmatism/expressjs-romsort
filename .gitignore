@@ -2,9 +2,12 @@ workspace/00 - starthere/
 workspace/00 - starthere
 workspace/01 - decompressed/
 workspace/01 - decompressed
-workspace/02 - compressedfiles
-workspace/02 - compressedfiles/
+workspace/02 - compressed
+workspace/02 - compressed/
+workspace/02 - compressed/*
 workspace/04 - alphasorted/*
+workspace/05 - topchoice
+workspace/05 - topchoice/
 workspace/05 - topchoice/*
 workspace/07 - romfiles/*
 workspace/08 - romfolders/*
@@ -42,4 +45,6 @@ public/boxart/*
 !public/boxart/segacd
 workspace/02 - compressed
 workspace/04 - alphasorted
+workspace/05 - topchoice
+workspace/02 - compressed
 workspace/05 - topchoice

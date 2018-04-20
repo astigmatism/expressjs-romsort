@@ -30,7 +30,11 @@ TopChoice.exec = function(sourcePath, destinationPath, lowerlimit, flatten, call
 	                //bail if a file, folders only
 	                if (stats.isFile()) {
 	                    return nextfolder(null);
-	                }
+                    }
+                    
+                    if (folder == "Public Domain") {
+                        return nextfolder(null);
+                    }
 
 	                //read title folder
 	                fs.readdir(sourcePath + '/' + folder, function(err, files) {
