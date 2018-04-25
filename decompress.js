@@ -5,186 +5,220 @@ var nodeZip = require('node-zip');
 var beep = require('beepbeep');
 var Main = require('./main.js');
 
-/**
- * DataService Constructor
- */
-Decompress = function() {
-};
+module.exports = new (function() {
 
-Decompress.exec = function(sourcePath, destinationPath, callback) {
+	this.exec = function(system, sourcePath, destinationPath, callback) {
 
-	console.log('Opening ' + sourcePath);
+		console.log('Opening ' + sourcePath);
+	
+		//open source folder
+		fs.readdir(sourcePath, function(err, sevenzipfiles) {
+			if (err) {
+				return callback(err);
+			}
+	
+			console.log('Found ' + sevenzipfiles.length + ' titles in ' + sourcePath);
+	
+			//create a target folder
+			Main.createFolder(destinationPath, true, function(err) {
+				if (err) {
+					return callback(err);
+				}
+	
+				console.log('Created (or overwrote) ' + destinationPath);
+	
+				//loop over all file contents
+				async.eachSeries(sevenzipfiles, function(file, nextfile) {
+	
+					//get file stats
+					fs.stat(sourcePath + '/' + file, function(err, stats) {
+						if (err) return nextfile(err);
+						
 
-	//open source folder
-	fs.readdir(sourcePath, function(err, sevenzipfiles) {
-        if (err) {
-            return callback(err);
-        }
+						OnEachExtractedTitle(system, file, function(err, titleObject) {
 
-        console.log('Found ' + sevenzipfiles.length + ' titles in ' + sourcePath);
-
-        //create a target folder
-        Main.createFolder(destinationPath, true, function(err) {
-        	if (err) {
-        		return callback(err);
-        	}
-
-        	console.log('Created (or overwrote) ' + destinationPath);
-
-			//loop over all file contents
-	        async.eachSeries(sevenzipfiles, function(file, nextfile) {
-
-	        	//get file stats
-	        	fs.stat(sourcePath + '/' + file, function(err, stats) {
-	        		if (err) {
-	                	return nextfile(err);
-	            	}
-
-	            	var f = Main.getFileNameAndExt(file);
-
-
-	            	//for nintendo ds
-	            	f.name = f.name.replace(/^(\d{4}|xxxx)\s{1}\-?\s?/,''); //remove prefix for nds
-	            	
-	            	//for vectrex
-	            	// var year = 2000;
-	            	// yearmatch = f.name.match(/\((\d{4})\)/);
-
-	            	// if (yearmatch && yearmatch.length > 0) {
-	            	// 	year = yearmatch[1];
-	            	// }
-					// end vect
-
-	            	//all systems - remove everything in paran
-	            	f.name = f.name.replace(/\(.*\)/g,'');
-	            	
-	            	//f.name = f.name.replace(/_/g,' ');
-	            	
-	            	f.name = f.name.trim();
-
-
-	            	//is this a file? (also check if 7z?)
-	            	if (stats.isFile() && f.ext === '7z') {
-
-	            		
-						var task = new sevenZip();
-
-						task.extractFull(sourcePath + '/' + file, destinationPath + '/' + f.name, { 
-
-						})
-
-						// Equivalent to `on('data', function (files) { // ... });` 
-						.progress(function (files) {
+	
+							//is this a file? (also check if 7z?)
+							if (stats.isFile() && titleObject.ext === '7z') {
+		
+								
+								var task = new sevenZip();
+		
+								task.extractFull(sourcePath + '/' + file, destinationPath + '/' + titleObject.name, { 
+		
+								})
+		
+								// Equivalent to `on('data', function (files) { // ... });` 
+								.progress(function (files) {
+									
+								})
+		
+								// When all is done 
+								.then(function () {
+		
+									//add's (U) to all files. I did this for Atari systems where it was true and I wanted to artifically rank them higher than PD
+		
+									if (titleObject.name !== 'Public Domain') {
+		
+										fs.readdir(destinationPath + '/' + titleObject.name, function(err, extractedfiles) {
+											if (err) return nextfile(err);
+											
+											//loop over extracted as needed
+											async.eachSeries(extractedfiles, function(extractedfile, nextextractedfile) {
+												
+												OnEachExtractedFile(system, destinationPath, titleObject, extractedfile, function(err) {
+													if (err) return nextextractedfile(err);
+													return nextextractedfile();
+												});
+		
+											}, function(err, result) {
+		
+												console.log('decompress 7z: ' + file);
+												return nextfile();
+											});
+										});
+									} 
+									else {
+										console.log('decompress 7z: ' + file);
+										return nextfile();
+									}
+								})
+		
+								// On error 
+								.catch(function (err) {
+									return nextfile(err);
+								});
+		
+							} 
 							
-						})
-
-						// When all is done 
-						.then(function () {
-
-							//add's (U) to all files. I did this for Atari systems where it was true and I wanted to artifically rank them higher than PD
-
-							// if (f.name !== 'Public Domain') {
-							// 	fs.readdir(destinationPath + '/' + f.name, function(err, extractedfiles) {
-							//         if (err) {
-							//             return nextfile(err);
-							//         }
-							// 		//loop over extracted as needed
-							// 		async.eachSeries(extractedfiles, function(extractedfile, nextextractedfile) {
-
-
-							// 			//for lynx
-							// 			var fname = Main.getFileNameAndExt(extractedfile);
-
-							// 			fname.name += ' (U)';
-
-							// 			fs.rename(destinationPath + '/' + f.name + '/' + extractedfile, destinationPath + '/' + f.name + '/' + fname.name + '.' + fname.ext, function(err) {
-							// 				if (err) {
-							// 					return nextextractedfile(err);
-							// 				}
-
-							// 				return nextextractedfile();
-							// 			});
-
-							// 		}, function(err, result) {
-
-							// 			console.log('decompress 7z: ' + file);
-							// 			return nextfile();
-							// 		});
-							// 	});
-							// } else {
-							// 	console.log('decompress 7z: ' + file);
+							//not tested in a while, try again
+							else if (stats.isFile() && titleObject.ext === 'zip') {
+		
+								//read file
+								fs.readFile(sourcePath + '/' + file, function(err, buffer) {
+									if (err) return nextfile(err);
+		
+									var zip = new nodeZip(buffer);
+									
+									//create a target folder
+									Main.createFolder(destinationPath + '/' + titleObject.name, true, function(err) {
+										if (err) {
+											return nextfile(err);
+										}
+		
+										//write zip to dest
+										Object.keys(zip.files).forEach(function(filename) {
+											var content = zip.files[filename].asNodeBuffer();
+											fs.writeFileSync(destinationPath + '/' + titleObject.name + '/' + filename, content);
+										});
+		
+										console.log('decompress zip: ' + file);
+		
+										return nextfile();
+									});
+								});
+		
+							} 
+		
+							//last I checked, it was broken :P
+							// else if (stats.isFile() && titleObject.ext === 'rar') {
+		
+							// 	//no callback or error checking? weird
+							// 	rar.extract(sourcePath + '/' + file, destinationPath + '/' + titleObject.name);
+		
+							// 	console.log('extracting rar --> ' + file);
+		
 							// 	return nextfile();
 							// }
-							
-
-							console.log('decompress 7z: ' + file);
-							return nextfile();
-						})
-
-						// On error 
-						.catch(function (err) {
-							return nextfile(err);
-						});
-
-	            	} 
-
-	            	else if (stats.isFile() && f.ext === 'zip') {
-
-	            		//read file
-						fs.readFile(sourcePath + '/' + file, function(err, buffer) {
-					        if (err) {
-					            return nextfile(err);
-					        }
-
-					        var zip = new nodeZip(buffer);
-					        
-					        //create a target folder
-						    Main.createFolder(destinationPath + '/' + f.name, true, function(err) {
-						    	if (err) {
-						    		return nextfile(err);
-						    	}
-
-						        //write zip to dest
-						        Object.keys(zip.files).forEach(function(filename) {
-									var content = zip.files[filename].asNodeBuffer();
-									fs.writeFileSync(destinationPath + '/' + f.name + '/' + filename, content);
-								});
-
-								console.log('decompress zip: ' + file);
-
+		
+							else {
+								//was not a file, keep going
 								return nextfile();
-							});
-				        });
+							}
+						});
+					});
+	
+				}, function(err, result) {
+					if (err) {
+						return callback(err);
+					}
+					beep(4);
+					console.log('decompress task complete. results in ' + destinationPath);
+					return callback(null, '');
+				});
+			});
+		});
+	};
 
-	            	} 
+	var OnEachExtractedTitle = function(system, title, callback) {
 
-	            	//last I checked, it was broken :P
-	            	// else if (stats.isFile() && f.ext === 'rar') {
+		var title = Main.getFileNameAndExt(title);
 
-	            	// 	//no callback or error checking? weird
-	            	// 	rar.extract(sourcePath + '/' + file, destinationPath + '/' + f.name);
+		//system specific changes (because not all goodsets use the same name formatting)
+		switch (system)
+		{
+			case "nds":
+				title.name = title.name.replace(/^(\d{4}|xxxx)\s{1}\-?\s?/,''); //remove prefix for nds
+				break;
+			case "vect":
+				var year = 2000;
+				yearmatch = title.name.match(/\((\d{4})\)/);
 
-	            	// 	console.log('extracting rar --> ' + file);
+				if (yearmatch && yearmatch.length > 0) {
+					year = yearmatch[1];
+				}
+				break;
+		}
 
-	            	// 	return nextfile();
-	            	// }
+		//all systems - remove everything in paran
+		title.name = title.name.replace(/\(.*\)/g,'');
+		
+		//title.name = title.name.replace(/_/g,' ');
+		
+		title.name = title.name.trim();
 
-	            	else {
-	            		//was not a file, keep going
-	            		return nextfile();
-	            	}
-	        	});
+		return callback(null, title);
+	};
 
-	        }, function(err, result) {
-	            if (err) {
-	                return callback(err);
-	            }
-	            beep(4);
-	            console.log('decompress task complete. results in ' + destinationPath);
-	            return callback(null, '');
-	        });
-        });
-    });
-};
+	var OnEachExtractedFile = function(system, destinationPath, titleObject, file, callback) {
+		
+		var fname = Main.getFileNameAndExt(file);
 
-module.exports = Decompress;
+		//again, system specific work
+		switch (system)
+		{
+			case "lynx":
+				
+				fname.name += ' (U)';
+
+				fs.rename(destinationPath + '/' + titleObject.name + '/' + file, destinationPath + '/' + titleObject.name + '/' + fname.name + '.' + fname.ext, function(err) {
+					if (err) return callback(err);
+					return callback();
+				});
+				break;
+			case "a7800":
+
+				//for atari 7800, a typical file name look like this: "Midnight Mutants (1990) (Atari) (PAL).a78" ... this sucks, no goodtools codes
+				
+				palmatch = fname.name.match(/\(pal\)/gi);
+				if (palmatch) {
+					fname.name += ' |E|';
+				} 
+				else {
+					fname.name += ' |U|';
+				}
+				
+				fname.name = fname.name.replace(/\(.*\)/g,'');
+				fname.name = fname.name.replace(/\|(.*)\|/g,'($1)');
+				fname.name = fname.name.trim();
+
+				fs.rename(destinationPath + '/' + titleObject.name + '/' + file, destinationPath + '/' + titleObject.name + '/' + fname.name + '.' + fname.ext, function(err) {
+					if (err) return callback(err);
+					return callback();
+				});
+				break;
+			default:
+				return callback();
+		}
+	}
+});

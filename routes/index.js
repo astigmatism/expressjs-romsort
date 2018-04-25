@@ -42,7 +42,7 @@ router.get('/decompress', function(req, res, next) {
 		return res.json('system is a required query param');
 	}
 
-	Decompress.exec(Main.getPath('start') + folder, Main.getPath('decompressed') + folder, function(err, data) {
+	Decompress.exec(folder, Main.getPath('start') + folder, Main.getPath('decompressed') + folder, function(err, data) {
 		if (err) {
 			console.log(err);
             return res.json(err);
