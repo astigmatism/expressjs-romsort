@@ -4,117 +4,81 @@ var sevenZip = require('node-7z');
 var nodeZip = require('node-zip');
 var beep = require('beepbeep');
 var Main = require('./main.js');
+const path = require('path');
 
 module.exports = new (function() {
 
-	this.exec = function(system, sourcePath, destinationPath, callback) {
+	var me = this;
+
+	this.Exec = function(system, sourcePath, destinationPath, destinationRoot, callback) {
 
 		console.log('Opening ' + sourcePath);
 	
 		//open source folder
 		fs.readdir(sourcePath, function(err, sevenzipfiles) {
-			if (err) {
-				return callback(err);
-			}
+			if (err) return callback(err);
 	
 			console.log('Found ' + sevenzipfiles.length + ' titles in ' + sourcePath);
 	
 			//create a target folder
 			Main.createFolder(destinationPath, true, function(err) {
-				if (err) {
-					return callback(err);
-				}
+				if (err) return callback(err);
 	
 				console.log('Created (or overwrote) ' + destinationPath);
 	
 				//loop over all file contents
-				async.eachSeries(sevenzipfiles, function(file, nextfile) {
+				async.eachSeries(sevenzipfiles, function(file7z, nextfile7z) {
 	
 					//get file stats
-					fs.stat(sourcePath + '/' + file, function(err, stats) {
-						if (err) return nextfile(err);
+					fs.stat(path.join(sourcePath, file7z), function(err, stats) {
+						if (err) return nextfile7z(err);
 						
 
-						OnEachExtractedTitle(system, file, function(err, titleObject) {
+						BuildTitleFolderName(system, file7z, function(err, titleObject) {
 
 	
-							//is this a file? (also check if 7z?)
+							// 7z -----------------------
 							if (stats.isFile() && titleObject.ext === '7z') {
 		
 								
 								var task = new sevenZip();
 		
-								task.extractFull(sourcePath + '/' + file, destinationPath + '/' + titleObject.name, { 
-		
+								task.extractFull(path.join(sourcePath, file7z), path.join(destinationPath, titleObject.name), { 
 								})
-		
-								// Equivalent to `on('data', function (files) { // ... });` 
-								.progress(function (files) {
-									
+								.progress(function (files) {	
 								})
-		
-								// When all is done 
 								.then(function () {
-		
-									//add's (U) to all files. I did this for Atari systems where it was true and I wanted to artifically rank them higher than PD
-		
-									if (titleObject.name !== 'Public Domain') {
-		
-										fs.readdir(destinationPath + '/' + titleObject.name, function(err, extractedfiles) {
-											if (err) return nextfile(err);
-											
-											//loop over extracted as needed
-											async.eachSeries(extractedfiles, function(extractedfile, nextextractedfile) {
-												
-												OnEachExtractedFile(system, destinationPath, titleObject, extractedfile, function(err) {
-													if (err) return nextextractedfile(err);
-													return nextextractedfile();
-												});
-		
-											}, function(err, result) {
-		
-												console.log('decompress 7z: ' + file);
-												return nextfile();
-											});
-										});
-									} 
-									else {
-										console.log('decompress 7z: ' + file);
-										return nextfile();
-									}
+									console.log('decompressed 7z: ' + file7z);
+									return nextfile7z();
 								})
-		
-								// On error 
 								.catch(function (err) {
-									return nextfile(err);
+									return nextfile7z(err);
 								});
 		
 							} 
 							
-							//not tested in a while, try again
+							//TODO: ZIP ---------------- not tested in a while, try again
 							else if (stats.isFile() && titleObject.ext === 'zip') {
 		
 								//read file
-								fs.readFile(sourcePath + '/' + file, function(err, buffer) {
-									if (err) return nextfile(err);
+								fs.readFile(path.join(sourcePath, file7z), function(err, buffer) {
+									if (err) return nextfile7z(err);
 		
 									var zip = new nodeZip(buffer);
 									
 									//create a target folder
-									Main.createFolder(destinationPath + '/' + titleObject.name, true, function(err) {
-										if (err) {
-											return nextfile(err);
-										}
+									Main.createFolder(path.join(destinationPath, titleObject.name), true, function(err) {
+										if (err) return nextfile7z(err);
 		
 										//write zip to dest
 										Object.keys(zip.files).forEach(function(filename) {
 											var content = zip.files[filename].asNodeBuffer();
-											fs.writeFileSync(destinationPath + '/' + titleObject.name + '/' + filename, content);
+											fs.writeFileSync(path.join(destinationPath, titleObject.name, filename), content);
 										});
 		
-										console.log('decompress zip: ' + file);
+										console.log('decompress zip: ' + file7z);
 		
-										return nextfile();
+										return nextfile7z();
 									});
 								});
 		
@@ -128,12 +92,12 @@ module.exports = new (function() {
 		
 							// 	console.log('extracting rar --> ' + file);
 		
-							// 	return nextfile();
+							// 	return nextfile7z();
 							// }
 		
 							else {
 								//was not a file, keep going
-								return nextfile();
+								return nextfile7z();
 							}
 						});
 					});
@@ -142,15 +106,66 @@ module.exports = new (function() {
 					if (err) {
 						return callback(err);
 					}
-					beep(4);
-					console.log('decompress task complete. results in ' + destinationPath);
-					return callback(null, '');
+
+					//scan all decompressed title folders to make changes if needed
+					me.ProcessTitles(system, destinationPath, destinationRoot, function(err) {
+						if (err) return callback(err);
+						
+						beep(4);
+						console.log('decompress task complete. results in ' + destinationPath);
+						return callback();
+					});
 				});
 			});
 		});
 	};
 
-	var OnEachExtractedTitle = function(system, title, callback) {
+	this.ProcessTitles = function(system, destinationPath, destinationRoot, callback) {
+
+		//open decompression folder
+		fs.readdir(destinationPath, function(err, titles) {
+			if (err) return callback(err);
+
+			//loop over all title folders
+			async.eachSeries(titles, function(title, nexttitle) {
+
+				fs.stat(path.join(destinationPath, title), (err, stats) => {
+					if (err) return nexttitle(err);
+					
+					//bail if a file, folders only in here
+					if (stats.isFile()) return nexttitle();
+
+					console.log('title scan: ' + title);
+
+					//open title folder
+					fs.readdir(destinationPath + '/' + title, function(err, files) {
+						if (err) return callback(err);
+						
+						//loop over all files
+						async.eachSeries(files, function(file, nextfile) {
+							
+							OnEachExtractedFile(system, destinationRoot, destinationPath, title, file, function(err, gotoNextTitle) {
+								if (err) return nextfile(err);
+								if (gotoNextTitle) return nexttitle();
+								return nextfile();
+							});
+			
+						}, function(err) {
+							if (err) return nexttitle(err);
+							return nexttitle();
+						});
+					});
+				});
+
+			}, function(err, result) {
+				if (err) return callback(err);
+				console.log('title and file scan task complete. results in ' + destinationPath);
+				return callback();
+			});
+		});
+	};
+
+	var BuildTitleFolderName = function(system, title, callback) {
 
 		var title = Main.getFileNameAndExt(title);
 
@@ -180,18 +195,40 @@ module.exports = new (function() {
 		return callback(null, title);
 	};
 
-	var OnEachExtractedFile = function(system, destinationPath, titleObject, file, callback) {
+	var OnEachExtractedFile = function(system, destinationRoot, destinationPath, title, file, callback) {
 		
 		var fname = Main.getFileNameAndExt(file);
 
 		//again, system specific work
 		switch (system)
 		{
+			case "gb":
+				//operation separate gbc!
+				gbcmatch = fname.name.match(/\[C\]/gi);
+
+				if (gbcmatch) {
+					
+					//create gbc folder (dont override it, just ensure its there)
+					Main.createFolder(path.join(destinationRoot, 'gbc'), false, function(err) {
+						if (err) return callback(err);
+						
+						//move the entire title folder over. rename WILL overwrite
+						fs.rename(path.join(destinationPath, title), path.join(destinationRoot, 'gbc', title), function(err) {
+							if (err) return callback(err);
+							return callback(null, true);
+						});
+					});
+				}
+				else {
+					return callback();
+				}
+
+				break;
 			case "lynx":
 				
 				fname.name += ' (U)';
 
-				fs.rename(destinationPath + '/' + titleObject.name + '/' + file, destinationPath + '/' + titleObject.name + '/' + fname.name + '.' + fname.ext, function(err) {
+				fs.rename(destinationPath + '/' + title + '/' + file, destinationPath + '/' + title + '/' + fname.name + '.' + fname.ext, function(err) {
 					if (err) return callback(err);
 					return callback();
 				});
@@ -212,7 +249,7 @@ module.exports = new (function() {
 				fname.name = fname.name.replace(/\|(.*)\|/g,'($1)');
 				fname.name = fname.name.trim();
 
-				fs.rename(destinationPath + '/' + titleObject.name + '/' + file, destinationPath + '/' + titleObject.name + '/' + fname.name + '.' + fname.ext, function(err) {
+				fs.rename(destinationPath + '/' + title + '/' + file, destinationPath + '/' + title + '/' + fname.name + '.' + fname.ext, function(err) {
 					if (err) return callback(err);
 					return callback();
 				});
