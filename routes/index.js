@@ -37,18 +37,32 @@ router.get('/', function(req, res, next) {
 router.get('/decompress', function(req, res, next) {
 	
 	var folder = req.query.system;
+	var scanOnly = req.query.scan;
 
 	if (!folder) {
 		return res.json('system is a required query param');
 	}
 
-	Decompress.exec(folder, Main.getPath('start') + folder, Main.getPath('decompressed') + folder, function(err, data) {
-		if (err) {
-			console.log(err);
-            return res.json(err);
-        }
-        res.json(data);
-	});
+	if (scanOnly) {
+
+		Decompress.ProcessTitles(folder, Main.getPath('decompressed') + folder, Main.getPath('decompressed'), function(err, data) {
+			if (err) {
+				console.log(err);
+				return res.json(err);
+			}
+			res.json(data);
+		});
+	}
+	else {
+
+		Decompress.Exec(folder, Main.getPath('start') + folder, Main.getPath('decompressed') + folder, Main.getPath('decompressed'), function(err, data) {
+			if (err) {
+				console.log(err);
+				return res.json(err);
+			}
+			res.json(data);
+		});
+	}
 });
 
 router.get('/compress', function(req, res, next) {

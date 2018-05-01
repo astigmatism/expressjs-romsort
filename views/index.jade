@@ -16,6 +16,9 @@ block content
 			span(class="folder") /01 - decopressed/[system id]/
 
 		button(onclick='$("#decompress").text("working");$.get("/decompress?system=" + $("#system").val(), function(response) { $("#decompress").text(response); })') GO!
+		p
+			| Scan title folders only. If you have some custom logic for changing file names (usually because they don't conform to GoodTools codes), you can skip the decompress step and simply run the post-step. I found this most useful for gb (PD) files which had been extracted but I needed to sort them between gb and gbc results.
+		button(onclick='$("#decompress").text("working");$.get("/decompress?system=" + $("#system").val() + "&scan=true", function(response) { $("#decompress").text(response); })') Scan Only
 		div#decompress(class="response")
 
 	div(class="panel util")
