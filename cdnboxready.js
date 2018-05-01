@@ -6,7 +6,7 @@ var gm = require('gm');
 CDNBoxReady = function() {
 };
 
-CDNBoxReady.widthResizes = ['256x256', 200, 170, 120, 50];
+CDNBoxReady.widthResizes = ['256x256', 200, 170, 116, 50];
 CDNBoxReady.outputFormat = 'jpg';
 
 CDNBoxReady.exec = function(datafilePath, sourcePath, destinationPath, callback) {
