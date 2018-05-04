@@ -202,6 +202,22 @@ module.exports = new (function() {
 		//again, system specific work
 		switch (system)
 		{
+			case 'arcade':
+
+				//open mame.dat file converted from xml to json (using an online tool)
+				fs.readJson('./tools/mame.json', (err, mamedat) => {
+					if (err) return callback(err);
+
+					for (var i = 0; i < mamedat.datafile.game.length; ++i) {
+
+						var game = mamedat.datafile.game[i];
+						if (game['-name'] === title) {
+							console.log(file);
+						}
+					}
+				});
+
+				break;
 			case "gb":
 				//operation separate gbc!
 				gbcmatch = fname.name.match(/\[C\]/gi);

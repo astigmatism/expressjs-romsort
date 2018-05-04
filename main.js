@@ -22,9 +22,7 @@ Main.onApplicationStart = function() {
 				console.log(err);
 			}
 		});
-	};	
-
-
+	};
 };
 
 Main.copyAllFiles = function(sourceFolderPath, destinationFolderPath, overrideDestination, copyFolders, callback) {
@@ -36,13 +34,11 @@ Main.copyAllFiles = function(sourceFolderPath, destinationFolderPath, overrideDe
             return callback(err);
         }
 
-
 		//open source folder
 	    fs.readdir(sourceFolderPath, function(err, files) {
 	        if (err) {
 	            return callback(err);
 	        }
-
 
 	        //loop over all file contents
 	        async.eachSeries(files, function(file, nextfile) {

@@ -5,6 +5,7 @@ var async = require('async');
 var Main = require('../main');
 var Decompress = require('../decompress');
 var Compress = require('../compress');
+var Mame = require('../mame');
 var AlphaSort = require('../alphasort');
 var TopChoice = require('../topchoice');
 var CDNReady = require('../cdnready');
@@ -83,6 +84,25 @@ router.get('/compress', function(req, res, next) {
 
 	Compress.Exec(source, destination, compressiontype, filter, (err, data) => {
 		if (err) return res.json(err);
+        res.json(data);
+	});
+});
+
+router.get('/mame', function(req, res, next) {
+	
+	var folder = 'arcade' || 'mame';
+
+	if (!folder)
+		return res.json('system is a required query param. Maps to folder name (gen, snes, n64, gb...)');
+
+	var source = path.join(Main.getPath('start'), folder);
+	var destination = path.join(Main.getPath('mame'));
+
+	Mame.Exec(source, destination, (err, data) => {
+		if (err) {
+			console.log(err);
+			return res.json(err);
+		}
         res.json(data);
 	});
 });
