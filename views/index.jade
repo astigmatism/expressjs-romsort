@@ -108,6 +108,12 @@ block content
 		button(onclick='$("#topchoice").text("working");$.get("/topchoice?system=" + $("#system").val() + "&source=" + $("input[name=topsource]:checked").val() + "&lowerlimit=" + $("#topchoicelowerlimit").val() + "&flatten=true", function(response) { $("#topchoice").text(response); })') GO!
 		div#topchoice(class="response")
 
+	div(class="panel util")
+		h3 Mame
+		p(class="requied") REQUIED: 00 - starthere/arcade should be filled with mame roms		
+		button(onclick='$("#mameworking").text("working");$.get("/mame?task=build", function(response) { $("#mameworking").text(response); })') GO!
+		div#mameworking(class="response")
+
 	div(class="panel")
 		h3 Rom Folders
 		p 
