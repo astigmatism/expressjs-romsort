@@ -208,6 +208,20 @@ Main.rmdir = function(path, callback) {
 	});
 };
 
+Main.IsDirEmpty = function(path, callback) {
+
+	fs.readdir(path, function(err, files) {
+		if (err) {
+		   return callback(err);
+		} else {
+		   if (!files.length) {
+			   return callback(null, true);
+		   }
+		   return callback(null, false);
+		}
+	});
+};
+
 Main.emptydir = function(path, callback) {
 	fs.readdir(path, function(err, files) {
 		if(err) {

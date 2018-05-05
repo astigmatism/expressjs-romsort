@@ -129,7 +129,9 @@ module.exports = new (function() {
 			//loop over all title folders
 			async.eachSeries(titles, function(title, nexttitle) {
 
-				fs.stat(path.join(destinationPath, title), (err, stats) => {
+				var titlePath = path.join(destinationPath, title);
+
+				fs.stat(titlePath, (err, stats) => {
 					if (err) return nexttitle(err);
 					
 					//bail if a file, folders only in here
@@ -138,21 +140,31 @@ module.exports = new (function() {
 					console.log('title scan: ' + title);
 
 					//open title folder
-					fs.readdir(destinationPath + '/' + title, function(err, files) {
+					fs.readdir(titlePath, function(err, files) {
 						if (err) return callback(err);
 						
 						//loop over all files
 						async.eachSeries(files, function(file, nextfile) {
 							
-							OnEachExtractedFile(system, destinationRoot, destinationPath, title, file, function(err, gotoNextTitle) {
+							OnEachExtractedFile(system, destinationRoot, destinationPath, title, file, function(err) {
 								if (err) return nextfile(err);
-								if (gotoNextTitle) return nexttitle();
 								return nextfile();
 							});
 			
 						}, function(err) {
 							if (err) return nexttitle(err);
-							return nexttitle();
+
+							//at this point, check if the title folder is empty. It's possible from the OnEachExtractedFile step (gb to gbc folder will leave title folders empty)
+							Main.IsDirEmpty(titlePath, function(err, result) {
+								if (err) return nexttitle(err);
+
+								if (result) {
+									fs.removeSync(titlePath);
+									return nexttitle();
+								}
+								return nexttitle();
+
+							});
 						});
 					});
 				});
@@ -204,18 +216,23 @@ module.exports = new (function() {
 		{
 			case "gb":
 				//operation separate gbc!
-				gbcmatch = fname.name.match(/\[C\]/gi);
+				gbcmatch = (fname.ext === 'gbc');
 
 				if (gbcmatch) {
 					
 					//create gbc folder (dont override it, just ensure its there)
 					Main.createFolder(path.join(destinationRoot, 'gbc'), false, function(err) {
 						if (err) return callback(err);
-						
-						//move the entire title folder over. rename WILL overwrite
-						fs.rename(path.join(destinationPath, title), path.join(destinationRoot, 'gbc', title), function(err) {
+
+						//create title folder, again dont override
+						Main.createFolder(path.join(destinationRoot, 'gbc', title), false, function(err) {
 							if (err) return callback(err);
-							return callback(null, true);
+						
+							//move this file over
+							fs.rename(path.join(destinationPath, title, file), path.join(destinationRoot, 'gbc', title, file), function(err) {
+								if (err) return callback(err);
+								return callback();
+							});
 						});
 					});
 				}
