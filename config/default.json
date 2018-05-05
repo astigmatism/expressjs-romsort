@@ -28,6 +28,9 @@
 		"tools": "/tools/"
 	},
 	"thegamesdb": {
+		"arcade": {
+			"platform": ["Arcade"]
+		},
 		"fds": {
 			"platform": ["Famicom Disk System"]
 		},
