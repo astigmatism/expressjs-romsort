@@ -95,70 +95,83 @@ MasterFile.exec = function(system, sourcePath, destinationFile, callback) {
 
 MasterFile.boxart = function(masterFilePath, boxartSoruce, destinationFile, callback) {
 
-    console.log('reading masterfile from: ' + masterFilePath);
+    console.log('looking for existing box masterfile to save top suggestions');
 
-    var imagedatafile = {};
-    var compress = true; //false for debugging
-
-
-    //read system data file
-    fs.readJson(masterFilePath, function(err, masterFile) {
+    fs.readJson(destinationFile, function(err, originalBoxMasterFile) {
         if (err) {
             return callback(err);
         }
 
-        console.log('looping over all folders in: ' + boxartSoruce);
+        console.log('reading masterfile from: ' + masterFilePath);
 
-        //open source folder (web folder used to save images)
-        fs.readdir(boxartSoruce, function(err, boxartFolders) {
+        var imagedatafile = {};
+        var compress = true; //false for debugging
+
+
+        //read system data file
+        fs.readJson(masterFilePath, function(err, masterFile) {
             if (err) {
                 return callback(err);
             }
 
-            //loop over all folders in web box art
-            async.eachSeries(boxartFolders, function(folder, nextfolder) {
+            console.log('looping over all folders in: ' + boxartSoruce);
 
-
-                fs.stat(boxartSoruce + '/' + folder, function(err, stats) {
-                    
-                    //bail if a file, folders only
-                    if (stats.isFile()) {
-                        return nextfolder(null);
-                    }
-
-                    //must have original.jpg
-                    fs.exists(boxartSoruce + '/' + folder + '/original.jpg', function(exists) {
-
-                        //if the data file has an entry for the web folder. simply having a title in this file marks it as having art
-                        //will can fill the object with data in the future
-                        //update: I write if this art is "top suggestion"
-                        if (folder in masterFile && exists) {
-                            console.log('found boxart for: ' + folder);
-                            
-                            imagedatafile[folder] = {}; //at the moment, I have no data to put here so we'll simply check for existance
-                        }
-
-                        nextfolder();
-                    });
-                });
-            }, function(err, result) {
-
+            //open source folder (web folder used to save images)
+            fs.readdir(boxartSoruce, function(err, boxartFolders) {
                 if (err) {
                     return callback(err);
                 }
 
-                //write data file
-                fs.writeFile(destinationFile, JSON.stringify(imagedatafile), function(err) {
+                //loop over all folders in web box art
+                async.eachSeries(boxartFolders, function(folder, nextfolder) {
+
+
+                    fs.stat(boxartSoruce + '/' + folder, function(err, stats) {
+                        
+                        //bail if a file, folders only
+                        if (stats.isFile()) {
+                            return nextfolder(null);
+                        }
+
+                        //must have original.jpg
+                        fs.exists(boxartSoruce + '/' + folder + '/original.jpg', function(exists) {
+
+                            //if the data file has an entry for the web folder. simply having a title in this file marks it as having art
+                            //will can fill the object with data in the future
+                            //update: I write if this art is "top suggestion"
+                            if (folder in masterFile && exists) {
+                                console.log('found boxart for: ' + folder);
+                                
+                                imagedatafile[folder] = {}; //at the moment, I have no data to put here so we'll simply check for existance
+
+                                //now check if this was previously a top suggestion and make it one again
+                                if (originalBoxMasterFile[folder] && originalBoxMasterFile[folder].t && originalBoxMasterFile[folder].t == 'true') {
+                                    imagedatafile[folder].t = 'true';
+                                }
+                            }
+
+                            nextfolder();
+                        });
+                    });
+                }, function(err, result) {
+
                     if (err) {
                         return callback(err);
                     }
-                    
-                    console.log('boxart masterfile task complete. result in ' + destinationFile);
 
-                    callback(null, '');
+                    //write data file
+                    fs.writeFile(destinationFile, JSON.stringify(imagedatafile), function(err) {
+                        if (err) {
+                            return callback(err);
+                        }
+                        
+                        console.log('boxart masterfile task complete. result in ' + destinationFile);
+
+                        callback(null, '');
+                    });
                 });
-            });
 
+            });
         });
     });
 };
