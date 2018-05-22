@@ -257,16 +257,8 @@ module.exports = new (function() {
 				}
 
 				break;
-			case "lynx":
-				
-				fname.name += ' (U)';
-
-				fs.rename(destinationPath + '/' + title + '/' + file, destinationPath + '/' + title + '/' + fname.name + '.' + fname.ext, function(err) {
-					if (err) return callback(err);
-					return callback();
-				});
-				break;
 			case "jag":
+			case "lynx":
 				
 				if (title !== 'Public Domain') {
 					fname.name += ' (U)';
