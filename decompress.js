@@ -266,6 +266,17 @@ module.exports = new (function() {
 					return callback();
 				});
 				break;
+			case "jag":
+				
+				if (title !== 'Public Domain') {
+					fname.name += ' (U)';
+				}
+
+				fs.rename(destinationPath + '/' + title + '/' + file, destinationPath + '/' + title + '/' + fname.name + '.' + fname.ext, function(err) {
+					if (err) return callback(err);
+					return callback();
+				});
+				break;
 			case "a7800":
 
 				//for atari 7800, a typical file name look like this: "Midnight Mutants (1990) (Atari) (PAL).a78" ... this sucks, no goodtools codes
