@@ -292,6 +292,28 @@ module.exports = new (function() {
 					return callback();
 				});
 				break;
+			case "a2600":
+
+				//similar to a7800 but different enough :P
+
+				palmatch = fname.name.match(/\(pal\)/gi);
+				if (palmatch) {
+					fname.name += ' |E|';
+				} 
+				else {
+					fname.name += ' |U|';
+				}
+
+				fname.name = fname.name.replace(/\(.*\)/g,'');
+				fname.name = fname.name.replace(/\|([A-Z]+)\|/g,'($1)');
+				fname.name = fname.name.trim();
+
+				fs.rename(destinationPath + '/' + title + '/' + file, destinationPath + '/' + title + '/' + fname.name + '.' + fname.ext, function(err) {
+					if (err) return callback(err);
+					return callback();
+				});
+
+				break;
 			default:
 				return callback();
 		}

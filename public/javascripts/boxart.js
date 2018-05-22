@@ -3,24 +3,34 @@
 var BoxArt = function() {
 
 	var self = this;
-
+	
 	$(document).ready(function() {
+
+		$('#threshold').text(threshold);
 
 		if (boxartdata) {
 
-			$('#hideus').click(function() {
+			$('#hidered').click(function() {
 				if ($(this).is(':checked')) {
-					$('li.en').hide();
+					$('li.red').hide();
 				} else {
-					$('li.en').show();
+					$('li.red').show();
 				}
 			});
 
-			$('#hideforeign').click(function() {
+			$('#hideyellow').click(function() {
 				if ($(this).is(':checked')) {
-					$('li.foreign').hide();
+					$('li.yellow').hide();
 				} else {
-					$('li.foreign').show();
+					$('li.yellow').show();
+				}
+			});
+
+			$('#hidegreen').click(function() {
+				if ($(this).is(':checked')) {
+					$('li.green').hide();
+				} else {
+					$('li.green').show();
 				}
 			});
 
@@ -32,16 +42,29 @@ var BoxArt = function() {
 					topranking = rank > topranking ? rank : topranking;
 				});
 
-				//minimumScore is 250 by default. 
-				console.log(minimumScore);
-				if (topranking <= minimumScore) {
-					return;
-				}
+				// console.log(threshold);
+				// if (topranking <= threshold) {
+				// 	return;
+				// }
 
 				var titleforbutton = title.replace('\'','\\\'');
 
-				//red = foreign, green = english title
-				var li = $('<li class="' + ((topranking >= 400) ? 'en' : 'foreign') + '" style="background-color: ' + ((topranking >= 400) ? '#EAFAF1' : '#FDEDEC') + '"><div class="title" style="padding-top: 5px">' + title + '</div></li>')
+				var bgcolor;
+
+				if (topranking >= threshold) {
+					bgcolor = 'green';
+				} else {
+
+					if (topranking >= 250) {
+						bgcolor = 'yellow';
+					}
+					else {
+						bgcolor = 'red';
+					}
+				}
+
+
+				var li = $('<li class="' + bgcolor + '"><div class="title" style="padding-top: 5px">' + title + '</div></li>');
 				
 				li.append('<div class="buttons">');
 				li.append('<input type="button" style="width:50px" value="T" onclick="opengoogle(\'' + titleforbutton + '\', 1, 1)"></input>');

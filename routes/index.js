@@ -322,7 +322,7 @@ router.get('/boxart/:system', function(req, res, next) {
 
 	var system = req.params.system;
 	var alpha = req.query.alpha;
-	var minimumScore = req.query.minimum || 250;
+	var threshold = req.query.threshold || 400;
 
 	//read all titles from web folder
 	fs.readdir(Main.getPath('webboxart') + system, function(err, webtitles) {
@@ -347,7 +347,7 @@ router.get('/boxart/:system', function(req, res, next) {
 						webtitles: JSON.stringify(webtitles),
 						system: system,
 						boxartdata: JSON.stringify(boxartdata),
-						minimumScore: minimumScore
+						threshold: threshold
 					});
 					return;
 				};
