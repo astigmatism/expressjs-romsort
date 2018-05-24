@@ -6,34 +6,47 @@ html
         var webtitles = !{webtitles};
         var system = '!{system}';
         var boxartdata = !{boxartdata};
-        var minimumScore = !{minimumScore};
+        var threshold = !{threshold};
     script(src='https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js')
     script(src='/javascripts/boxart.js', type='text/javascript')
     script(src='/javascripts/dropzone.js', type='text/javascript')
     link(rel='stylesheet', href='/stylesheets/boxart.css')
     link(rel='stylesheet', href='/stylesheets/dropzone.css')
   body
-    div
-        h3 A little about the process of obtaining box art:
-        div When you run /getboxart for a system, it uses the master data file (pce.json) as a source for which titles to download box art for.
-        div Any titles with a score of less than 250 are ignored (we don't obtain box art for them)
-        div If you have run /getboxart before, then title folders exist in /public/boxart. If we find that the title has a folder here, then we skidiv obtaining box art for that title
-        div At the end of the /getboxart process, all folders are copied to the /public/boxart folder.
-        div NOW: It is your duty to scan the box art and make corrections as needed. you can upload new art or delete it altoegther.
-        div The next steps ("box art datafile" and "cdnready boxes") will scan only the art from the web folder
-    h3 All titles which rank 250 and greater:
     div(class="controls")
+        p
+            | Box Art is tied to suggestions and searching this way:
+        table
+            tr
+                th top
+                th above
+                th below
+            tr
+                td 
+                    | Check the "top suggestion" option for a title. This will place it the top catagory which includes suggestions on the main page for all systems. Basically these are popular titles to attract clicks.
+                td
+                    | Above is defined by the system's "suggestionThreshold" in the config. It is mostly translated to be "English speaking offical titles". These titles appear in system-specific suggestions and when browsing, appear as not "obscure". The default score for this is 400 and up.
+                td
+                    | Everything else. Generally these are foriegn, non-english or translated titles. I sometimes show them as "obscure"
+        div Box Art threshold set to:
+            span#threshold
+        div(class="terms")
+            p
+                | Assign a search term to the "1" and "2":
+            div
+                span Add term1 to search: 
+                input#search1
+            div
+                span Add term2 to search: 
+                input#search2
         div
-            span Add term1 to search: 
-            input#search1
+            input(type='checkbox')#hidegreen
+            span Hide Green (Above Threshold; Official Release English-speaking)
         div
-            span Add term2 to search: 
-            input#search2
+            input(type='checkbox')#hideyellow
+            span Hide Yellow (Below Threshold; Official Release but Foreign)
         div
-            input(type='checkbox')#hideus
-            span Hide English-speaking titles
-        div
-            input(type='checkbox')#hideforeign
-            span Hide Foreign titles
+            input(type='checkbox')#hidered
+            span Hide Red (Below 250; PD, Prototypes, Unofficial Titles)
     ul
 

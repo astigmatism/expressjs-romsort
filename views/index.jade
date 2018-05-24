@@ -217,15 +217,7 @@ block content
 			div#getboxart(class="response")
 
 		p After starting, watch the console window to see box art coming in. If it doesn't look accurate, stop the app and restart to try again.
-		
-	div(class="panel boxart")
-		h3 Modify Box Art
-		p(class="requied") REQUIED: Create Box Art Masterfile. Create ahead of time to capture downloaded art and afterwards for uploaded art.
-		p 
-			| This will open a new tab with the box art modification tools. It will use the box art downloaded to
-			span(class="folder") /public/boxart/[systemid]/
-		button(onclick='window.open("/boxart/" + $("#system").val(), "_blank")') OPEN
-	
+
 	div(class="panel boxart")
 		h3 Create Box Art Masterfile
 		p(class="requied") REQUIED: You have some downloaded box art for this System ID and have optionally modified it as well.
@@ -235,8 +227,13 @@ block content
 		button(onclick='$("#boxartmasterfile").text("working");$.get("/masterfile/boxart?system=" + $("#system").val(), function(response) { $("#boxartmasterfile").text(response); })') GO!
 		div#boxartmasterfile(class="response")
 
-
-
+	div(class="panel boxart")
+		h3 Modify Box Art
+		p(class="requied") REQUIED: Create Box Art Masterfile. Create ahead of time to capture downloaded art and afterwards for uploaded art.
+		p 
+			| This will open a new tab with the box art modification tools. It will use the box art downloaded to
+			span(class="folder") /public/boxart/[systemid]/
+		button(onclick='window.open("/boxart/" + $("#system").val(), "_blank")') OPEN
 
 
 	div(class="panel gamesdb")

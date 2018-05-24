@@ -257,9 +257,12 @@ module.exports = new (function() {
 				}
 
 				break;
+			case "jag":
 			case "lynx":
 				
-				fname.name += ' (U)';
+				if (title !== 'Public Domain') {
+					fname.name += ' (U)';
+				}
 
 				fs.rename(destinationPath + '/' + title + '/' + file, destinationPath + '/' + title + '/' + fname.name + '.' + fname.ext, function(err) {
 					if (err) return callback(err);
@@ -270,6 +273,32 @@ module.exports = new (function() {
 
 				//for atari 7800, a typical file name look like this: "Midnight Mutants (1990) (Atari) (PAL).a78" ... this sucks, no goodtools codes
 				
+				if (title === 'Public Domain') {
+					fname.name += ' |PD|';
+				} else {
+
+					palmatch = fname.name.match(/\(pal\)/gi);
+					if (palmatch) {
+						fname.name += ' |E|';
+					} 
+					else {
+						fname.name += ' |U|';
+					}
+				}
+				
+				fname.name = fname.name.replace(/\(.*\)/g,'');
+				fname.name = fname.name.replace(/\|([A-Z]+)\|/g,'($1)');
+				fname.name = fname.name.trim();
+
+				fs.rename(destinationPath + '/' + title + '/' + file, destinationPath + '/' + title + '/' + fname.name + '.' + fname.ext, function(err) {
+					if (err) return callback(err);
+					return callback();
+				});
+				break;
+			case "a2600":
+
+				//similar to a7800 but different enough :P
+
 				palmatch = fname.name.match(/\(pal\)/gi);
 				if (palmatch) {
 					fname.name += ' |E|';
@@ -277,10 +306,22 @@ module.exports = new (function() {
 				else {
 					fname.name += ' |U|';
 				}
-				
+
 				fname.name = fname.name.replace(/\(.*\)/g,'');
-				fname.name = fname.name.replace(/\|(.*)\|/g,'($1)');
+				fname.name = fname.name.replace(/\|([A-Z]+)\|/g,'($1)');
 				fname.name = fname.name.trim();
+
+				fs.rename(destinationPath + '/' + title + '/' + file, destinationPath + '/' + title + '/' + fname.name + '.' + fname.ext, function(err) {
+					if (err) return callback(err);
+					return callback();
+				});
+
+				break;
+			case "vect":
+				
+				if (title !== 'Public Domain') {
+					fname.name += ' (U)';
+				}
 
 				fs.rename(destinationPath + '/' + title + '/' + file, destinationPath + '/' + title + '/' + fname.name + '.' + fname.ext, function(err) {
 					if (err) return callback(err);

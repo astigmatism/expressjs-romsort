@@ -19,12 +19,31 @@ li {
 	font-size: 12px;
 }
 
-li.foreign {
-	background-color: #EAFAF1;
+table {
+	border: black 1px solid;
 }
 
-li.en {
-	background-color: #FDEDEC;
+th, td {
+	width: 200px;
+	padding: 10px;
+}
+th {
+	background-color: #ccc;
+}
+td {
+	background-color: #eee;
+}
+
+.green {
+	background-color: lightgreen;
+}
+
+.yellow {
+	background-color: lightyellow;
+}
+
+.red {
+	background-color: lightpink;
 }
 
 div.title {
@@ -38,4 +57,7 @@ div.controls {
 
 div.buttons {
 	margin: 5px 0;
+}
+div.terms {
+	margin: 10px 0;
 }
