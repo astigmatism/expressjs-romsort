@@ -8,7 +8,8 @@ const path = require('path');
 
 module.exports = new (function() {
 
-	var self = this;
+    var self = this;
+    var _mameFile = 'mame0.37b5.json';
 
 	this.Exec = function(sourcePath, destinationPath, callback) {
 
@@ -18,8 +19,10 @@ module.exports = new (function() {
             console.log('Emptied ' + destinationPath);
 
             //open the mamedat file
-            fs.readJson('./tools/mame.json', (err, mamedat) => {
+            fs.readJson('./tools/' + _mameFile, (err, mamedat) => {
                 if (err) console.error(err)
+
+                console.log(mamedat);
 
                 console.log('Opened mame.json file sucessfully.');
         
@@ -37,6 +40,12 @@ module.exports = new (function() {
                             
                         //for each name in the dat file
                         gamedat = FindInDat(mamedat, file.name);
+
+                        if (gamedat == null) {
+                            console.log('error: could not find ' + file.name + ' in dat file');
+                            return nextmamefile();
+                        }
+
 
                         var title = gamedat['description'];
 
