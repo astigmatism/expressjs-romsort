@@ -5,10 +5,14 @@ var nodeZip = require('node-zip');
 var beep = require('beepbeep');
 var Main = require('./main.js');
 const path = require('path');
+var colors = require('colors');
 
 module.exports = new (function() {
 
 	var me = this;
+	var highRomCountTheshold = 10; //greater than 10 files, alert on completion
+	var highRomCountWarning = {};
+	var errorInDecompression = {};
 
 	this.Exec = function(system, sourcePath, destinationPath, destinationRoot, callback) {
 
@@ -28,7 +32,9 @@ module.exports = new (function() {
 	
 				//loop over all file contents
 				async.eachSeries(sevenzipfiles, function(file7z, nextfile7z) {
-	
+					
+					console.log(file7z + ' starting...');
+
 					//get file stats
 					fs.stat(path.join(sourcePath, file7z), function(err, stats) {
 						if (err) return nextfile7z(err);
@@ -45,13 +51,29 @@ module.exports = new (function() {
 		
 								task.extractFull(path.join(sourcePath, file7z), path.join(destinationPath, titleObject.name), { 
 								})
-								.progress(function (files) {	
+								.progress(function (files) {
 								})
 								.then(function () {
-									console.log('decompressed 7z: ' + file7z);
-									return nextfile7z();
+
+									fs.readdir(path.join(destinationPath, titleObject.name), (err, romFiles) => {
+										
+										var count = 0;
+										romFiles.forEach(file => {
+											count++;
+										});
+
+										console.log(colors.green('    file(s) extracted: ' + count));
+
+										if (count > highRomCountTheshold) {
+											highRomCountWarning[titleObject.name] = count;
+										}
+
+										return nextfile7z();
+									});
 								})
 								.catch(function (err) {
+									console.log('    THERE WAS AN ERROR!');
+									errorInDecompression[titleObject.name] = err;
 									return nextfile7z(err);
 								});
 		
@@ -112,7 +134,9 @@ module.exports = new (function() {
 						if (err) return callback(err);
 						
 						beep(4);
-						console.log('decompress task complete. results in ' + destinationPath);
+						console.log('\nDecompress task complete. results in ' + destinationPath + '\n');
+						console.log('these titles have a high rom count, perhaps use rom folders?', colors.blue(highRomCountWarning));
+						console.log('these titles errored:', colors.red(errorInDecompression));
 						return callback();
 					});
 				});

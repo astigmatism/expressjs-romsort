@@ -1,4 +1,5 @@
 {
+	"ln": "ln -s /Volumes/Extend/Projects/expressjs-romsort/05\\ -\\ topchoice/ ./Projects/expressjs-romsort/workspace/05\\ -\\ topchoice",
 	"paths": {
 		"start": "/workspace/00 - starthere/",
 		"decompressed": "/workspace/01 - decompressed/",

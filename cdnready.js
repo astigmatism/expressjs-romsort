@@ -57,6 +57,8 @@ CDNReady.exec = function(sourcePath, destinationPath, fileDataPath, segmentSize,
                             //output file for filesize
                             //compress the file name, I was running into issues with filenames with weird characters
                             fileData[destinationFileName] = {
+                                t: title,
+                                f: fileorfolder,
                                 s: 0
                             };
 
@@ -64,7 +66,8 @@ CDNReady.exec = function(sourcePath, destinationPath, fileDataPath, segmentSize,
                             //if its a file: we compressed it to be included in the emulator file system
                             //if its a folder: we compress all files within it to be included in the emulator file system
                             
-                            console.log('\r\nStarting --> ' + fileorfolder);
+                            console.log('\nStarting --> ' + fileorfolder);
+                            console.log('\n' + title + fileorfolder + ' --> ' + destinationFileName);
 
                             var sourceFilePath = path.join(sourcePath, title, fileorfolder);
 
