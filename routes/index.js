@@ -96,7 +96,7 @@ router.get('/mame', function(req, res, next) {
 		return res.json('system is a required query param. Maps to folder name (gen, snes, n64, gb...)');
 
 	var source = path.join(Main.getPath('start'), folder);
-	var destination = path.join(Main.getPath('mame'));
+	var destination = path.join(Main.getPath('decompressed'), folder);
 
 	Mame.Exec(source, destination, (err, data) => {
 		if (err) {
