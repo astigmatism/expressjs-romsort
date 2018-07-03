@@ -4,6 +4,7 @@ var pako = require('pako');
 var beep = require('beepbeep');
 var Main = require('./main.js');
 const path = require('path');
+var colors = require('colors');
 
 CDNReady = function() {
 };
@@ -50,6 +51,8 @@ CDNReady.exec = function(sourcePath, destinationPath, fileDataPath, segmentSize,
                                 return nextfileorfolder();
                             }
 
+                            console.log(fileorfolder + ' ...');
+
                             //the resulting file name will be the combination of title and file (or folder) for uniquness
                             var destinationFileName = Main.compress.string(title + fileorfolder);
                             destinationFileName = encodeURIComponent(destinationFileName);
@@ -57,7 +60,6 @@ CDNReady.exec = function(sourcePath, destinationPath, fileDataPath, segmentSize,
                             //output file for filesize
                             //compress the file name, I was running into issues with filenames with weird characters
                             fileData[destinationFileName] = {
-                                t: title,
                                 f: fileorfolder,
                                 s: 0
                             };
@@ -66,8 +68,7 @@ CDNReady.exec = function(sourcePath, destinationPath, fileDataPath, segmentSize,
                             //if its a file: we compressed it to be included in the emulator file system
                             //if its a folder: we compress all files within it to be included in the emulator file system
                             
-                            console.log('\nStarting --> ' + fileorfolder);
-                            console.log('\n' + title + fileorfolder + ' --> ' + destinationFileName);
+                            console.log(colors.green('    cdn file name: ' + title + fileorfolder + ' --> ' + destinationFileName));
 
                             var sourceFilePath = path.join(sourcePath, title, fileorfolder);
 
@@ -90,7 +91,8 @@ CDNReady.exec = function(sourcePath, destinationPath, fileDataPath, segmentSize,
                                     }
 
                                     */
-                                    console.log('... this is a file');
+                                    console.log(colors.green('    This is a file (not a folder)'));
+
                                     var file = fileorfolder;
                                     var destinationFilePath = path.join(destinationPath, destinationFileName);
 
@@ -117,7 +119,8 @@ CDNReady.exec = function(sourcePath, destinationPath, fileDataPath, segmentSize,
 
                                                     fileData[destinationFileName].s = stat.size;
 
-                                                    console.log('cdnready: ' + title + ' + ' + file + '\r\nFile size: ' + stat.size + '\r\n');
+                                                    console.log(colors.green('    Resulting file size: ' + stat.size));
+                                                    console.log(colors.blue('    CDN Ready!') + title + ' ' + file);
                                                     return nextfileorfolder();     
                                                 });
 
@@ -131,7 +134,7 @@ CDNReady.exec = function(sourcePath, destinationPath, fileDataPath, segmentSize,
                                     //this is different enough from the task if it were a file
                                     //for a folder, write one destination file with all the files as properties
 
-                                    console.log('...this is a folder');
+                                    console.log(colors.green('    This is a folder (not a file)'));
 
                                     var folder = fileorfolder;
                                     //file is a folder, compress all files into a single
@@ -216,7 +219,8 @@ CDNReady.exec = function(sourcePath, destinationPath, fileDataPath, segmentSize,
 
                                                             fileData[destinationFileName].s = stat.size;
 
-                                                            console.log('cdnready: ' + title + ' + ' + folder + '\r\nFile size: ' + stat.size + '\r\n');
+                                                            console.log(colors.green('    Resulting file size: ' + stat.size));
+                                                            console.log(colors.blue('    CDN Ready!') + title + ' ' + file);
                                                             return nextfileorfolder();     
                                                         });
 
