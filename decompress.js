@@ -65,7 +65,13 @@ module.exports = new (function() {
 										console.log(colors.green('    file(s) extracted: ' + count));
 
 										if (count > highRomCountTheshold) {
-											highRomCountWarning[titleObject.name] = count;
+											if (highRomCountWarning[titleObject.name]) {
+												highRomCountWarning[titleObject.name] += count;
+											}
+											else {
+												highRomCountWarning[titleObject.name] = count;
+											}
+											
 										}
 
 										return nextfile7z();
