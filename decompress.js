@@ -10,7 +10,7 @@ var colors = require('colors');
 module.exports = new (function() {
 
 	var me = this;
-	var highRomCountTheshold = 10; //greater than 10 files, alert on completion
+	var highRomCountTheshold = 100; //greater than 10 files, alert on completion
 	var highRomCountWarning = {};
 	var errorInDecompression = {};
 
@@ -33,7 +33,7 @@ module.exports = new (function() {
 				//loop over all file contents
 				async.eachSeries(sevenzipfiles, function(file7z, nextfile7z) {
 					
-					console.log(file7z + ' starting...');
+					console.log(file7z + ' ...');
 
 					//get file stats
 					fs.stat(path.join(sourcePath, file7z), function(err, stats) {
