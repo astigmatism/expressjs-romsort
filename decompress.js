@@ -17,6 +17,8 @@ module.exports = new (function() {
 	this.Exec = function(system, sourcePath, destinationPath, destinationRoot, callback) {
 
 		console.log('Opening ' + sourcePath);
+		highRomCountWarning = {};
+		errorInDecompression = {};
 	
 		//open source folder
 		fs.readdir(sourcePath, function(err, sevenzipfiles) {
