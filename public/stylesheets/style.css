@@ -46,3 +46,7 @@ span.folder {
 span.file {
 	color: green;
 }
+
+.hide {
+	display: none;
+}

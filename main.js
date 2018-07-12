@@ -100,17 +100,17 @@ Main.copyFile = function(sourcePath, destinationPath, callback) {
 	//read file
     fs.readFile(sourcePath, function(err, buffer) {
         if (err) {
-        	console.log(err);
+        	//console.log(err);
             return callback(err);
         }
 
         fs.writeFile(destinationPath, buffer, function(err) {
             if (err) {
-            	console.log(err);
+            	//console.log(err);
                 return callback(err);
             }
 
-            console.log(sourcePath + ' --- copied ---> ' + destinationPath);
+            //console.log(sourcePath + ' --- copied ---> ' + destinationPath);
 
             callback();
         }); 

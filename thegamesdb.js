@@ -394,6 +394,8 @@ TheGamesDB.getGameList = function(game, callback) {
 	var self = this;
 	var url = 'http://thegamesdb.net/api/GetGamesList.php?name=' + game;
 
+	console.log(url);
+
 	//make request to thegamesdb to retrieve a game list
 	request({
         method: 'get',

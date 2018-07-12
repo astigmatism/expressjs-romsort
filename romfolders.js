@@ -1,67 +1,57 @@
 var fs = require('fs-extra');
 var async = require('async');
 var Main = require('./main.js');
+const path = require('path');
+var colors = require('colors');
 
-RomFolders = function() {
-};
+module.exports = new (function() {
 
-/**
- * takes a folder of single rom files and puts them in an appropriately named folder
- * this was important with some GoodMerged sets as unzipping some yielded in single files instead of a folder
- * for crazyerics we want to build search querys from the name of the game (its folder name) so this function
- * converts those files into game name folders
- * @param  {sting}   system
- * @param  {Function} callback
- * @return {}
- */
-RomFolders.exec = function(sourcePath, destinationPath, callback) {
 
-    var datafile = {};
+	this.Exec = function(sourcePath, workingFolder, folders, callback) {
+        
+        folders = folders.split(',');
 
-    //open source folder
-    fs.readdir(sourcePath, function(err, romfiles) {
-        if (err) {
-            return callback(err);
-        }
+        //for each folder name
+        async.eachSeries(folders, function(folder, nextfolder) {
+            
+            folder = folder.replace(/^\s+|\s+$/gm,''); //trim name
+            console.log('Starting ' + folder + '...');
 
-        //loop over all file contents
-        async.eachSeries(romfiles, function(romfile, nextromfile) {
+            var folderSourcePath = path.join(sourcePath, folder);
 
-            fs.stat(sourcePath + '/' + romfile, function(err, stats) {
-                
-                //bail if anything but a file
-                if (stats.isFile()) {
+            fs.stat(folderSourcePath, function(err, stats) {
+                if (err) {
+                    return nextfolder(err);
+                }
 
-                    if (romfile === '.DS_Store') {
-                        nextromfile();
-                        return;
-                    }
-                        
-                    //add to remove year: .replace(/\(\d{2}[a-z0-9]{0,2}\)/g,'')
-                    //used for lynx
+                if (stats.isDirectory()) {
 
-                    //remove file extenstions, anything in brackets 
-                    var dirname = romfile.replace(/\..{2,3}$/i,''); //remove extensions
-                    dirname = dirname.replace(/\(.{1}\)/g,''); //remove periods
-                    dirname = dirname.replace(/\[.*\]/g,''); //remove everything in brackets
-                    dirname = dirname.replace(/\(\d{2}[a-z0-9]{0,2}\)/g,''); //remove year (1999) or (199x) or (19xx)
-                    dirname = dirname.replace(/\s{2,}/g,' '); //remove any double spacing
-                    dirname.trim();
-
-                    //passing false to second param says NOT to overwrite on exist
-                    Main.createFolder(destinationPath + '/' + dirname, false, function(err) {
+                    //clear working folder
+                    Main.emptydir(workingFolder, function(err) {
                         if (err) {
-                            return callback(err);
+                            return nextfolder(err);
                         }
 
-                        Main.copyFile(sourcePath + '/' + romfile, destinationPath + '/' + dirname + '/' + romfile, function(err) {
+                        //move files into folders
+                        MoveFilesIntoFolders(folderSourcePath, sourcePath, (err) => {
                             if (err) {
-                                return callback(err);
+                                return nextfolder(err);
                             }
 
-                            nextromfile();                      
+                            //delete original folder
+                            Main.rmdir(folderSourcePath, (err) => {
+                                if (err) {
+                                    return nextfolder(err);
+                                }   
+
+                                return nextfolder();
+                            });
                         });
+
                     });
+                }
+                else {
+                    return nextfolder(folder + ' is not a folder');
                 }
             });
 
@@ -70,10 +60,72 @@ RomFolders.exec = function(sourcePath, destinationPath, callback) {
             if (err) {
                 return callback(err);
             }
-            callback(null, '');
+            callback();
         });
-    });
+    };
 
-};
+    var MoveFilesIntoFolders = function(source, destination, callback) {
+        
+        var datafile = {};
 
-module.exports = RomFolders;
+        //open source folder
+        fs.readdir(source, function(err, files) {
+            if (err) {
+                return callback(err);
+            }
+
+            //loop over all file contents
+            async.eachSeries(files, function(file, nextfile) {
+
+                var sourceFile = path.join(source, file);
+
+                fs.stat(sourceFile, function(err, stats) {
+                    
+                    //bail if anything but a file
+                    if (stats.isFile()) {
+
+                        if (file === '.DS_Store') {
+                            return nextfile();
+                        }
+                            
+                        //add to remove year: .replace(/\(\d{2}[a-z0-9]{0,2}\)/g,'')
+                        //used for lynx
+
+                        //remove file extenstions, anything in brackets 
+                        var dirname = file.replace(/\..{2,3}$/i,''); //remove extensions
+                        dirname = dirname.replace(/\(.{1}\)/g,''); //remove periods
+                        dirname = dirname.replace(/\[.*\]/g,''); //remove everything in brackets
+                        dirname = dirname.replace(/\(\d{2}[a-z0-9]{0,2}\)/g,''); //remove year (1999) or (199x) or (19xx)
+                        dirname = dirname.replace(/\s{2,}/g,' '); //remove any double spacing
+                        dirname.trim();
+
+                        var destFolder = path.join(destination, dirname);
+                        var destFile = path.join(destination, dirname, file);
+
+                        //passing false to second param says NOT to overwrite on exist
+                        Main.createFolder(destFolder, false, function(err) {
+                            if (err) {
+                                return nextfile(err);
+                            }
+
+                            Main.copyFile(sourceFile, destFile, function(err) {
+                                if (err) {
+                                    return nextfile(err);
+                                }
+
+                                return nextfile();                      
+                            });
+                        });
+                    }
+                });
+
+            }, function(err, result) {
+
+                if (err) {
+                    return callback(err);
+                }
+                callback();
+            });
+        });
+    }
+});

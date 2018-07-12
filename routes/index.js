@@ -127,26 +127,24 @@ router.get('/alphasort', function(req, res, next) {
 	});
 });
 
-router.get('/romfolders', function(req, res, next) {
+router.get('/romfolderbyname', function(req, res, next) {
 
-	RomFolders.exec(Main.getPath('romfiles'), Main.getPath('romfolders'), function(err, data) {
-		if (err) return res.json(err);
-        res.json('complete');
-	});
-});
+	var folders = req.query.folders;
+	var folder = req.query.system;
 
-router.get('/clearromfolders', function(req, res, next) {
-
-	Main.emptydir(Main.getPath('romfiles'), function(err) {
-		if (err) {
-			console.log(err);
-		}
-		Main.emptydir(Main.getPath('romfolders'), function(err) {
-			if (err) console.log(err);
-			return res.json('complete');
-		});
-	});
+	if (!folder) {
+		return res.json('system is a required query param');
+	}
 	
+	var sourceFolder = path.join(Main.getPath('decompressed'), folder);
+	var workingFolder = Main.getPath('romfiles');
+
+	RomFolders.Exec(sourceFolder, workingFolder, folders, (err) => {
+		if (err) {
+            return res.json(err);
+        }
+        res.json('Rom Folders Complete!');
+	});
 });
 
 router.get('/neogeorename', function(req, res, next) {

@@ -115,35 +115,20 @@ block content
 		div#mameworking(class="response")
 
 	div(class="panel")
-		h3 Rom Folders
-		p 
-			| First, let's ensure our two working folders (
-			span(class="folder") /07 - romfiles/
-			|  and 
-			span(class="folder") /08 - romfiles/
-			| ) are empty.
-		button(onclick='$("#clearromfolders").text("working");$.get("/clearromfolders", function(response) { $("#clearromfolders").text(response); })') Clean Up 
-		div#clearromfolders(class="response")
-
-		p 
-			| Now, copy all files in 
-			span(class="folder") /01 - decompressed/[systemid]/Public Domain/
-			|  into 
-			span(class="folder") /07 - romfiles/
-			| . This command will put each file into their own folder at 
-			span(class="folder") /08 - romfolders/
-			| .
-		button(onclick='$("#romfolders").text("working");$.get("/romfolders", function(response) { $("#romfolders").text(response); })') GO!
-		div#romfolders(class="response")
+		h3 Create Rom Folders By Folder Name
 		p
-			| Finally, copy all folders from 
-			span(class="folder") /08 - romfolders/ 
-			| and paste back into 
-			span(class="folder") /01 - decompressed/[systemid]/
+			| New technique! Just type the name of the title folder(s) in to complete this process. All files in the 
+			span(class="folder") /01 - decompressed/[systemid]/[folder name]/
+			| will be placed into their own parent folder and then put back in the 
+			span(class="folder") /01 - decompressed/[systemid] 
+			| folder. The original folder will then be deleted!
 		p
-			| Now delete the original 
-			span(class="folder") /01 - decompressed/[systemid]/Public Domain/
-			|  folder.
+			| To perform this task for multiple folders, use a comma delimited list
+		div
+			input#romfoldersbyname
+			|  (eg Public Domain, Videos)
+		button(onclick='$("#romfolderbyname").text("working");$.get("/romfolderbyname?folders=" + $("#romfoldersbyname").val() + "&system=" + $("#system").val(), function(response) { $("#romfolderbyname").text(response); })') GO!
+		div#romfolderbyname(class="response")
 	
 	div(class="panel")
 		h3 Create Masterfile
@@ -237,7 +222,7 @@ block content
 
 
 	div(class="panel gamesdb")
-		h3 The GamesDB
+		h3 The GamesDB (not working last I checked 7/2018)
 		p(class="requied") REQUIED: Masterfile
 		p
 			| Using the master file, iterator over all titles any hit thegamesgb.com api seeking details about the title. Will compare result to all others for likeliness of correction. You'll need to ensure a direct mapping of System ID to thegamesdb identifier (eg nes is "Nintendo Entertain System"). Add an entry in the config file at 
