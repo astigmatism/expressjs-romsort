@@ -15,11 +15,27 @@ block content
 			| . This will command will decompress all those files into folders in 
 			span(class="folder") /01 - decopressed/[system id]/
 
-		button(onclick='$("#decompress").text("working");$.get("/decompress?system=" + $("#system").val(), function(response) { $("#decompress").text(response); })') GO!
+		button(onclick='$("#decompress").text("working");$.get("/decompress?system=" + $("#system").val(), function(response) { $("#decompress").text(JSON.stringify(response)); })') GO!
 		p
 			| Scan title folders only. If you have some custom logic for changing file names (usually because they don't conform to GoodTools codes), you can skip the decompress step and simply run the post-step. I found this most useful for gb (PD) files which had been extracted but I needed to sort them between gb and gbc results.
 		button(onclick='$("#decompress").text("working");$.get("/decompress?system=" + $("#system").val() + "&scan=true", function(response) { $("#decompress").text(response); })') Scan Only
 		div#decompress(class="response")
+
+	div(class="panel")
+		h3 Create Rom Folders
+		p
+			| New technique! Just type the name of the title folder(s) in to complete this process. All files in the 
+			span(class="folder") /01 - decompressed/[systemid]/[folder name]/
+			| will be placed into their own parent folder and then put back in the 
+			span(class="folder") /01 - decompressed/[systemid] 
+			| folder. The original folder will then be deleted!
+		p
+			| To perform this task for multiple folders, use a comma delimited list
+		div
+			input#romfoldersbyname
+			|  (eg Public Domain, Videos)
+		button(onclick='$("#romfolderbyname").text("working");$.get("/romfolderbyname?folders=" + $("#romfoldersbyname").val() + "&system=" + $("#system").val(), function(response) { $("#romfolderbyname").text(response); })') GO!
+		div#romfolderbyname(class="response")
 
 	div(class="panel util")
 		h3 Compress
@@ -113,22 +129,6 @@ block content
 		p(class="requied") REQUIED: 00 - starthere/arcade should be filled with mame roms		
 		button(onclick='$("#mameworking").text("working");$.get("/mame?task=build", function(response) { $("#mameworking").text(response); })') GO!
 		div#mameworking(class="response")
-
-	div(class="panel")
-		h3 Create Rom Folders By Folder Name
-		p
-			| New technique! Just type the name of the title folder(s) in to complete this process. All files in the 
-			span(class="folder") /01 - decompressed/[systemid]/[folder name]/
-			| will be placed into their own parent folder and then put back in the 
-			span(class="folder") /01 - decompressed/[systemid] 
-			| folder. The original folder will then be deleted!
-		p
-			| To perform this task for multiple folders, use a comma delimited list
-		div
-			input#romfoldersbyname
-			|  (eg Public Domain, Videos)
-		button(onclick='$("#romfolderbyname").text("working");$.get("/romfolderbyname?folders=" + $("#romfoldersbyname").val() + "&system=" + $("#system").val(), function(response) { $("#romfolderbyname").text(response); })') GO!
-		div#romfolderbyname(class="response")
 	
 	div(class="panel")
 		h3 Create Masterfile
@@ -271,7 +271,10 @@ block content
 			span(class="folder") /06 - datafile/[systemid]_filedata
 			|  which is a manifest of compressed file sizes which I once used for crazyerics to know the size of a file before download (for the progress bar) but I no longer use it since I got the response header to provide this data.
 		
-		button(onclick='$("#cdnready").text("working");$.get("/cdnready?system=" + $("#system").val() + "&source=decompressed", function(response) { $("#cdnready").text(response); })') GO!
+		div
+			input#cdnromfoldername
+			|  (I like to use a date to reflect when I did this, eg 20180711)
+		button(onclick='$("#cdnready").text("working");$.get("/cdnready?system=" + $("#system").val() + "&source=decompressed&cdnromfoldername=" + $("#cdnromfoldername").val(), function(response) { $("#cdnready").text(response); })') GO!
 		div#cdnready(class="response")
 		p 
 			| On completion, you'll need to copy the resulting folder at 

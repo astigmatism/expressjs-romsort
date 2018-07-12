@@ -145,7 +145,7 @@ module.exports = new (function() {
 						console.log('\nDecompress task complete. results in ' + destinationPath + '\n');
 						console.log('these titles have a high rom count, perhaps use rom folders?', colors.blue(highRomCountWarning));
 						console.log('these titles errored:', colors.red(errorInDecompression));
-						return callback();
+						return callback(null, highRomCountWarning);
 					});
 				});
 			});

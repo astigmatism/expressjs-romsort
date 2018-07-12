@@ -108,11 +108,15 @@ module.exports = new (function() {
                         var destFolder = path.join(destination, dirname);
                         var destFile = path.join(destination, dirname, file);
 
+                        console.log(colors.blue('        Creating new title folder: ' + dirname));
+
                         //passing false to second param says NOT to overwrite on exist
                         Main.createFolder(destFolder, false, function(err) {
                             if (err) {
                                 return nextfile(err);
                             }
+
+                            console.log(colors.magenta('        Moving rom file: ' + file));
 
                             Main.copyFile(sourceFile, destFile, function(err) {
                                 if (err) {

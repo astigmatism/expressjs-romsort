@@ -228,15 +228,18 @@ router.get('/cdnready', function(req, res, next) {
 	var folder = req.query.system;
 	var source = req.query.source;
 	var segmentsize = req.query.segmentsize || 25000000;
+	var cdnromfoldername = req.query.cdnromfoldername;
 
 	if (!folder)
 		return res.json('system is a required query param. Maps to folder name (gen, snes, n64, gb...)');
 	if (!source)
 		return res.json('source is a required query param. topchoice|decompressed');
+	if (!cdnromfoldername)
+		cdnromfoldername = folder; //use folder name (a2600)
 
 	source = source === "topchoice" ? Main.getPath('topchoice') + folder : Main.getPath('decompressed') + folder;
 
-	CDNReady.exec(source, Main.getPath('cdnready') + folder, Main.getPath('datafiles') + '/' + folder + '_filedata', segmentsize, function(err, data) {
+	CDNReady.exec(source, Main.getPath('cdnready') + cdnromfoldername, Main.getPath('datafiles') + '/' + folder + '_filedata', segmentsize, function(err, data) {
 		if (err) return res.json(err);
         res.json('complete');
 	});
