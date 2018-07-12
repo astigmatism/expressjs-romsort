@@ -26,6 +26,8 @@ module.exports = new (function() {
 
                 if (stats.isDirectory()) {
 
+                    console.log(colors.green('    Clearing working folder...'));
+
                     //clear working folder
                     Main.emptydir(workingFolder, function(err) {
                         if (err) {
@@ -37,6 +39,8 @@ module.exports = new (function() {
                             if (err) {
                                 return nextfolder(err);
                             }
+
+                            console.log(colors.green('    Deleting original folder...'));
 
                             //delete original folder
                             Main.rmdir(folderSourcePath, (err) => {
@@ -73,6 +77,8 @@ module.exports = new (function() {
             if (err) {
                 return callback(err);
             }
+
+            console.log(colors.green('    Found ' + files.length + ' file(s) in ' + source));
 
             //loop over all file contents
             async.eachSeries(files, function(file, nextfile) {

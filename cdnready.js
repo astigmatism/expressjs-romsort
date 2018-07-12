@@ -267,12 +267,39 @@ CDNReady.exec = function(sourcePath, destinationPath, fileDataPath, segmentSize,
                         return callback(err);
                     }
 
-                    console.log('\nCDN Ready process complete\n');
-                    console.log('These errors occured:', colors.red(cdnErrors));
+                    console.log('Checking for existance of each file');
 
-                    beep(5);
+                    //check for existance of each file
+                    async.forEachOf(fileData, function(value, key, next) {
 
-	                return callback();
+                        var filePath = path.join(destinationPath, key);
+
+                        fs.exists(filePath, (exists) => {
+
+                            if (!exists) {
+                                console.log(colors.red('        ' + value.f + ' NOT FOUND'));
+                                cdnErrors[value.f] = 'The resulting file "' + key + '" was not found';
+                            }
+                            else {
+                                console.log(colors.green('        ' + value.f + ' found'));
+                            }
+
+                            return next();
+                        });
+
+
+                    }, function(err, result) {
+                        if (err) {
+                            return callback(err);
+                        }
+                        
+                        console.log('\nCDN Ready process complete\n');
+                        console.log('These errors occured:', colors.red(cdnErrors));
+
+                        beep(5);
+
+                        return callback();
+                    });
                 });
 	        });
         });
