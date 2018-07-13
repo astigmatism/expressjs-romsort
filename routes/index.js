@@ -481,4 +481,21 @@ router.get('/spcrename', function(req, res, next) {
 	});
 });
 
+router.get('/cleanup', function(req, res, next) {
+
+	var cdnromfoldername = req.query.cdnromfoldername;
+	var folder = req.query.system;
+
+	if (!folder) {
+		return res.json('system is a required query param');
+	}
+
+	Main.rmdir(path.join(Main.getPath('start'), folder), function() {
+		Main.rmdir(path.join(Main.getPath('decompressed'), folder), function() {
+			Main.rmdir(path.join(Main.getPath('cdnready'), cdnromfoldername), function() {
+			});
+		});
+	});
+});
+
 module.exports = router;

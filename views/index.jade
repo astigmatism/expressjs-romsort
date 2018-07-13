@@ -323,3 +323,17 @@ block content
 			| The resulting files will be in 
 			span(class="folder") /cdnshaderready/
 			| . Copy these files and place them in your cdn. You will need to version the shader files, I usually use a date for when I complied them (eg 2017-12-27). Then change the path from which shaders are loaded from in the configs under "paths".
+
+	div(class="panel")
+		h3 Clean up
+		p
+			| Using the values typed in for system and CDN Ready steps, let's clean up all the folders used:
+			ul
+				li 
+					span(class="folder") /00 - starthere/[systemid]/
+				li 
+					span(class="folder") /01 - decompressed/[systemid]/
+				li 
+					span(class="folder") /workspace/cdnready/[cdnreadyfoldername]
+		button(onclick='$("#cleanup").text("working");$.get("/cleanup?cdnromfoldername=" + $("#cdnromfoldername").val() + "&system=" + $("#system").val(), function(response) { $("#cleanup").text(response); })') GO!
+		div#cleanup(class="response")
