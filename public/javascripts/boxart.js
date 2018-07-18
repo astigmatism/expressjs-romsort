@@ -6,8 +6,6 @@ var BoxArt = function() {
 	
 	$(document).ready(function() {
 
-		$('#threshold').text(threshold);
-
 		if (boxartdata) {
 
 			$('#hidered').click(function() {
@@ -42,16 +40,13 @@ var BoxArt = function() {
 					topranking = rank > topranking ? rank : topranking;
 				});
 
-				// console.log(threshold);
-				// if (topranking <= threshold) {
-				// 	return;
-				// }
-
 				var titleforbutton = title.replace('\'','\\\'');
 
 				var bgcolor;
 
-				if (topranking >= threshold) {
+				//green, yellow and red thresholds set here
+
+				if (topranking >= 400) {
 					bgcolor = 'green';
 				} else {
 
@@ -134,6 +129,7 @@ var BoxArt = function() {
 						url: '/boxart/meta',
 						type: 'POST',
 						data: {
+							folder: folder,
 							system: system,
 							title: title,
 							topsuggestion: self.checked
@@ -165,6 +161,7 @@ var BoxArt = function() {
 						url: '/boxart',
 						type: 'DELETE',
 						data: {
+							folder: folder,
 							system: system,
 							title: title
 						},
@@ -184,6 +181,7 @@ var BoxArt = function() {
 						
 						$('.dz-preview').hide();
 
+						formData.append('folder', folder);
 						formData.append('title', title);
 						formData.append('system', system);
 					},
@@ -215,6 +213,7 @@ var modulate = function(wrapper, size, system, title, b, s, h) {
 		url: '/boxart',
 		type: 'PATCH',
 		data: {
+			folder: folder,
 			system: system,
 			title: title,
 			b: b,
@@ -236,7 +235,7 @@ var loadImage = function(wrapper, size, system, title) {
 
 	$(wrapper).empty();
 	var image = new Image();
-	image.src = '/boxart/' + system + '/' + title + '/original.jpg?' + new Date(); //always show original since we can be certain it is jpg
+	image.src = '/' + folder + '/' + system + '/' + title + '/original.jpg?' + new Date(); //always show original since we can be certain it is jpg
 	image.onerror = function() { $(this).remove(); };
 	//image.width = 400;
 	image.onload = function() {
@@ -249,6 +248,9 @@ var loadImage = function(wrapper, size, system, title) {
 var boxart = new BoxArt();
 
 var opengoogle = function(term, size, type) {
+
+	var height = $('#height').val();
+	var width = $('#width').val();
 
 	switch (type) {
 		case 2:
@@ -267,6 +269,7 @@ var opengoogle = function(term, size, type) {
 			term += ' ' + $('#search2').val() + ' box';
 			break;
 	}
+	term = escape(term);
 
 	switch (size)
 	{
@@ -276,9 +279,16 @@ var opengoogle = function(term, size, type) {
 		default:
 			size = "qsvga"
 	}
+	
 
-	console.log(term);
+	var url;
 
-	term = escape(term);
-	window.open('https://www.google.com/search?q=' + term + '&source=lnms&tbm=isch&sa=X&ved=0ahUKEwi89tOMoezKAhVT22MKHWQDBxYQ_AUIBygB&biw=2156&bih=1322&tbm=isch&tbs=isz:lt,islt:' + size, '_blank');
+	if (height && width) {
+		url = 'https://www.google.com/search?q=' + term + '&source=lnms&tbm=isch&sa=X&ved=0ahUKEwi89tOMoezKAhVT22MKHWQDBxYQ_AUIBygB&biw=2156&bih=1322&tbm=isch&tbs=isz:ex,iszw:' + width + ',iszh:' + height;
+	}
+	else {
+		url = 'https://www.google.com/search?q=' + term + '&source=lnms&tbm=isch&sa=X&ved=0ahUKEwi89tOMoezKAhVT22MKHWQDBxYQ_AUIBygB&biw=2156&bih=1322&tbm=isch&tbs=isz:lt,islt:' + size;
+	}
+	
+	window.open(url, '_blank');
 };

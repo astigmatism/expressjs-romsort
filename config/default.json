@@ -21,7 +21,7 @@
 		"cdnboxready": "/workspace/cdnboxready/",
 		"cdnready": "/workspace/cdnready/",
 		"cdnsupportready": "/workspace/cdnsupportready/",
-		"webboxart": "/public/boxart/",
+		"public": "/public/",
 		"cdnshaderready": "/workspace/cdnshaderready/",
 		"spcsready": "/workspace/spcsready/",
 		"config": "/config/",

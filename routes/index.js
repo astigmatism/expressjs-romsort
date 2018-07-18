@@ -11,10 +11,10 @@ var TopChoice = require('../topchoice');
 var CDNReady = require('../cdnready');
 var MasterFile = require('../masterfile');
 var RomFolders = require('../romfolders');
-var GetBoxArt = require('../getboxart');
+var ImageScrape = require('../imagescrape');
+var ImageMasterFile = require('../imagemasterfile');
 var CDNBoxReady = require('../cdnboxready');
 var SupportFiles = require('../supportfiles.js');
-//var NeoGeoRename = require('../neogeorename');
 var TheGamesDB = require('../thegamesdb');
 var TheGamesDBPics = require('../thegamesdbpics');
 var CompressShaders = require('../compressshaders');
@@ -188,19 +188,6 @@ router.get('/masterfile', function(req, res, next) {
 	});
 });
 
-router.get('/masterfile/boxart', function(req, res, next) {
-
-	var folder = req.query.system;
-
-	if (!folder)
-		return res.json('system is a required query param. Maps to folder name (gen, snes, n64, gb...)');
-		
-	MasterFile.boxart(Main.getPath('datafiles') + '/' + folder + '_master', Main.getPath('webboxart') + folder, Main.getPath('datafiles') + '/' + folder + '_boxart', function(err, result) {
-		if (err) return res.json(err);
-		res.json('complete');
-	});
-});
-
 router.get('/topchoice', function(req, res, next) {
 	
 	var folder = req.query.system;
@@ -269,18 +256,51 @@ router.get('/supportfiles', function(req, res, next) {
 	});
 });
 
-router.get('/getboxart', function(req, res, next) {
+router.get('/imagescrape', function(req, res, next) {
 
 	var system = req.query.system;
 	var term = req.query.term;
 	var delay = req.query.delay || 2000; //delay between searching
 	var lowerThreshold = req.query.lower || 250;
 	var higherThreshold = req.query.upper || 500;
+	var height = req.query.height;
+	var width = req.query.width;
 	var override = req.query.override;
+	var folder = req.query.folder;
 
-	GetBoxArt.exec(system, term, Main.getPath('tools'), Main.getPath('datafiles'), Main.getPath('webboxart'), delay, lowerThreshold, higherThreshold, override, function(err, data) {
+	if (!system)
+		return res.json('system is a required query param. Maps to folder name (gen, snes, n64, gb...)');
+	if (!folder)
+		return res.json('folder is a required query param. Maps to folder in public to which to save images');
+	if (!term)
+		return res.json('term is a required query param. How else would you query google image search?');
+
+	var destination = path.join(Main.getPath('public'), folder);
+
+	ImageScrape.Exec(system, term, Main.getPath('tools'), Main.getPath('datafiles'), destination, delay, lowerThreshold, higherThreshold, override, height, width, function(err, data) {
 		if (err) return res.json(err);
-        res.json('complete');
+        res.json(data);
+	});
+});
+
+router.get('/imagemasterfile', function(req, res, next) {
+
+	var system = req.query.system;
+	var folder = req.query.folder;
+
+	if (!system)
+		return res.json('system is a required query param. Maps to folder name (gen, snes, n64, gb...)');
+	if (!folder)
+		return res.json('folder is a required query param. Maps to folder in public to which to save images');
+
+
+	var masterfile = path.join(Main.getPath('datafiles'), system + '_master');
+	var source = path.join(Main.getPath('public'), folder, system);
+	var destination = path.join(Main.getPath('datafiles'), system + '_' + folder);
+
+	ImageMasterFile.Exec(masterfile, source, destination, function(err, data) {
+		if (err) return res.json(err);
+		res.json(data);
 	});
 });
 
@@ -319,27 +339,36 @@ router.get('/thegamesdbpics', function(req, res, next) {
 	});
 });
 
-router.get('/boxart/:system', function(req, res, next) {
+router.get('/imagesedit/:system/:folder', function(req, res, next) {
 
 	var system = req.params.system;
-	var alpha = req.query.alpha;
+	var folder = req.params.folder;
 	var threshold = req.query.threshold || 400;
 
+	if (!system)
+		return res.json('system is a required query param. Maps to folder name (gen, snes, n64, gb...)');
+	if (!folder)
+		return res.json('folder is a required query param. Maps to folder in public to which to save images');
+
+	var source = path.join(Main.getPath('public'), folder, system);
+	var datafile = path.join(Main.getPath('datafiles') + '/' + system + '_master');
+	var imagemanifest = path.join(Main.getPath('datafiles') + '/' + system + '_' + folder);
+
 	//read all titles from web folder
-	fs.readdir(Main.getPath('webboxart') + system, function(err, webtitles) {
+	fs.readdir(source, function(err, webtitles) {
         if (err) {
         	console.log(err);
             return res.json(err);
         }
 
         //get contents of data file
-        fs.readJson(Main.getPath('datafiles') + '/' + system + '_master', function(err, masterFile) {
+        fs.readJson(datafile, function(err, masterFile) {
 	        if (err) {
 	            return callback(err);
 	        }
 
 			//get contents of the boxart data file, if exists!
-			fs.exists(Main.getPath('datafiles') + '/' + system + '_boxart', function(exists) {
+			fs.exists(imagemanifest, function(exists) {
 
 				var onComplete = function(boxartdata) {
 
@@ -347,6 +376,7 @@ router.get('/boxart/:system', function(req, res, next) {
 						data: JSON.stringify(masterFile),
 						webtitles: JSON.stringify(webtitles),
 						system: system,
+						folder: folder,
 						boxartdata: JSON.stringify(boxartdata),
 						threshold: threshold
 					});
@@ -355,7 +385,7 @@ router.get('/boxart/:system', function(req, res, next) {
 
 				if (exists) {
 					
-					fs.readJson(Main.getPath('datafiles') + '/' + system + '_boxart', function(err, boxartdatafile) {
+					fs.readJson(imagemanifest, function(err, boxartdatafile) {
 						if (err) {
 							return callback(err);
 						}
@@ -374,11 +404,14 @@ router.patch('/boxart', function(req, res, next) {
 
 	var system = req.body.system;
 	var title = req.body.title;
+	var folder = req.body.folder;
 	var b = req.body.b;
 	var s = req.body.s;
 	var h = req.body.h;
 
-	GetBoxArt.modulate(Main.getPath('webboxart') + '/' + system + '/' + title + '/original.jpg', b, s, h, function(err) {
+	var file = path.join(Main.getPath('public'), folder, system, title, 'original.jpg');
+
+	GetBoxArt.modulate(file, b, s, h, function(err) {
 		if (err) {
 			console.log(err);
 			return res.json(err);
@@ -389,10 +422,11 @@ router.patch('/boxart', function(req, res, next) {
 
 router.delete('/boxart', function(req, res, next) {
 
+	var folder = req.body.folder;
 	var system = req.body.system;
 	var title = req.body.title;
 
-	Main.rmdir(Main.getPath('webboxart') + '/' + system + '/' + title, function(err) {
+	Main.rmdir(path.join(Main.getPath('public'), folder, system, title), function(err) {
 		if (err) {
 			console.log(err);
 			return res.json(err);
@@ -405,8 +439,11 @@ router.post('/boxart', upload.single( 'file' ), function(req, res, next) {
 
 	var system = req.body.system;
 	var title = req.body.title;
+	var folder = req.body.folder;
 
-	GetBoxArt.uploaded(Main.getPath('tools'), req.file, Main.getPath('webboxart') + '/' + system + '/' + title, function(err) {
+	var destination = path.join(Main.getPath('public'), folder, system, title);
+
+	ImageScrape.Uploaded(Main.getPath('tools'), req.file, destination, function(err) {
 		if (err) {
 			return res.json(err);
 		}
@@ -416,12 +453,13 @@ router.post('/boxart', upload.single( 'file' ), function(req, res, next) {
 
 router.post('/boxart/meta', function(req, res, next) {
 
+	var folder = req.body.folder;
 	var system = req.body.system;
 	var title = req.body.title;
 	var topsuggestion = req.body.topsuggestion;
 
 	//read system data file
-	GetBoxArt.updateMeta(Main.getPath('datafiles') + '/' + system + '_boxart', title, topsuggestion, function(err) {
+	ImageScrape.UpdateMeta(Main.getPath('datafiles') + '/' + system + '_' + folder, title, topsuggestion, function(err) {
         if (err) {
             return callback(err);
         }

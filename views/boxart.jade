@@ -5,6 +5,7 @@ html
         var data = !{data};
         var webtitles = !{webtitles};
         var system = '!{system}';
+        var folder = '!{folder}';
         var boxartdata = !{boxartdata};
         var threshold = !{threshold};
     script(src='https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js')
@@ -15,7 +16,7 @@ html
   body
     div(class="controls")
         p
-            | Box Art is tied to suggestions and searching this way:
+            
         table
             tr
                 th top
@@ -28,8 +29,6 @@ html
                     | Above is defined by the system's "suggestionThreshold" in the config. It is mostly translated to be "English speaking offical titles". These titles appear in system-specific suggestions and when browsing, appear as not "obscure". The default score for this is 400 and up.
                 td
                     | Everything else. Generally these are foriegn, non-english or translated titles. I sometimes show them as "obscure"
-        div Box Art threshold set to:
-            span#threshold
         div(class="terms")
             p
                 | Assign a search term to the "1" and "2":
@@ -39,6 +38,13 @@ html
             div
                 span Add term2 to search: 
                 input#search2
+        div
+            p Provide a custom width and height for image search:
+                div Width/Height: 
+                    input#width(size="10")
+                    |  x 
+                    input#height(size="10")
+        br
         div
             input(type='checkbox')#hidegreen
             span Hide Green (Above Threshold; Official Release English-speaking)

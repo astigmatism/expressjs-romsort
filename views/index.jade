@@ -160,66 +160,75 @@ block content
 
 		button(onclick='$("#masterfile").text("working");$.get("/masterfile?system=" + $("#system").val(), function(response) { $("#masterfile").text(response); })') GO!
 		div#masterfile(class="response")
-		
-	div(class="panel boxart")
-		h3 Get Box Art
-		p(class="requied") REQUIED: a generated masterfile for this System ID which we can use to understand scoring of domestic and forgien titles.
+
+	div(class="panel scraper")
+		h3 Image Scrape
 		p
-			| Iterate over a rom collection and scrape google image search with the intent to hopefully get the correct box art automatically.
+			| This task can be used to retrieve any image from google image search you desire (box art, screenshots, etc)
 		p
-			| First, define the search term. Use the phrase "[title]" as a placeholder for where the game's title will be used. Game titles come from the folder names in 
-			span(class="folder") /01 - decompressed/[systemid]/
-			| ). A common helper might also include the system's name and the term "box" resulting in something like: "[title] genesis box"
+			| 1) All images will be saved to a folder in 
+			span(class="folder") /public/ 
+			| please name that folder here for use: 
+			input#isWebFolder
+			|  (eg boxart, titlescreens, etc)
+		p
+			| 2) We can filter which titles we want to obtain title screen for using the masterfile. Titles I determine as domestic score above 400. While foreign titles (Europe and Asia) likely score between 250 and 400. See the 
+			span(class="file") findbestrom.js
+			|  file for how the scoring works.
+			| Please enter the minimum and maximum scoring values for filtering. Values are inclusive.
+		div Score Range: 
+			input#isMinimumScore(value="400") 
+			|  to 
+			input#isMaximumScore(value="500")
+		p
+			| 3) Let's define our search term. Use the expression "[title]" as a replacement in the query where the game's title will be used.
 		div Search term:  
-			input#term
-			|  (eg [title] nintendo box)
+			input#isTerm(size="50")
+			|  (eg [title] title screen)
 		p
-			| Second, define a delay between searches in ms (sometimes google would terminate my auto searching if I had too many requests within a given timeframe)
-		div Optional delay between search: 
-			input#delay
+			| 4) By default, we do NOT replace existing downloaded title screen if is exists, check this if you are sure you want to replace files already downloaded.
+		div Override existing downloaded images: 
+			input(type="checkbox")#isOverride
+		p
+			| 5) Define a delay between searches in ms (sometimes google would terminate my auto searching if I had too many requests within a given timeframe)
+		div Optional delay between search:
+			input#isDelay(value="2000")
 			|  (in ms)
 		p
-			| Third, by default, we do NOT replace existing downloaded box art if is exists, check this if you are sure you want to replace
-		div Override existing downloaded box art: 
-			input(type="checkbox")#overridebox
+			| 6) Optionally, include height and width limitations (this is useful when getting actual resolution screenshots).
+		div Width/Height: 
+			input#isWidth(size="10")
+			|  x 
+			input#isHeight(size="10")
+		div
+			br
+			button(onclick='$("#is").text("working");$.get("/imagescrape?folder=" + $("#isWebFolder").val() + "&delay=" + $("#isDelay").val() + "&system=" + $("#system").val() + "&term=" + $("#isTerm").val() + "&height=" + $("#isHeight").val() + "&width=" + $("#isWidth").val() + "&upper=" + $("#isMaximumScore").val() + "&lower=" + $("#isMinimumScore").val() + "&override=" + $("#isOverride").is(":checked"), function(response) { $("#is").text(response); })') GO!
+			div#is(class="response")
+
+		p After starting, watch the console window to see box art coming in.
+
+	div(class="panel scraper")
+		h3 Create Image Masterfile
 		p 
-			| Finally, we can filter which titles we want to obtain box art for using the masterfile. Titles I determine as domestic score above 400. While foreign titles (Europe and Asia) likely score between 250 and 400. See the 
-			span(class="file") findbestrom.js
-			|  file for how the scoring works. The resulting box art is downloaded outside of the workspace into 
-			span(class="folder") /public/boxart/[systemid]/[title]/original.jpg
-			|  where is remains for the next step, which is to optionally modify it.
-		div
-			button(onclick='$("#getboxart").text("working");$.get("/getboxart?delay=" + $("#delay").val() + "&system=" + $("#system").val() + "&term=" + $("#term").val() + "&lower=400&override=" + $("#overridebox").is(":checked"), function() { $("#getboxart").text("complete"); })') Get Domestic (400 and up only)
-		div
-			button(onclick='$("#getboxart").text("working");$.get("/getboxart?delay=" + $("#delay").val() + "&system=" + $("#system").val() + "&term=" + $("#term").val() + "&lower=250&upper=400&override=" + $("#overridebox").is(":checked"), function() { $("#getboxart").text("complete"); })') Get Foreign (250 to 400 only)
+			| Just like with roms, we want to create a manifest for crazyerics which defined which titles have images downloaded for them. 
 		p
-			| Optionally, you can define the range of scores you want to use as a box art filter. If going this route, please be sure to define upper and lower values. The maximum score a title can have is 500 and the lowest is 0.
-		div
-			input#lowscore(value="0")
-			input#highscore(value="500")
-		div
-			button(onclick='$("#getboxart").text("working");$.get("/getboxart?delay=" + $("#delay").val() + "&system=" + $("#system").val() + "&term=" + $("#term").val() + "&upper=" + $("#highscore").val() + "&lower=" + $("#lowscore").val() + "&override=" + $("#overridebox").is(":checked"), function(response) { $("#getboxart").text(response); })') GO!
-			div#getboxart(class="response")
+			| The name of the folder to use in  
+			span(class="folder") /public/ 
+			input#imWebFolder
+		
+		button(onclick='$("#im").text("working");$.get("/imagemasterfile?folder=" + $("#imWebFolder").val() + "&system=" + $("#system").val(), function(response) { $("#im").text(response); })') GO!
+		div#im(class="response")
+		p The resulting file will be located in 
+			span(class="folder") /06 - datafile/[systemid]_[foldername]/
 
-		p After starting, watch the console window to see box art coming in. If it doesn't look accurate, stop the app and restart to try again.
-
-	div(class="panel boxart")
-		h3 Create Box Art Masterfile
-		p(class="requied") REQUIED: You have some downloaded box art for this System ID and have optionally modified it as well.
-		p 
-			| Just like with roms, we want to create a manifest for crazyerics which defined which titles have boxart downloaded for them. The resulting file will be located in 
-			span(class="folder") /06 - datafile/[systemid]_boxart/
-		button(onclick='$("#boxartmasterfile").text("working");$.get("/masterfile/boxart?system=" + $("#system").val(), function(response) { $("#boxartmasterfile").text(response); })') GO!
-		div#boxartmasterfile(class="response")
-
-	div(class="panel boxart")
-		h3 Modify Box Art
-		p(class="requied") REQUIED: Create Box Art Masterfile. Create ahead of time to capture downloaded art and afterwards for uploaded art.
-		p 
-			| This will open a new tab with the box art modification tools. It will use the box art downloaded to
-			span(class="folder") /public/boxart/[systemid]/
-		button(onclick='window.open("/boxart/" + $("#system").val(), "_blank")') OPEN
-
+	div(class="panel scraper")
+		h3 Modify Downloaded Images
+		p(class="requied") REQUIED: Create Image Masterfile. Create ahead of time to capture downloaded art and afterwards for uploaded art.
+		p
+			| The name of the folder to use in  
+			span(class="folder") /public/ 
+			input#miWebFolder
+		button(onclick='window.open("/imagesedit/" + $("#system").val() + "/" + $("#miWebFolder").val(), "_blank")') OPEN
 
 	div(class="panel gamesdb")
 		h3 The GamesDB (not working last I checked 7/2018)
