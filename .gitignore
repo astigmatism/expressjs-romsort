@@ -1,5 +1,6 @@
 public/title/*
 !public/title/nes
+!public/title/snes
 public/screen1/*
 workspace/00 - starthere/
 workspace/00 - starthere
