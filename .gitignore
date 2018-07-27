@@ -1,6 +1,7 @@
 public/title/*
 !public/title/nes
 !public/title/snes
+!public/title/gb
 public/screen1/*
 !public/screen1/nes
 !public/screen1/snes
