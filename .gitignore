@@ -2,6 +2,7 @@ public/title/*
 !public/title/nes
 !public/title/snes
 !public/title/gb
+!public/title/gbc
 !public/title/sms
 !public/title/gg
 !public/title/vb
