@@ -30,6 +30,7 @@ workspace/16 - supportfiles/*
 workspace/17 - mame/*
 workspace/99 - decompressed/*
 workspace/cdnboxready/*
+workspace/cdnimages/*
 workspace/cdnshaderready
 workspace/cdnshaderready/
 workspace/cdnready/

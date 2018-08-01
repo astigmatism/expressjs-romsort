@@ -20,6 +20,7 @@
 		"ready": "/workspace/ready/",
 		"cdnboxready": "/workspace/cdnboxready/",
 		"cdnready": "/workspace/cdnready/",
+		"cdnimages": "/workspace/cdnimages/",
 		"cdnsupportready": "/workspace/cdnsupportready/",
 		"public": "/public/",
 		"cdnshaderready": "/workspace/cdnshaderready/",

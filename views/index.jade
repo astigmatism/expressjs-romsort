@@ -200,7 +200,7 @@ block content
 			input#isWidth(size="10")
 			|  x 
 			input#isHeight(size="10")
-		div
+		div		
 			br
 			button(onclick='$("#is").text("working");$.get("/imagescrape?folder=" + $("#isWebFolder").val() + "&delay=" + $("#isDelay").val() + "&system=" + $("#system").val() + "&term=" + $("#isTerm").val() + "&height=" + $("#isHeight").val() + "&width=" + $("#isWidth").val() + "&upper=" + $("#isMaximumScore").val() + "&lower=" + $("#isMinimumScore").val() + "&override=" + $("#isOverride").is(":checked"), function(response) { $("#is").text(response); })') GO!
 			div#is(class="response")
@@ -223,7 +223,6 @@ block content
 
 	div(class="panel scraper")
 		h3 Modify Downloaded Images
-		p(class="requied") REQUIED: Create Image Masterfile. Create ahead of time to capture downloaded art and afterwards for uploaded art.
 		p
 			| The name of the folder to use in  
 			span(class="folder") /public/ 
@@ -313,6 +312,23 @@ block content
 			|  to your CDN in the appropriate location. For versioning, I like to use the date I complied the box art since I'm updating on a regular basis. Something like 2017-12-02. This name then has to be supplied to the crazyerics config file at 
 			span(class="file") /config/default.json
 			|  so that the crazyerics app pulls box art from that location for a given system.
+
+	div(class="panel cdn")
+		h3 CDN Prepare Images
+		p 
+			| Prepare the image files you downloaded earlier for comsumption on crazyerics cdn
+		p
+			| The name of the folder to use in  
+			span(class="folder") /public/ 
+			input#cdnPrepareImagesFolder
+		p
+			div Currently images are in their title folder. Would you like to move them into a folder using the gamekey name generated from the best rom?  
+				input(type="checkbox")#cdnImagesFolder
+
+		
+		button(onclick='$("#cdnpi").text("working");$.get("/cdnimages?folder=" + $("#cdnPrepareImagesFolder").val() + "&system=" + $("#system").val() + "&file=" + $("#cdnImagesFolder").val(), function(response) { $("#im").text(response); })') GO!
+		div#cdnpi(class="response")
+
 	
 	div(class="panel other")
 		h3 Prepare Shaders

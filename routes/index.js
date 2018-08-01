@@ -9,6 +9,7 @@ var Mame = require('../mame');
 var AlphaSort = require('../alphasort');
 var TopChoice = require('../topchoice');
 var CDNReady = require('../cdnready');
+var CDNImages = require('../cdnimages')
 var MasterFile = require('../masterfile');
 var RomFolders = require('../romfolders');
 var ImageScrape = require('../imagescrape');
@@ -240,6 +241,26 @@ router.get('/cdnboxready/:folder', function(req, res, next) {
 		if (err) return res.json(err);
         res.json('complete');
 	});
+});
+
+router.get('/cdnimages', function(req, res, next) {
+
+	var system = req.query.system;
+	var folder = req.query.folder;
+	var usefile = req.query.file;
+
+	var datafilepath = Main.getPath('datafiles') + '/' + system + '_master';
+	var source = path.join(Main.getPath('public'), folder, system);
+	var dest = path.join(Main.getPath('cdnimages'), system);
+
+	if (!system)
+		return res.json('system is a required query param. Maps to folder name (gen, snes, n64, gb...)');
+
+	CDNImages.Exec(system, folder, usefile, source, dest, datafilepath, (err) => {
+		if (err) return res.json(err);
+		res.json();
+	});
+
 });
 
 router.get('/supportfiles', function(req, res, next) {
