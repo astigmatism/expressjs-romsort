@@ -86,31 +86,31 @@ var BoxArt = function() {
 				});
 			}
 
-			li.append('<div class="buttons">');
-			li.append(makeButton('-10%', 90, 100, 100));
-			li.append(makeButton('-5%', 95, 100, 100));
-			li.append(makeButton('-1%', 99, 100, 100));
-			li.append(' Brightness ');
-			li.append(makeButton('1%', 101, 100, 100));
-			li.append(makeButton('5%', 105, 100, 100));
-			li.append(makeButton('10%', 110, 100, 100));
-			li.append('<br/>');
-			li.append(makeButton('-10%', 100, 90, 100));
-			li.append(makeButton('-5%', 100, 95, 100));
-			li.append(makeButton('-1%', 100, 99, 100));
-			li.append(' Saturation ');
-			li.append(makeButton('1%', 100, 101, 100));
-			li.append(makeButton('5%', 100, 105, 100));
-			li.append(makeButton('10%', 100, 110, 100));
-			li.append('<br/>');
-			li.append(makeButton('-10%', 100, 100, 90));
-			li.append(makeButton('-5%', 100, 100, 95));
-			li.append(makeButton('-1%', 100, 100, 99));
-			li.append(' Hue ');
-			li.append(makeButton('1%', 100, 100, 101));
-			li.append(makeButton('5%', 100, 100, 105));
-			li.append(makeButton('10%', 100, 100, 110));
-			li.append('</div>');
+			// li.append('<div class="buttons">');
+			// li.append(makeButton('-10%', 90, 100, 100));
+			// li.append(makeButton('-5%', 95, 100, 100));
+			// li.append(makeButton('-1%', 99, 100, 100));
+			// li.append(' Brightness ');
+			// li.append(makeButton('1%', 101, 100, 100));
+			// li.append(makeButton('5%', 105, 100, 100));
+			// li.append(makeButton('10%', 110, 100, 100));
+			// li.append('<br/>');
+			// li.append(makeButton('-10%', 100, 90, 100));
+			// li.append(makeButton('-5%', 100, 95, 100));
+			// li.append(makeButton('-1%', 100, 99, 100));
+			// li.append(' Saturation ');
+			// li.append(makeButton('1%', 100, 101, 100));
+			// li.append(makeButton('5%', 100, 105, 100));
+			// li.append(makeButton('10%', 100, 110, 100));
+			// li.append('<br/>');
+			// li.append(makeButton('-10%', 100, 100, 90));
+			// li.append(makeButton('-5%', 100, 100, 95));
+			// li.append(makeButton('-1%', 100, 100, 99));
+			// li.append(' Hue ');
+			// li.append(makeButton('1%', 100, 100, 101));
+			// li.append(makeButton('5%', 100, 100, 105));
+			// li.append(makeButton('10%', 100, 100, 110));
+			// li.append('</div>');
 
 			loadImage(imagewrapper, size, system, title);
 
@@ -230,7 +230,7 @@ var loadImage = function(wrapper, size, system, title) {
 
 	$(wrapper).empty();
 	var image = new Image();
-	image.src = '/' + folder + '/' + system + '/' + title + '/original.jpg?' + new Date(); //always show original since we can be certain it is jpg
+	image.src = '/' + folder + '/' + system + '/' + title + '/0.jpg?' + new Date(); //always show original since we can be certain it is jpg
 	image.onerror = function() { $(this).remove(); };
 	//image.width = 400;
 	image.onload = function() {

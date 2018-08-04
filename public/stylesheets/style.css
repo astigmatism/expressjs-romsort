@@ -34,6 +34,9 @@ div.gamesdb {
 div.other {
 	background-color: YellowGreen;
 }
+div.emumovies {
+	background-color: aliceblue;
+}
 
 div.response {
 	margin: 10px 0px;

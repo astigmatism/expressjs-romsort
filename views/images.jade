@@ -1,0 +1,76 @@
+extends layout
+
+block content
+
+	div(class="systemid")
+		h3 System ID
+		p This is a required definition for most of the functionality below. It usually defines the folder name denoting a system type (eg nes, gen, gb, gba, a2600). Please be sure to fill this in otherwise the commands below will not work!
+		input#system
+
+	div(class="panel scraper")
+		h3 Image Scrape
+		p
+			| This task can be used to retrieve any image from google image search you desire (box art, screenshots, etc)
+		p
+			| 1) All images will be saved to a folder in 
+			span(class="folder") /public/ 
+			| please name that folder here for use: 
+			input#isWebFolder
+			|  (eg boxart, titlescreens, etc)
+		p
+			| 2) We can filter which titles we want to obtain title screen for using the masterfile. Titles I determine as domestic score above 400. While foreign titles (Europe and Asia) likely score between 250 and 400. See the 
+			span(class="file") findbestrom.js
+			|  file for how the scoring works.
+			| Please enter the minimum and maximum scoring values for filtering. Values are inclusive.
+		div Score Range: 
+			input#isMinimumScore(value="400") 
+			|  to 
+			input#isMaximumScore(value="500")
+		p
+			| 3) Let's define our search term. Use the expression "[title]" as a replacement in the query where the game's title will be used.
+		div Search term:  
+			input#isTerm(size="50")
+			|  (eg [title] title screen)
+		p
+			| 4) By default, we do NOT replace existing downloaded title screen if is exists, check this if you are sure you want to replace files already downloaded.
+		div Override existing downloaded images: 
+			input(type="checkbox")#isOverride
+		p
+			| 5) Define a delay between searches in ms (sometimes google would terminate my auto searching if I had too many requests within a given timeframe)
+		div Optional delay between search:
+			input#isDelay(value="2000")
+			|  (in ms)
+		p
+			| 6) Optionally, include height and width limitations (this is useful when getting actual resolution screenshots).
+		div Width/Height: 
+			input#isWidth(size="10")
+			|  x 
+			input#isHeight(size="10")
+		div		
+			br
+			button(onclick='$("#is").text("working");$.get("/imagescrape?folder=" + $("#isWebFolder").val() + "&delay=" + $("#isDelay").val() + "&system=" + $("#system").val() + "&term=" + $("#isTerm").val() + "&height=" + $("#isHeight").val() + "&width=" + $("#isWidth").val() + "&upper=" + $("#isMaximumScore").val() + "&lower=" + $("#isMinimumScore").val() + "&override=" + $("#isOverride").is(":checked"), function(response) { $("#is").text(response); })') GO!
+			div#is(class="response")
+
+		p After starting, watch the console window to see box art coming in.
+
+	div(class="panel scraper")
+		h3 Create Image Masterfile
+		p 
+			| Just like with roms, we want to create a manifest for crazyerics which defined which titles have images downloaded for them. 
+		p
+			| The name of the folder to use in  
+			span(class="folder") /public/ 
+			input#imWebFolder
+		
+		button(onclick='$("#im").text("working");$.get("/imagemasterfile?folder=" + $("#imWebFolder").val() + "&system=" + $("#system").val(), function(response) { $("#im").text(response); })') GO!
+		div#im(class="response")
+		p The resulting file will be located in 
+			span(class="folder") /06 - datafile/[systemid]_[foldername]/
+
+	div(class="panel scraper")
+		h3 Modify Downloaded Images
+		p
+			| The name of the folder to use in  
+			span(class="folder") /public/ 
+			input#miWebFolder
+		button(onclick='window.open("/imagesedit/" + $("#system").val() + "/" + $("#miWebFolder").val(), "_blank")') OPEN

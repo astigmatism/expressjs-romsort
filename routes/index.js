@@ -32,6 +32,18 @@ router.get('/', function(req, res, next) {
 	});
 });
 
+router.get('/images', function(req, res, next) {
+	res.render('images', { 
+		title: 'Parse EmuMovies Content' 
+	});
+});
+
+router.get('/cdn', function(req, res, next) {
+	res.render('cdn', { 
+		title: 'Prepare CDN content' 
+	});
+});
+
 /**
  * This end point is going to take a folder with a bunch of 7z files and extact them
  * This is the typical storage routine for GoodMerge sets
@@ -430,7 +442,7 @@ router.patch('/boxart', function(req, res, next) {
 	var s = req.body.s;
 	var h = req.body.h;
 
-	var file = path.join(Main.getPath('public'), folder, system, title, 'original.jpg');
+	var file = path.join(Main.getPath('public'), folder, system, title, '0.jpg');
 
 	GetBoxArt.modulate(file, b, s, h, function(err) {
 		if (err) {

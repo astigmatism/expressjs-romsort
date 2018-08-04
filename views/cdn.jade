@@ -1,0 +1,108 @@
+extends layout
+
+block content
+
+	div(class="systemid")
+		h3 System ID
+		p This is a required definition for most of the functionality below. It usually defines the folder name denoting a system type (eg nes, gen, gb, gba, a2600). Please be sure to fill this in otherwise the commands below will not work!
+		input#system
+
+	div(class="panel cdn")
+		h3 Prepare Support Files
+		p
+			| Support files are generally BIOS files needed by certain systems in order for the emulator to run. This step compresses all files in 
+			span(class="folder") /16 - supportfiles/
+			|  to a single file which can be found in 
+			span(class="file") /cdnsupportready/
+			|  upon completion. Ensure the files are named as they need to be read from the Retroarch file system.
+		br
+		button(onclick='$("#supportfiles").text("working");$.get("/supportfiles?system=" + $("#system").val(), function(response) { $("#supportfiles").text(response); })') GO!
+		div#supportfiles(class="response")
+		p
+			| Upon completion, the response will show a file size for the file generated. Copy it and put it in the crazyerics config definition for this system.
+		p
+			| You will then need to copy the resulting file in 
+			span(class="file") /cdnsupportready/
+			|  to its proper location on the CDN. The folder it should be placed in is equal to the emulator extention name for that system (eg 1.6.7-stable).
+
+	div(class="panel cdn")
+		h3 CDN Prepare Roms
+		p(class="requied") REQUIED: Decompress, Rom Folders and Masterfile steps. Files are only obtainable on the CDN when an associated masterfile is defined. It isn't required here really, but strongly recommended you generate one first.
+		p
+			| Iterate over all rom files in 
+			span(class="folder") /01 - decompressed/[systemid]/
+			|  and compress them into a custom format for use on crazyerics. The resuting files are json formatted. The resulting file names are also compressed to avoid users hitting the cdn with specific known values. As the compression routine converts byte arrays into strings, its possible for a file to be so large the resulting string can overflow and fail on decompression. To get around this, I define a "segment size" in 
+			span(class="file") /routes/index.js
+			|  for the "cdnready" route. The default value should be ok but you can change this if necessary. I won't expose a control here for it. This process also creates the file 
+			span(class="folder") /06 - datafile/[systemid]_filedata
+			|  which is a manifest of compressed file sizes which I once used for crazyerics to know the size of a file before download (for the progress bar) but I no longer use it since I got the response header to provide this data.
+		
+		div
+			input#cdnromfoldername
+			|  (I like to use a date to reflect when I did this, eg 20180711)
+		button(onclick='$("#cdnready").text("working");$.get("/cdnready?system=" + $("#system").val() + "&source=decompressed&cdnromfoldername=" + $("#cdnromfoldername").val(), function(response) { $("#cdnready").text(response); })') GO!
+		div#cdnready(class="response")
+		p 
+			| On completion, you'll need to copy the resulting folder at 
+			span(class="folder") /cdnready/[systemid]/
+			|  to your CDN in the appropriate location. For versioning, I like to use something descriptive, such as a the GoodRoms version (eg GoodNes-3.23b). This name then has to be supplied to the crazyerics config file at 
+			span(class="file") /config/default.json
+			|  so that the crazyerics app pulls content from that location for a given system.
+
+	div(class="panel cdn")
+		h3 CDN Prepare Box Art
+		p(class="requied") REQUIED: Image Magick. I use this app to create the required thumbnails in this step. Install with: brew install imagemagick --with-webp. Also, Box Art Masterfile. Box art can only be obtained on the CDN by crazyerics through an associated box art masterfile.
+		p
+			| Iterate over all folders in 
+			span(class="folder") /public/boxart/[systemid]/
+			|  and generate thumbnails using the 
+			span(class="file") original.jpg
+			|  file as a source for each title in that location. The thumbnail sizes I generate are defined in 
+			span(class="file") cdnboxready.js
+			| . This includes textures I use for webgl.
+
+		button(onclick='$("#cdnreadyboxes").text("working");$.get("/cdnboxready/" + $("#system").val(), function(response) { $("#cdnreadyboxes").text(response); })') GO!
+		div#cdnreadyboxes(class="response")
+
+		p 
+			| On completion, you'll need to copy the resulting folder at 
+			span(class="folder") /cdnboxready/[systemid]/
+			|  to your CDN in the appropriate location. For versioning, I like to use the date I complied the box art since I'm updating on a regular basis. Something like 2017-12-02. This name then has to be supplied to the crazyerics config file at 
+			span(class="file") /config/default.json
+			|  so that the crazyerics app pulls box art from that location for a given system.
+
+	div(class="panel cdn")
+		h3 CDN Prepare Images
+		p 
+			| Prepare the image files you downloaded earlier for comsumption on crazyerics cdn
+		p
+			| The name of the folder to use in  
+			span(class="folder") /public/ 
+			input#cdnPrepareImagesFolder
+		p
+			div Currently images are in their title folder. Would you like to move them into a folder using the gamekey name generated from the best rom?  
+				input(type="checkbox")#cdnImagesFolder
+
+		
+		button(onclick='$("#cdnpi").text("working");$.get("/cdnimages?folder=" + $("#cdnPrepareImagesFolder").val() + "&system=" + $("#system").val() + "&file=" + $("#cdnImagesFolder").is(":checked"), function(response) { $("#im").text(response); })') GO!
+		div#cdnpi(class="response")
+
+	
+	div(class="panel other")
+		h3 Prepare Shaders
+		p
+			| First, download the glsl shaders from GitHub at "https://github.com/libretro/glsl-shaders". 
+		p
+			| Unzip the package and place all its folders in  
+			span(class="folder") /11 - allshaders/
+			| . Click GO!
+
+		button(onclick='$("#buildshaders").text("working");$.get("/makeallshaders/", function(response) { var text = JSON.stringify(response); $("#buildshaders").text(text); })') GO!
+		div#buildshaders(class="response")
+
+		p
+			| The response will display the result of every shader compliation as a JSON object stringified. Copy this blob and paste it into the crazyerics config file under "shaders". The file size is necessary for the download progress bar when the user selects a shader to use.
+		p
+			| The resulting files will be in 
+			span(class="folder") /cdnshaderready/
+			| . Copy these files and place them in your cdn. You will need to version the shader files, I usually use a date for when I complied them (eg 2017-12-27). Then change the path from which shaders are loaded from in the configs under "paths".

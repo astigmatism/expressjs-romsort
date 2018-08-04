@@ -1,0 +1,22 @@
+extends layout
+
+block content
+
+    div(class="panel emumovies")
+        h3 System ID
+        p(class="requied") REQUIED: A preexisting master file has been generated for this system
+        input#system
+
+    div(class="panel emumovies")
+        h3 Put Content in Title Folders
+        p
+            | Parse through EmuMovies files and place the asset in Crazyerics title folders
+        p
+            | Parse files in this folder:
+            span(class="folder") /17 - emumovies/ 
+            input#scFolder
+        
+        button(onclick='$("#sc").text("working");$.get("/emumovies/sortcontent?folder=" + $("#scFolder").val() + "&system=" + $("#system").val(), function(response) { $("#sc").text(response); })') GO!
+        div#sc(class="response")
+        p The resulting file will be located in 
+            span(class="folder") /emumoviesready/[folder]

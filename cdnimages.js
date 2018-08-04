@@ -43,8 +43,7 @@ module.exports = new (function() {
                     async.eachSeries(titles, function(title, nexttitle) {
                         
                         var sourceimage = path.join(source, title, 'original.jpg');
-                        var titlename = Main.compress.string(title);
-                        var destination = path.join(dest, titlename, '0.jpg');
+                        var destination = path.join(dest, title, '0.jpg');
 
                         //if usefile is on, we are asking to move the file to title/bestromfile (more useful for screenshots per rom file)
                         if (usefile == 'on' && title in datafile) {

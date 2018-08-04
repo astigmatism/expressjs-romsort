@@ -297,40 +297,43 @@ module.exports = new (function() {
 
     this.Modulate = function(imagePath, b, s, h, callback) {
 
-        b = b || 100;
-        s = s || 100;
-        h = h || 100;
+        // b = b || 100;
+        // s = s || 100;
+        // h = h || 100;
     
-        console.log('Modulating image (bsh): ' + b + ',' + s + ',' + h);
+        // console.log('Modulating image (bsh): ' + b + ',' + s + ',' + h);
     
-        gm(imagePath).modulate(b, s, h).write(imagePath, function(err) {
-            if (err) {
-                return callback(err);
-            }
-            callback();
-        });
+        // gm(imagePath).modulate(b, s, h).write(imagePath, function(err) {
+        //     if (err) {
+        //         return callback(err);
+        //     }
+        //     callback();
+        // });
+        callback();
     };
 
     var ConvertImageOnObtain = function(toolsDir, sourceImage, destinationPath, autoTone, callback) {
     
         //after scrape, save downloaded image in the format we work with
-        gm(sourceImage).setFormat(outputFormat).write(destinationPath + '/original.' + outputFormat, function (err) {
+        gm(sourceImage).setFormat(outputFormat).write(destinationPath + '/0.' + outputFormat, function (err) {
             if (err) {
                 return callback(err);
             }
-    
-            //autotone this image? (come on, say yes!!)
-            if (false) {
-                exec(toolsDir + 'autotone "' + destinationPath + '/original.' + outputFormat + '" "' + destinationPath + '/original.' + outputFormat + '"', function (err, stdout, stderr) {
-                    if (err) {
-                        console.log('stderr: ' + stderr);
-                        return callback(err);
-                    }
-                    return callback();
-                });
-            } else {
-                return callback();
-            }
+            
+            return callback();
+
+            //autotone this image? (come on, say yes!!) - no. 8-2-18
+            // if (false) {
+            //     exec(toolsDir + 'autotone "' + destinationPath + '/original.' + outputFormat + '" "' + destinationPath + '/original.' + outputFormat + '"', function (err, stdout, stderr) {
+            //         if (err) {
+            //             console.log('stderr: ' + stderr);
+            //             return callback(err);
+            //         }
+            //         return callback();
+            //     });
+            // } else {
+            //     return callback();
+            // }
         });
     };
 
