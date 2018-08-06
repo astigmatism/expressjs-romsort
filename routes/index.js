@@ -410,7 +410,6 @@ router.get('/imagesedit/:system/:folder', function(req, res, next) {
 						webtitles: JSON.stringify(webtitles),
 						system: system,
 						folder: folder,
-						boxartdata: JSON.stringify(boxartdata),
 						threshold: threshold
 					});
 					return;
