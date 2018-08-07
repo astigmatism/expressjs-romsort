@@ -140,14 +140,6 @@ var BoxArt = function() {
 			var $checkwrapper = $('<div>Top Suggestion: </div>');
 			$checkwrapper.append($checkbox);
 
-			if (boxartdata) {
-				if (title in boxartdata) {
-					if (boxartdata[title].hasOwnProperty('t')) {
-						$checkbox.prop('checked', true);
-					}
-				}
-			}
-
 			li.append($checkwrapper);
 			
 
