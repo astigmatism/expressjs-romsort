@@ -1,14 +1,4 @@
-public/title/*
-!public/title/nes
-!public/title/snes
-!public/title/gb
-!public/title/gbc
-!public/title/sms
-!public/title/gg
-!public/title/vb
-public/screen1/*
-!public/screen1/nes
-!public/screen1/snes
+public/*
 workspace/00 - starthere/
 workspace/00 - starthere
 workspace/01 - decompressed/
@@ -39,29 +29,6 @@ workspace/emumoviesready/
 workspace/cdnready
 workspace/cdnsupportready/*
 workspace/spcsready/*
-public/boxart/*
-public/emumovies/*
-!public/boxart/vb
-!public/boxart/pce
-!public/boxart/sms
-!public/boxart/jag
-!public/boxart/vect
-!public/boxart/lynx
-!public/boxart/wsx
-!public/boxart/gen
-!public/boxart/gg
-!public/boxart/gb
-!public/boxart/nes
-!public/boxart/gba
-!public/boxart/n64
-!public/boxart/snes
-!public/boxart/a2600
-!public/boxart/nds
-!public/boxart/fds
-!public/boxart/a7800
-!public/boxart/ngpx
-!public/boxart/32x
-!public/boxart/segacd
 workspace/02 - compressed
 workspace/04 - alphasorted
 workspace/05 - topchoice

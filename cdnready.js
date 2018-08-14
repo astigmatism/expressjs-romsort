@@ -12,19 +12,19 @@ CDNReady = function() {
 var _compressEverything = false; //for debugging
 var cdnErrors = {};
 
-CDNReady.exec = function(sourcePath, destinationPath, fileDataPath, segmentSize, callback) {
+CDNReady.exec = function(sourcePath, destinationRoot, fileDataPath, segmentSize, callback) {
 
     var self = this;
     var fileData = {};
 
 	//open source folder
-	fs.readdir(sourcePath, function(err, titles) {
+	fs.readdir(sourcePath, (err, titles) => {
         if (err) {
             return callback(err);
         }
 
         //create a target folder
-        Main.createFolder(destinationPath, true, function(err) {
+        Main.createFolder(destinationRoot, true, err => {
         	if (err) {
         		return callback(err);
         	}
@@ -32,227 +32,236 @@ CDNReady.exec = function(sourcePath, destinationPath, fileDataPath, segmentSize,
 			//loop over all title (game) folders
 	        async.eachSeries(titles, function(title, nexttitle) {
 
-	        	fs.stat(sourcePath + '/' + title, function(err, stats) {
+                var titleFolder = path.join(sourcePath, title);
+
+	        	fs.stat(titleFolder, (err, stats) => {
 	                
 	                //bail if a file, folders only for titles
-	                if (stats.isFile()) {
-	                    return nexttitle(null);
-	                }
+	                if (stats.isFile()) return nexttitle(null);
 
 	                //read title folder
-	                fs.readdir(sourcePath + '/' + title, function(err, roms) {
+	                fs.readdir(titleFolder, (err, roms) => {
 	                    if (err) {
                             cdnErrors[title] = err;
 	                        return nexttitle(err);
-	                    }
+                        }
+                        
+                        fileData[title] = {};
 
-                        //loop over reach rom file or folder
-                        async.eachSeries(roms, function(fileorfolder, nextfileorfolder) {
+                        var destinationTitle = path.join(destinationRoot, title);
 
-                            if (fileorfolder == '.DS_Store') {
-                                return nextfileorfolder();
+                        //write title folder to destination
+                        Main.createFolder(destinationTitle, true, err => {
+                            if (err) {
+                                cdnErrors[title] = err;
+                                return nexttitle(err);
                             }
 
-                            console.log(fileorfolder + ' ...');
 
-                            //the resulting file name will be the combination of title and file (or folder) for uniquness
-                            var destinationFileName = Main.compress.string(title + fileorfolder);
-                            destinationFileName = encodeURIComponent(destinationFileName);
+                            //loop over reach rom file or folder
+                            async.eachSeries(roms, (fileorfolder, nextfileorfolder) => {
 
-                            //output file for filesize
-                            //compress the file name, I was running into issues with filenames with weird characters
-                            fileData[destinationFileName] = {
-                                f: fileorfolder,
-                                s: 0
-                            };
+                                if (fileorfolder == '.DS_Store') {
+                                    return nextfileorfolder();
+                                }
 
-                            //ok, so here's the deal:
-                            //if its a file: we compressed it to be included in the emulator file system
-                            //if its a folder: we compress all files within it to be included in the emulator file system
-                            
-                            console.log(colors.green('    CDN file name: ' + title + fileorfolder + ' --> ' + destinationFileName));
+                                console.log(fileorfolder + ' ...');
 
-                            var sourceFilePath = path.join(sourcePath, title, fileorfolder);
 
-                            //what are we working with?
-                            fs.stat(sourceFilePath, function(err, stats) {
+                                //output file for filesize
+                                //compress the file name, I was running into issues with filenames with weird characters
+                                fileData[title][fileorfolder] = {
+                                    f: fileorfolder,
+                                    s: 0
+                                };
 
-                                if (stats.isFile()) {
+                                //ok, so here's the deal:
+                                //if its a file: we compressed it to be included in the emulator file system
+                                //if its a folder: we compress all files within it to be included in the emulator file system
+                                
+                                //console.log(colors.green('    CDN file name: ' + title + fileorfolder + ' --> ' + destinationFileName));
 
-                                    //file
-                                    /*
+                                var sourceFilePath = path.join(sourcePath, title, fileorfolder);
 
-                                    key:
-                                    f: files
+                                //what are we working with?
+                                fs.stat(sourceFilePath, err, stats => {
 
-                                    object:
-                                    {
-                                        f: {
-                                            filename: [string, string, ...]
-                                        }
-                                    }
+                                    if (stats.isFile()) {
 
-                                    */
-                                    console.log(colors.green('    This is a file (not a folder)'));
+                                        //file
+                                        /*
 
-                                    var file = fileorfolder;
-                                    var destinationFilePath = path.join(destinationPath, destinationFileName);
+                                        key:
+                                        f: files
 
-                                    //begin by writing an empty json file which we can append details to
-                                    self.CreateFile(destinationFilePath, '{"f":{', function(err) {
-                                        if (err) {
-                                            cdnErrors[file] = err;
-                                            return nextfileorfolder(err);
+                                        object:
+                                        {
+                                            f: {
+                                                filename: [string, string, ...]
+                                            }
                                         }
 
-                                        //files are written as json properties
-                                        self.WriteGameFileAsJson(sourceFilePath, destinationFilePath, file, segmentSize, (err) => {
+                                        */
+                                        console.log(colors.green('    This is a file (not a folder)'));
+
+                                        var file = fileorfolder;
+                                        var destinationFilePath = path.join(destinationTitle, file);
+
+                                        //begin by writing an empty json file which we can append details to
+                                        self.CreateFile(destinationFilePath, '{"f":{', function(err) {
                                             if (err) {
                                                 cdnErrors[file] = err;
                                                 return nextfileorfolder(err);
                                             }
 
-                                            //close output json with bracket
-                                            fs.appendFile(destinationFilePath, '}}', (err) => {
+                                            //files are written as json properties
+                                            self.WriteGameFileAsJson(sourceFilePath, destinationFilePath, file, segmentSize, (err) => {
                                                 if (err) {
                                                     cdnErrors[file] = err;
                                                     return nextfileorfolder(err);
                                                 }
-                                                
-                                                //get resulting filesize
-                                                fs.stat(destinationFilePath, (err, stat) => {
 
-                                                    fileData[destinationFileName].s = stat.size;
-
-                                                    console.log(colors.green('    Resulting file size: ' + stat.size));
-                                                    console.log(colors.blue('    CDN Ready!'));
-                                                    return nextfileorfolder();     
-                                                });
-
-                                            });
-                                        });
-                                    });
-
-                                } else {
-
-                                    //is a folder
-                                    //this is different enough from the task if it were a file
-                                    //for a folder, write one destination file with all the files as properties
-
-                                    console.log(colors.green('    This is a folder (not a file)'));
-
-                                    var folder = fileorfolder;
-                                    //file is a folder, compress all files into a single
-
-                                    //read folder
-                                    /*
-
-                                    key:
-                                    f: files
-                                    b: best game to boot in emaultor
-
-                                    object:
-                                    {
-                                        f: {
-                                            filename1: [string, string, ...],
-                                            filename2: [string],
-                                            ...
-                                        },
-                                        b: string
-                                    }
-
-                                    */
-                                    fs.readdir(sourceFilePath, function(err, files) {
-                                        if (err) {
-                                            cdnErrors[folder] = err;
-                                            return nextfileorfolder();
-                                        }
-
-                                        var destinationFilePath = path.join(destinationPath, destinationFileName);
-
-                                        //begin by writing an empty title file which we can append to
-                                        self.CreateFile(destinationFilePath, '{"f":{', function(err) {
-                                            if (err) {
-                                                cdnErrors[folder] = err;
-                                                return nextfileorfolder(err);
-                                            }
-
-                                            //since this game has a multiple file structure, we need to decide which file to bootstrap in the emulator
-                                            var bestBootCandidate = Main.compress.string(self.DetermineBootCandidate(files));
-
-                                            //loop over reach rom file in folder folder
-                                            async.eachOfSeries(files, function(file, i, nextfile) {
-
-                                                var sourceFolderPathFile = path.join(sourceFilePath, file);
-
-                                                self.WriteGameFileAsJson(sourceFolderPathFile, destinationFilePath, file, segmentSize, (err) => {
+                                                //close output json with bracket
+                                                fs.appendFile(destinationFilePath, '}}', (err) => {
                                                     if (err) {
                                                         cdnErrors[file] = err;
-                                                        return nextfile(err);
+                                                        return nextfileorfolder(err);
                                                     }
+                                                    
+                                                    //get resulting filesize
+                                                    fs.stat(destinationFilePath, (err, stat) => {
 
-                                                    //are there more files? If so, append a comma between object properties
-                                                    if (i !== (files.length -1)) {
-                                                        fs.appendFile(destinationFilePath, ',', (err) => {
-                                                            if (err) {
-                                                                cdnErrors[file] = err;
-                                                                return nextfile(err);
-                                                            }
-                                                            return nextfile();
-                                                        });
-                                                    } 
-                                                    else {
-                                                        return nextfile();
-                                                    }
+                                                        fileData[title][fileorfolder].s = stat.size;
+
+                                                        console.log(colors.green('    Resulting file size: ' + stat.size));
+                                                        console.log(colors.blue('    CDN Ready!'));
+                                                        return nextfileorfolder();     
+                                                    });
+
                                                 });
+                                            });
+                                        });
 
-                                            }, function(err, result) {
+                                    } else {
+
+                                        //is a folder
+                                        //this is different enough from the task if it were a file
+                                        //for a folder, write one destination file with all the files as properties
+
+                                        console.log(colors.green('    This is a folder (not a file)'));
+
+                                        var folder = fileorfolder;
+                                        //file is a folder, compress all files into a single
+
+                                        //read folder
+                                        /*
+
+                                        key:
+                                        f: files
+                                        b: best game to boot in emaultor
+
+                                        object:
+                                        {
+                                            f: {
+                                                filename1: [string, string, ...],
+                                                filename2: [string],
+                                                ...
+                                            },
+                                            b: string
+                                        }
+
+                                        */
+                                        fs.readdir(sourceFilePath, function(err, files) {
+                                            if (err) {
+                                                cdnErrors[folder] = err;
+                                                return nextfileorfolder();
+                                            }
+
+                                            var destinationFilePath = path.join(destinationRoot, destinationFileName);
+
+                                            //begin by writing an empty title file which we can append to
+                                            self.CreateFile(destinationFilePath, '{"f":{', function(err) {
                                                 if (err) {
                                                     cdnErrors[folder] = err;
                                                     return nextfileorfolder(err);
                                                 }
 
-                                                //we'll need to inform the emulator which file to bootstrap, lets write it here
-                                                fs.appendFile(destinationFilePath, '},\"b\":\"' + bestBootCandidate + '\"', (err) => {
+                                                //since this game has a multiple file structure, we need to decide which file to bootstrap in the emulator
+                                                var bestBootCandidate = Main.compress.string(self.DetermineBootCandidate(files));
+
+                                                //loop over reach rom file in folder folder
+                                                async.eachOfSeries(files, function(file, i, nextfile) {
+
+                                                    var sourceFolderPathFile = path.join(sourceFilePath, file);
+
+                                                    self.WriteGameFileAsJson(sourceFolderPathFile, destinationFilePath, file, segmentSize, (err) => {
+                                                        if (err) {
+                                                            cdnErrors[file] = err;
+                                                            return nextfile(err);
+                                                        }
+
+                                                        //are there more files? If so, append a comma between object properties
+                                                        if (i !== (files.length -1)) {
+                                                            fs.appendFile(destinationFilePath, ',', (err) => {
+                                                                if (err) {
+                                                                    cdnErrors[file] = err;
+                                                                    return nextfile(err);
+                                                                }
+                                                                return nextfile();
+                                                            });
+                                                        } 
+                                                        else {
+                                                            return nextfile();
+                                                        }
+                                                    });
+
+                                                }, function(err, result) {
                                                     if (err) {
                                                         cdnErrors[folder] = err;
                                                         return nextfileorfolder(err);
                                                     }
-                                                    
-                                                    //close output json with bracket
-                                                    fs.appendFile(destinationFilePath, '}', (err) => {
+
+                                                    //we'll need to inform the emulator which file to bootstrap, lets write it here
+                                                    fs.appendFile(destinationFilePath, '},\"b\":\"' + bestBootCandidate + '\"', (err) => {
                                                         if (err) {
                                                             cdnErrors[folder] = err;
                                                             return nextfileorfolder(err);
                                                         }
                                                         
-                                                        //get resulting filesize
-                                                        fs.stat(destinationFilePath, (err, stat) => {
+                                                        //close output json with bracket
+                                                        fs.appendFile(destinationFilePath, '}', (err) => {
+                                                            if (err) {
+                                                                cdnErrors[folder] = err;
+                                                                return nextfileorfolder(err);
+                                                            }
+                                                            
+                                                            //get resulting filesize
+                                                            fs.stat(destinationFilePath, (err, stat) => {
 
-                                                            fileData[destinationFileName].s = stat.size;
+                                                                fileData[destinationFileName].s = stat.size;
 
-                                                            console.log(colors.green('    Resulting file size: ' + stat.size));
-                                                            console.log(colors.blue('    CDN Ready!'));
-                                                            return nextfileorfolder();     
+                                                                console.log(colors.green('    Resulting file size: ' + stat.size));
+                                                                console.log(colors.blue('    CDN Ready!'));
+                                                                return nextfileorfolder();     
+                                                            });
+
                                                         });
-
                                                     });
                                                 });
                                             });
                                         });
-                                    });
 
+                                    }
+                                });
+
+                            }, function(err, result) {
+                                if (err) {
+                                    cdnErrors[title] = err;
+                                    return nexttitle(err);
                                 }
+                                nexttitle(null);
                             });
-
-                        }, function(err, result) {
-                            if (err) {
-                                cdnErrors[title] = err;
-                                return nexttitle(err);
-                            }
-                            nexttitle(null);
                         });
-
                     });
 				});
 
@@ -272,7 +281,7 @@ CDNReady.exec = function(sourcePath, destinationPath, fileDataPath, segmentSize,
                     //check for existance of each file
                     async.forEachOf(fileData, function(value, key, next) {
 
-                        var filePath = path.join(destinationPath, key);
+                        var filePath = path.join(destinationRoot, key);
 
                         fs.exists(filePath, (exists) => {
 

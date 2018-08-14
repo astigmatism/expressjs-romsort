@@ -36,7 +36,7 @@ module.exports = new (function() {
 
                         var bestFileForTitle = {};
 
-                        //loop over all contents in source
+                        //loop over all files in source
                         async.eachSeries(contents, function(content, nextcontent) {
                             
                             var scores = getScores(content, titles); //get scores of all titles for this file
@@ -137,7 +137,7 @@ module.exports = new (function() {
         for (i; i < len; ++i) {
             scores.push({
                 target: collection[i],
-                score: stringScore(term, collection[i], 0.5)
+                score: stringScore(term, collection[i] + '(USA)', 0.5) //adding (USA) to better match emumovies
             });
         }
 
