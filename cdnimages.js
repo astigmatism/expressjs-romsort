@@ -41,17 +41,19 @@ module.exports = new (function() {
                             return nexttitle();
                         }
 
-                        var sourceimage = path.join(source, title, 'original.jpg');
+                        var sourceimage = path.join(source, title, '0.jpg');
                         var destination = path.join(dest, title, '0.jpg');
 
                         console.log(colors.blue('Copying ' + title + ' image...'));
 
                         //if usefile is on, we are asking to move the file to title/bestromfile (more useful for screenshots per rom file)
-                        // if (usefile == 'on' && title in datafile) {
-                        //     var bestfile = datafile[title].b;
-                        //     var details = datafile[title].f[bestfile];
-                        //     destination = path.join(dest, title, bestfile, '0.jpg');
-                        // }
+                        if (usefile == 'true' && title in datafile) {
+                            var bestfile = datafile[title].b;
+                            var details = datafile[title].f[bestfile];
+                            destination = path.join(dest, title, bestfile, '0.jpg');
+                        }
+
+                        console.log(colors.blue('Copying ' + title + ' image to ' + destination));
 
                         //copy image to destination
                         fs.copy(sourceimage, destination, err => {

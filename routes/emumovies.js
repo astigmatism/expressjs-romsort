@@ -20,12 +20,16 @@ router.get('/sortcontent', function(req, res, next) {
 
     var system = req.query.system;
     var folder = req.query.folder;
+    var fileType = req.query.type; //jpg, mp4
     
     if (!system) {
         return res.status(400).json('system is a required param');
     }
     if (!folder) {
         return res.status(400).json('folder is a required param');
+    }
+    if (!fileType) {
+        return res.status(400).json('fileType is a required param');
     }
 
     //form paths
@@ -34,7 +38,7 @@ router.get('/sortcontent', function(req, res, next) {
     var destinationFolder = path.join(destinationRoot, folder);
     var workingFolder = path.join(destinationRoot, folder + '_unknown')
 
-    SortContent.Exec(masterfile, sourceFolder, destinationFolder, workingFolder, err => {
+    SortContent.Exec(masterfile, fileType, sourceFolder, destinationFolder, workingFolder, err => {
         if (err) {
             return res.status(500).json(err);
         }

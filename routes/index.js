@@ -377,6 +377,7 @@ router.get('/imagesedit/:system/:folder', function(req, res, next) {
 	var system = req.params.system;
 	var folder = req.params.folder;
 	var threshold = req.query.threshold || 400;
+	var fileType = req.query.type || 'jpg';
 
 	if (!system)
 		return res.json('system is a required query param. Maps to folder name (gen, snes, n64, gb...)');
@@ -385,7 +386,6 @@ router.get('/imagesedit/:system/:folder', function(req, res, next) {
 
 	var source = path.join(Main.getPath('public'), folder, system);
 	var datafile = path.join(Main.getPath('datafiles') + '/' + system + '_master');
-	var imagemanifest = path.join(Main.getPath('datafiles') + '/' + system + '_' + folder);
 
 	//read all titles from web folder
 	fs.readdir(source, function(err, webtitles) {
@@ -400,34 +400,15 @@ router.get('/imagesedit/:system/:folder', function(req, res, next) {
 	            return callback(err);
 	        }
 
-			//get contents of the boxart data file, if exists!
-			fs.exists(imagemanifest, function(exists) {
-
-				var onComplete = function(boxartdata) {
-
-					res.render('boxart', {
-						data: JSON.stringify(masterFile),
-						webtitles: JSON.stringify(webtitles),
-						system: system,
-						folder: folder,
-						threshold: threshold
-					});
-					return;
-				};
-
-				if (exists) {
-					
-					fs.readJson(imagemanifest, function(err, boxartdatafile) {
-						if (err) {
-							return callback(err);
-						}
-						return onComplete(boxartdatafile);
-					});
-				}
-				else {
-					return onComplete();
-				}
+			res.render('boxart', {
+				data: JSON.stringify(masterFile),
+				webtitles: JSON.stringify(webtitles),
+				system: system,
+				folder: folder,
+				threshold: threshold,
+				fileType: fileType
 			});
+			return;
 		});
     });
 });

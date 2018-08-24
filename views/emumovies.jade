@@ -15,8 +15,11 @@ block content
             | Parse files in this folder:
             span(class="folder") /17 - emumovies/ 
             input#scFolder
+        p
+            | File Output Type (jpg, mp4)
+            input#scFileType
         
-        button(onclick='$("#sc").text("working");$.get("/emumovies/sortcontent?folder=" + $("#scFolder").val() + "&system=" + $("#system").val(), function(response) { $("#sc").text(response); })') GO!
+        button(onclick='$("#sc").text("working");$.get("/emumovies/sortcontent?type=" + $("#scFileType").val() + "&folder=" + $("#scFolder").val() + "&system=" + $("#system").val(), function(response) { $("#sc").text(response); })') GO!
         div#sc(class="response")
         p The resulting file will be located in 
             span(class="folder") /emumoviesready/[folder]

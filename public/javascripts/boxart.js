@@ -219,7 +219,7 @@ var modulate = function(wrapper, size, system, title, b, s, h) {
 };
 
 var loadImage = function(wrapper, size, system, title) {
-
+	
 	$(wrapper).empty();
 	var image = new Image();
 	image.src = '/' + folder + '/' + system + '/' + title + '/0.jpg?' + new Date(); //always show original since we can be certain it is jpg

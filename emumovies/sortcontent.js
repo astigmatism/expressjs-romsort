@@ -8,8 +8,9 @@ const stringScore = require('string-score');
 module.exports = new (function() {
 
     const _self = this;
+    var titles = [];
 
-    this.Exec = function(masterfilePath, sourceFolder, destinationFolder, workingFolder, callback) {
+    this.Exec = function(masterfilePath, fileType, sourceFolder, destinationFolder, workingFolder, callback) {
         
         //empty destinations
         fs.emptyDir(destinationFolder, err => {
@@ -24,61 +25,50 @@ module.exports = new (function() {
                     if (err) return callback(err);
 
                     //create array of titles
-                    var titles = [];
                     for (var title in masterfile) {
-                        titles.push(title);
+
+                        if (title == 'About Advanced Dungeons & Dragons - Heroes of the Lance (PD)') debugger;
+
+                        //filter based on score
+                        var rank = masterfile[title].f[masterfile[title].b].rank;
+
+                        if (rank >= 250) {
+                            titles.push(title);
+                        }
                     }
 
                     //open source folder
                     fs.readdir(sourceFolder, function(err, contents) {
                         if (err) return callback(err);
 
-
-                        var bestFileForTitle = {};
-
-                        //loop over all files in source
-                        async.eachSeries(contents, function(content, nextcontent) {
-                            
-                            var scores = getScores(content, titles); //get scores of all titles for this file
-                            var title = scores[0].target;
-                            var score = scores[0].score;
-
-                            if (!bestFileForTitle[title]) {
-                                bestFileForTitle[title] = {
-                                    file: content,
-                                    score: score
-                                };
-                                console.log(colors.blue('file: ' + content + ' -> matches title: ' + title + ' ' + score));
-                            }
-                            else {
-                                if (bestFileForTitle[title].score < score) {
-                                    bestFileForTitle[title] = {
-                                        file: content,
-                                        score: score
-                                    };
-                                    console.log(colors.magenta('file: ' + content + ' -> BETTER matches title: ' + title + ' ' + score));
-                                }
-                                else {
-                                    console.log(colors.red('file: ' + content + ' does not better match title: ' + title + '. The score of ' + score + ' is less than file: ' + bestFileForTitle[title].file + ' ' + bestFileForTitle[title].score));
-                                }
-                            }
-
-                            nextcontent();
-
-                        }, function(err, result) {
+                        
+                        LoopFiles(contents, 0, {}, (err, bestFileForTitle) => {
                             if (err) return callback(err);
-                            
+
                             //loop over all best file matches
                             async.eachOfSeries(bestFileForTitle, function(value, key, nextTitle) {
                                 
                                 var sourceFile = path.join(workingFolder, value.file);
-                                var destinationFile = path.join(destinationFolder, key, '0.jpg');
+                                var destinationFile = path.join(destinationFolder, key, '0.' + fileType);
+                                var destinationInfo = path.join(destinationFolder, key, 'info.json');
+
+                                var data = {
+                                    'originalfile': value.file,
+                                    'dateprocessed': Date.now(),
+                                    'notes': ''
+                                };
+
 
                                 //MOVE files out of working folder, this leaves unknown files in the working folder
                                 fs.move(sourceFile, destinationFile, err => {
                                     if (err) return callback(err)
 
-                                    return nextTitle();
+                                    //write data file
+                                    fs.writeJSON(destinationInfo, data, err => {
+                                        if (err) return callback(err);
+
+                                        return nextTitle();
+                                    });
                                 });
 
                             }, err => {
@@ -86,9 +76,7 @@ module.exports = new (function() {
 
                                 callback();
                             });
-
                         });
-
                     });
                 });
             });
@@ -126,6 +114,76 @@ module.exports = new (function() {
     //                             });
     //                         }
 
+    var LoopFiles = function(contents, scoreIndex, bestFileForTitle, callback) {
+
+        var again = [];
+
+        //loop over all files in source
+        async.eachSeries(contents, function(content, nextcontent) {
+            
+            //doctor file name since emumovies tends to add stuff not needed
+            var file = path.parse(content);
+            var searchTerm = file.name;
+            searchTerm = searchTerm.replace(/\(.*\)/g, '');
+
+            if (scoreIndex > 0) {
+                searchTerm = searchTerm.replace('II', '2');
+            }
+
+            var scores = getScores(searchTerm, titles); //get scores of all titles for this file
+            var title = scores[scoreIndex].target;
+            var score = scores[scoreIndex].score;
+
+            //if (content === 'Zoda\'s Revenge - StarTropics II (USA).mp4') debugger;
+
+
+            if (score <= 0.5) {
+                console.log('file: ' + content + ' -> best matches title: ' + title + ' but too low scoring at ' + score);
+                return nextcontent();
+            }
+
+            if (!bestFileForTitle[title]) {
+                bestFileForTitle[title] = {
+                    file: content,
+                    score: score
+                };
+
+                console.log(colors.blue('file: ' + content + ' -> matches title: ' + title + ' ' + score));
+            }
+            else {
+                if (bestFileForTitle[title].score < score) {
+                    
+                    //if the previous file match now fails, add it to the end to try again later
+                    var original = bestFileForTitle[title].file;
+                    again.push(original);
+
+                    bestFileForTitle[title] = {
+                        file: content,
+                        score: score
+                    };
+
+                    console.log(colors.magenta('file: ' + content + ' -> BETTER matches title: ' + title + ' ' + score + '. The old file: ' + original + ' will go again'));
+                }
+                else {
+                    console.log(colors.red('file: ' + content + '\'s best match was ' + title + '. BUT Its score of ' + score + ' is less than file already set: ' + bestFileForTitle[title].file + ' ' + bestFileForTitle[title].score + '. Will try its next match'));
+                    again.push(content);
+                }
+            }
+
+            nextcontent();
+
+        }, function(err, result) {
+            if (err) return callback(err);
+
+            if (again.length > 0 && scoreIndex < 2) {
+                LoopFiles(again, scoreIndex + 1, bestFileForTitle, callback);
+            }
+            else {
+                callback(null, bestFileForTitle);
+            }
+        });
+    }
+
 
     var getScores = function(term, collection) {
 
@@ -134,12 +192,54 @@ module.exports = new (function() {
         var len = collection.length;
 
         //record scores for all in collection
+        // for (i; i < len; ++i) {
+        //     scores.push({
+        //         target: collection[i],
+        //         score: stringScore(term, collection[i], 0.5)
+        //     });
+        // }
+
+        var termwords = term.trim().split(' ');
+
+        //for all in haystack
         for (i; i < len; ++i) {
+
+            var sum = 0;
+            var collectionwords = collection[i].split(' ');
+            
+            for(var j = 0; j < termwords.length; ++j) {
+
+                var foundterm = false;
+
+                for (var k = 0; k < collectionwords.length; ++k) {
+
+                    if (termwords[j].toLowerCase() == collectionwords[k].toLowerCase())
+                    {
+                        foundterm = true;
+                    }
+                    
+                }
+
+                if (foundterm) {
+                    sum += 1;
+                } else {
+                    sum -= 0.5;
+                }
+            }
+
+            if (collectionwords.length > termwords.length) {
+                sum -= (collectionwords.length - termwords.length) * 0.2;
+            }
+
+            var score = sum / termwords.length;
+
             scores.push({
                 target: collection[i],
-                score: stringScore(term, collection[i] + '(USA)', 0.5) //adding (USA) to better match emumovies
-            });
+                score: score
+            })
         }
+
+        
 
         scores.sort(function(a, b){
             return b.score - a.score;

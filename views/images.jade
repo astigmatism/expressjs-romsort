@@ -73,4 +73,7 @@ block content
 			| The name of the folder to use in  
 			span(class="folder") /public/ 
 			input#miWebFolder
-		button(onclick='window.open("/imagesedit/" + $("#system").val() + "/" + $("#miWebFolder").val(), "_blank")') OPEN
+		p
+			| File TYpe
+			input#miFileType
+		button(onclick='window.open("/imagesedit/" + $("#system").val() + "/" + $("#miWebFolder").val() + "?type=" + $("#miFileType").val(), "_blank")') OPEN
