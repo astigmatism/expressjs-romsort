@@ -18,8 +18,11 @@ block content
         p
             | File Output Type (jpg, mp4)
             input#scFileType
+        p
+            | Put resulting file in folder for best rom? (Do this for screens!)
+            input(type="checkbox")#bestromfile
         
-        button(onclick='$("#sc").text("working");$.get("/emumovies/sortcontent?type=" + $("#scFileType").val() + "&folder=" + $("#scFolder").val() + "&system=" + $("#system").val(), function(response) { $("#sc").text(response); })') GO!
+        button(onclick='$("#sc").text("working");$.get("/emumovies/sortcontent?type=" + $("#scFileType").val() + "&folder=" + $("#scFolder").val() + "&system=" + $("#system").val() + "&bestrom=" + $("#bestromfile").is(":checked"), function(response) { $("#sc").text(response); })') GO!
         div#sc(class="response")
         p The resulting file will be located in 
             span(class="folder") /emumoviesready/[folder]

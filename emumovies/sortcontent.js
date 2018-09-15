@@ -10,7 +10,7 @@ module.exports = new (function() {
     const _self = this;
     var titles = [];
 
-    this.Exec = function(masterfilePath, fileType, sourceFolder, destinationFolder, workingFolder, callback) {
+    this.Exec = function(masterfilePath, fileType, sourceFolder, destinationFolder, usefile, workingFolder, callback) {
         
         //empty destinations
         fs.emptyDir(destinationFolder, err => {
@@ -27,7 +27,7 @@ module.exports = new (function() {
                     //create array of titles
                     for (var title in masterfile) {
 
-                        if (title == 'About Advanced Dungeons & Dragons - Heroes of the Lance (PD)') debugger;
+                        //if (title == 'About Advanced Dungeons & Dragons - Heroes of the Lance (PD)') debugger;
 
                         //filter based on score
                         var rank = masterfile[title].f[masterfile[title].b].rank;
@@ -48,9 +48,14 @@ module.exports = new (function() {
                             //loop over all best file matches
                             async.eachOfSeries(bestFileForTitle, function(value, key, nextTitle) {
                                 
+                                var destination = path.join(destinationFolder, key);
+                                if (usefile ==  'true') {
+                                    destination = path.join(destination, masterfile[key].b);
+                                }
+                                
                                 var sourceFile = path.join(workingFolder, value.file);
-                                var destinationFile = path.join(destinationFolder, key, '0.' + fileType);
-                                var destinationInfo = path.join(destinationFolder, key, 'info.json');
+                                var destinationFile = path.join(destination, '0.' + fileType);
+                                var destinationInfo = path.join(destination, 'info.json');
 
                                 var data = {
                                     'originalfile': value.file,

@@ -21,6 +21,7 @@ router.get('/sortcontent', function(req, res, next) {
     var system = req.query.system;
     var folder = req.query.folder;
     var fileType = req.query.type; //jpg, mp4
+    var usefile = req.query.bestrom;
     
     if (!system) {
         return res.status(400).json('system is a required param');
@@ -38,7 +39,7 @@ router.get('/sortcontent', function(req, res, next) {
     var destinationFolder = path.join(destinationRoot, folder);
     var workingFolder = path.join(destinationRoot, folder + '_unknown')
 
-    SortContent.Exec(masterfile, fileType, sourceFolder, destinationFolder, workingFolder, err => {
+    SortContent.Exec(masterfile, fileType, sourceFolder, destinationFolder, usefile, workingFolder, err => {
         if (err) {
             return res.status(500).json(err);
         }

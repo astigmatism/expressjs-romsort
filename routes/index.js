@@ -543,7 +543,11 @@ router.get('/cleanup', function(req, res, next) {
 
 	Main.rmdir(path.join(Main.getPath('start'), folder), function() {
 		Main.rmdir(path.join(Main.getPath('decompressed'), folder), function() {
-			Main.rmdir(path.join(Main.getPath('cdnready'), cdnromfoldername), function() {
+			Main.rmdir(path.join(Main.getPath('compressed'), folder), function() {
+				Main.rmdir(path.join(Main.getPath('topchoice'), folder), function() {
+					Main.rmdir(path.join(Main.getPath('cdnready'), cdnromfoldername), function() {
+					});
+				});
 			});
 		});
 	});
